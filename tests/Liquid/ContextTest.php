@@ -215,6 +215,15 @@ class ContextTest extends TestCase
 		$this->assertEquals('hi? hi!', $context->invoke('hi', 'hi?'));
 	}
 
+	public function testOverrideGlobalFilter() {
+		$template = new Template();
+		$template->registerFilter(new GlobalFilter());
+
+		$template->parse("{{'test' | notice }}");
+		$this->assertEquals('Global test', $template->render());
+		$this->assertEquals('Local test', $template->render(array(), new LocalFilter()));
+	}
+
 	public function testAddItemInOuterScope() {
 		$this->context->set('test', 'test');
 		$this->context->push();

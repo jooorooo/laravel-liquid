@@ -9,6 +9,7 @@
  * @package Liquid
  */
 
-$loader = require __DIR__ . '/../vendor/autoload.php';
+$loader = require __DIR__ . '/../../vendor/autoload.php';
 $loader->addPsr4('Liquid\\', __DIR__ . '/../src/Liquid');
 $loader->addPsr4('Liquid\\', __DIR__ . '/Liquid');
+
