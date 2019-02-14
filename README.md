@@ -1,4 +1,4 @@
-# Liquid template engine for PHP [![Build Status](https://travis-ci.org/harrydeluxe/php-liquid.svg?branch=develop)](https://travis-ci.org/harrydeluxe/php-liquid)
+# Liquid template engine for Laravel [![Build Status](https://travis-ci.org/jooorooo/laravel-liquid.svg?branch=develop)](https://travis-ci.org/jooorooo/laravel-liquid)
 
 Liquid is a PHP port of the [Liquid template engine for Ruby](https://github.com/Shopify/liquid), which was written by Tobias Lutke. Although there are many other templating engines for PHP, including Smarty (from which Liquid was partially inspired), Liquid had some advantages that made porting worthwhile:
 
@@ -21,7 +21,7 @@ Liquid was written to meet three templating library requirements: good performan
 
 You can install this lib via [composer](https://getcomposer.org/):
 
-    composer create-project liquid/liquid
+    composer create-project simexis/laravel-liquid
 
 ## Example template
 
@@ -64,7 +64,7 @@ To find more examples have a look at the `examples` directory or at the original
 
 Have a bug? Please create an issue here on GitHub!
 
-[https://github.com/harrydeluxe/php-liquid/issues](https://github.com/harrydeluxe/php-liquid/issues)
+[https://github.com/jooorooo/laravel-liquid/issues](https://github.com/jooorooo/laravel-liquid/issues)
 
 ## Fork notes and contributors
 
