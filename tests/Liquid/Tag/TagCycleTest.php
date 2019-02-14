@@ -16,14 +16,6 @@ use Liquid\Template;
 
 class TagCycleTest extends TestCase
 {
-	/**
-	 * @expectedException \Liquid\LiquidException
-	 */
-	public function testInvalidSyntax() {
-		$template = new Template();
-		$template->parse("{% cycle %}");
-	}
-
 	public function testCycle() {
 		$this->assertTemplateResult('one', '{%cycle "one", "two"%}');
 		$this->assertTemplateResult('one two', '{%cycle "one", "two"%} {%cycle "one", "two"%}');

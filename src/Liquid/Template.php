@@ -62,7 +62,7 @@ class Template
      * @param Repository $cache
      * @param int $cache_expire
      */
-    public function __construct(ViewFinderInterface $viewFinder, Repository $cache, int $cache_expire = 60)
+    public function __construct(ViewFinderInterface $viewFinder, Repository $cache, $cache_expire = 60)
     {
         $this->viewFinder = $viewFinder;
         $this->setCache($cache);
@@ -93,7 +93,7 @@ class Template
      * @param int $expire
      * @return Template
      */
-    public function setCacheExpire(int $expire)
+    public function setCacheExpire($expire)
     {
         self::$cache_expire = $expire;
         return $this;
