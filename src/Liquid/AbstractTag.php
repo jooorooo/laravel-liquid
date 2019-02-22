@@ -18,83 +18,88 @@ use Illuminate\View\ViewFinderInterface;
  */
 abstract class AbstractTag
 {
-	/**
-	 * The markup for the tag
-	 *
-	 * @var string
-	 */
-	protected $markup;
+    /**
+     * The markup for the tag
+     *
+     * @var string
+     */
+    protected $markup;
 
-	/**
-	 * Filesystem object is used to load included template files
-	 *
-	 * @var ViewFinderInterface
-	 */
-	protected $viewFinder;
+    /**
+     * Filesystem object is used to load included template files
+     *
+     * @var ViewFinderInterface
+     */
+    protected $viewFinder;
 
-	/**
-	 * Additional attributes
-	 *
-	 * @var array
-	 */
-	protected $attributes = array();
+    /**
+     * Additional attributes
+     *
+     * @var array
+     */
+    protected $attributes = array();
 
-	/**
-	 * Constructor.
-	 *
-	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
-	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
-		$this->markup = $markup;
-		$this->viewFinder = $viewFinder;
-		$this->parse($tokens);
-	}
+    /**
+     * Constructor.
+     *
+     * @param string $markup
+     * @param array $tokens
+     * @param ViewFinderInterface $viewFinder
+     */
+    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null)
+    {
+        $this->markup = $markup;
+        $this->viewFinder = $viewFinder;
+        $this->parse($tokens);
+    }
 
-	/**
-	 * Parse the given tokens.
-	 *
-	 * @param array $tokens
-	 */
-	public function parse(array &$tokens) {
-		// Do nothing by default
-	}
+    /**
+     * Parse the given tokens.
+     *
+     * @param array $tokens
+     */
+    public function parse(array &$tokens)
+    {
+        // Do nothing by default
+    }
 
-	/**
-	 * Render the tag with the given context.
-	 *
-	 * @param Context $context
-	 *
-	 * @return string
-	 */
-	public function render(Context $context) {
-		return '';
-	}
+    /**
+     * Render the tag with the given context.
+     *
+     * @param Context $context
+     *
+     * @return string
+     */
+    public function render(Context $context)
+    {
+        return '';
+    }
 
-	/**
-	 * Extracts tag attributes from a markup string.
-	 *
-	 * @param string $markup
-	 */
-	protected function extractAttributes($markup) {
-		$this->attributes = array();
+    /**
+     * Extracts tag attributes from a markup string.
+     *
+     * @param string $markup
+     */
+    protected function extractAttributes($markup)
+    {
+        $this->attributes = array();
 
-		$attributeRegexp = new Regexp(Liquid::get('TAG_ATTRIBUTES'));
+        $attributeRegexp = new Regexp(Liquid::get('TAG_ATTRIBUTES'));
 
-		$matches = $attributeRegexp->scan($markup);
+        $matches = $attributeRegexp->scan($markup);
 
-		foreach ($matches as $match) {
-			$this->attributes[$match[0]] = $match[1];
-		}
-	}
+        foreach ($matches as $match) {
+            $this->attributes[$match[0]] = $match[1];
+        }
+    }
 
-	/**
-	 * Returns the name of the tag.
-	 *
-	 * @return string
-	 */
-	protected function name() {
-		return strtolower(get_class($this));
-	}
+    /**
+     * Returns the name of the tag.
+     *
+     * @return string
+     */
+    protected function name()
+    {
+        return strtolower(get_class($this));
+    }
 }

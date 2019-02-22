@@ -66,13 +66,14 @@ class TagIf extends Decision
 		parent::__construct($markup, $tokens, $viewFinder);
 	}
 
-	/**
-	 * Handler for unknown tags, handle else tags
-	 *
-	 * @param string $tag
-	 * @param array $params
-	 * @param array $tokens
-	 */
+    /**
+     * Handler for unknown tags, handle else tags
+     *
+     * @param string $tag
+     * @param array $params
+     * @param array $tokens
+     * @throws LiquidException
+     */
 	public function unknownTag($tag, $params, array $tokens) {
 		if ($tag == 'else' || $tag == 'elsif') {
 			// Update reference to nodelistHolder for this block

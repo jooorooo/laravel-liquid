@@ -11,6 +11,8 @@
 
 namespace Liquid;
 
+use Illuminate\Support\Collection;
+
 /**
  * A selection of standard filters.
  */
@@ -429,7 +431,10 @@ class StandardFilters
 	 * @return int
 	 */
 	public static function size($input) {
-		if ($input instanceof \Iterator) {
+	    if($input instanceof Collection) {
+	        return $input->count();
+        }
+	    if ($input instanceof \Iterator) {
 			return iterator_count($input);
 		}
 		if (is_string($input) || is_numeric($input)) {
