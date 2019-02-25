@@ -8,19 +8,22 @@
 
 namespace Liquid;
 
-use Illuminate\Support\ServiceProvider;
+use Illuminate\View\Engines\EngineResolver;
+use Illuminate\View\Factory;
+use Illuminate\View\FileViewFinder;
+use Illuminate\View\ViewServiceProvider;
 use Liquid\Template;
 
-class LiquidServiceProvider extends ServiceProvider
+class LiquidServiceProvider extends ViewServiceProvider
 {
 
     public function register()
     {
+        parent::register();
+
         $this->mergeConfigFrom(__DIR__ . '/../../config/liquid.php', 'liquid');
 
         $this->registerCache();
-        $this->registerExtension();
-        $this->registerEngine();
     }
 
     public function boot()
@@ -32,36 +35,68 @@ class LiquidServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the Twig extension in the Laravel View component.
+     * Register the engine resolver instance.
      *
      * @return void
      */
-    protected function registerExtension()
+    public function registerEngineResolver()
     {
-        $this->app['view']->addExtension(
-            $extension = $this->app['config']->get('liquid.extension'),
-            'liquid',
-            function () {
-                return $this->app['liquid'];
+        $this->app->singleton('view.engine.resolver', function () {
+            $resolver = new EngineResolver();
+
+            // Next, we will register the various view engines with the resolver so that the
+            // environment will resolve the engines needed for various views based on the
+            // extension of view file. We call a method for each of the view's engines.
+            foreach (['file', 'php', 'blade', 'liquid'] as $engine) {
+                $this->{'register'.ucfirst($engine).'Engine'}($resolver);
             }
-        );
 
-        $finder = $this->app['view.finder'];
-        $finder->addExtension($extension);
-        $this->app['view.finder'] = $finder;
+            return $resolver;
+        });
     }
+
     /**
-     * Register Twig engine bindings.
+     * Create a new Factory Instance.
+     *
+     * @param  \Illuminate\View\Engines\EngineResolver  $resolver
+     * @param  \Illuminate\View\ViewFinderInterface  $finder
+     * @param  \Illuminate\Contracts\Events\Dispatcher  $events
+     * @return \Illuminate\View\Factory
+     */
+    protected function createFactory($resolver, $finder, $events)
+    {
+        $factory = new Factory($resolver, $finder, $events);
+        $factory->addExtension($this->app['config']->get('liquid.extension'), 'liquid');
+        return $factory;
+    }
+
+    /**
+     * Register the PHP engine implementation.
+     *
+     * @param  \Illuminate\View\Engines\EngineResolver  $resolver
+     * @return void
+     */
+    public function registerLiquidEngine($resolver)
+    {
+        $resolver->register('liquid', function () {
+            return new LiquidEngine($this->app['view.finder'], $this->app['liquid.cache'], $this->app['config']->get('liquid.cache.expire'));
+        });
+    }
+
+    /**
+     * Register the view finder implementation.
      *
      * @return void
      */
-    protected function registerEngine()
+    public function registerViewFinder()
     {
-        $this->app->bindIf('liquid', function () {
-                return new LiquidEngine($this->app['view.finder'], $this->app['liquid.cache'], $this->app['config']->get('liquid.cache.expire'));
-            }, true);
-
+        $this->app->bind('view.finder', function ($app) {
+            $finder = new FileViewFinder($app['files'], $app['config']['view.paths']);
+            $finder->addExtension($this->app['config']->get('liquid.extension'));
+            return $finder;
+        });
     }
+
     /**
      * Register Twig engine bindings.
      *
