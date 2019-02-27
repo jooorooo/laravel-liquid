@@ -12,7 +12,6 @@ use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewServiceProvider;
-use Liquid\Template;
 
 class LiquidServiceProvider extends ViewServiceProvider
 {
@@ -22,8 +21,6 @@ class LiquidServiceProvider extends ViewServiceProvider
         parent::register();
 
         $this->mergeConfigFrom(__DIR__ . '/../../config/liquid.php', 'liquid');
-
-        $this->registerCache();
     }
 
     public function boot()
@@ -79,7 +76,10 @@ class LiquidServiceProvider extends ViewServiceProvider
     public function registerLiquidEngine($resolver)
     {
         $resolver->register('liquid', function () {
-            return new LiquidEngine($this->app['view.finder'], $this->app['liquid.cache'], $this->app['config']->get('liquid.cache.expire'));
+            //Merge liqud config
+            Liquid::$config = array_merge(Liquid::$config, config('liquid.liquid', []));
+
+            return new Template($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
         });
     }
 
@@ -95,19 +95,6 @@ class LiquidServiceProvider extends ViewServiceProvider
             $finder->addExtension($this->app['config']->get('liquid.extension'));
             return $finder;
         });
-    }
-
-    /**
-     * Register Twig engine bindings.
-     *
-     * @return void
-     */
-    protected function registerCache()
-    {
-        $this->app->bindIf('liquid.cache', function () {
-                return $this->app['cache']->driver($this->app['config']->get('liquid.cache.driver'));
-            }, true);
-
     }
 
 }

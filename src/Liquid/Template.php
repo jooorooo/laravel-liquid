@@ -11,8 +11,11 @@
 
 namespace Liquid;
 
-use Illuminate\Contracts\Cache\Repository;
+use ErrorException;
+use Illuminate\Contracts\View\Engine;
 use Illuminate\View\ViewFinderInterface;
+use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Debug\Exception\FatalThrowableError;
 
 /**
  * The Template class.
@@ -23,7 +26,7 @@ use Illuminate\View\ViewFinderInterface;
  *     $tpl->parse(template_source);
  *     $tpl->render(array('foo'=>1, 'bar'=>2);
  */
-class Template
+class Template implements Engine
 {
     /**
      * @var Document The root of the node tree
@@ -46,27 +49,34 @@ class Template
     private static $tags = array();
 
     /**
-     * @var Repository
+     * @var Filesystem
      */
-    private static $cache;
+    private static $files;
 
     /**
      * @var integer
      */
-    private static $cache_expire = 3600;
+    private static $compiled;
+
+    /**
+     * A stack of the last compiled templates.
+     *
+     * @var array
+     */
+    protected $lastCompiled = [];
 
     /**
      * Constructor.
      *
      * @param ViewFinderInterface $viewFinder
-     * @param Repository $cache
-     * @param int $cache_expire
+     * @param Filesystem $files
+     * @param $compiled
      */
-    public function __construct(ViewFinderInterface $viewFinder, Repository $cache, $cache_expire = 60)
+    public function __construct(ViewFinderInterface $viewFinder, Filesystem $files, $compiled)
     {
         $this->viewFinder = $viewFinder;
-        $this->setCache($cache);
-        $this->setCacheExpire($cache_expire);
+        $this->setFiles($files);
+        $this->setCompiledPath($compiled);
     }
 
     /**
@@ -80,39 +90,39 @@ class Template
     }
 
     /**
-     * @param Repository $cache
+     * @param Filesystem $files
      * @return Template
      */
-    public function setCache(Repository $cache)
+    public function setFiles(Filesystem $files)
     {
-        self::$cache = $cache;
+        self::$files = $files;
         return $this;
     }
 
     /**
-     * @param int $expire
+     * @param string $compiled
      * @return Template
      */
-    public function setCacheExpire($expire)
+    public function setCompiledPath($compiled)
     {
-        self::$cache_expire = $expire;
+        self::$compiled = $compiled;
         return $this;
     }
 
     /**
-     * @return Repository
+     * @return Filesystem
      */
-    public static function getCache()
+    public static function getFiles()
     {
-        return self::$cache;
+        return self::$files;
     }
 
     /**
      * @return integer
      */
-    public static function getCacheExpire()
+    public static function getCompiledPath()
     {
-        return self::$cache_expire;
+        return self::$compiled;
     }
 
     /**
@@ -172,20 +182,17 @@ class Template
      * @param string $source
      *
      * @return Template
-     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function parse($source)
     {
-        if ($cache = self::getCache()) {
-            if (($this->root = $cache->get(md5($source))) != false && $this->root->checkIncludes() != true) {
-            } else {
-                $tokens = Template::tokenize($source);
-                $this->root = new Document($tokens, $this->viewFinder);
-                $cache->set(md5($source), $this->root, self::getCacheExpire());
-            }
-        } else {
-            $tokens = Template::tokenize($source);
-            $this->root = new Document($tokens, $this->viewFinder);
+        $file = md5($source) . '.liquid';
+        $path = self::getCompiledPath() . '/' . $file;
+
+        if(!Template::getFiles()->exists($path) || !($this->root = @unserialize(Template::getFiles()->get($path))) || !($this->root->checkIncludes() != true)) {
+            $templateTokens = Template::tokenize($source);
+            $this->root = new Document($templateTokens, $this->viewFinder);
+            Template::getFiles()->put($path, serialize($this->root));
         }
 
         return $this;
@@ -217,5 +224,62 @@ class Template
         }
 
         return $this->root->render($context);
+    }
+
+    /**
+     * Get the evaluated contents of the view.
+     *
+     * @param string $path
+     * @param array $data
+     * @return string|null
+     * @throws ErrorException
+     * @throws \Psr\SimpleCache\InvalidArgumentException
+     */
+    public function get($path, array $data = [])
+    {
+        $this->lastCompiled[] = $path;
+
+        $obLevel = ob_get_level();
+        try {
+            $results = $this->parse(file_get_contents($path))->render($data);
+            array_pop($this->lastCompiled);
+            return $results;
+        } catch (\Exception $e) {
+            $this->handleViewException($e, $obLevel);
+        } catch (\Throwable $e) {
+            $this->handleViewException(new FatalThrowableError($e), $obLevel);
+        }
+        return null;
+    }
+
+    /**
+     * Handle a view exception.
+     *
+     * @param  \Exception  $e
+     * @param  int  $obLevel
+     * @return void
+     *
+     * @throws $e
+     */
+    protected function handleViewException(\Exception $e, $obLevel)
+    {
+        $e = new ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
+
+        while (ob_get_level() > $obLevel) {
+            ob_end_clean();
+        }
+
+        throw $e;
+    }
+
+    /**
+     * Get the exception message for an exception.
+     *
+     * @param  \Exception  $e
+     * @return string
+     */
+    protected function getMessage(\Exception $e)
+    {
+        return $e->getMessage().' (View: '.realpath(last($this->lastCompiled)).')';
     }
 }

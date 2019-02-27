@@ -36,7 +36,7 @@ class TemplateTest extends TestCase
 	 */
 	public function testSetCacheInvalidKey() {
 		$template = new Template();
-		$template->setCache(array());
+		$template->setFiles(array());
 	}
 
 	/**
@@ -44,19 +44,19 @@ class TemplateTest extends TestCase
 	 */
 	public function testSetCacheInvalidClass() {
 		$template = new Template();
-		$template->setCache(array('cache' => 'no_such_class'));
+		$template->setFiles(array('cache' => 'no_such_class'));
 	}
 
 	public function testSetCacheThroughArray() {
 		$template = new Template();
-		$template->setCache(array('cache' => 'file', 'cache_dir' => $this->cacheDir));
+		$template->setFiles(array('cache' => 'file', 'cache_dir' => $this->cacheDir));
 		$this->assertInstanceOf('\Liquid\Cache\File', $template::getCache());
 	}
 
 	public function testSetCacheThroughCacheObject() {
 		$template = new Template();
 		$cache = new Cache\File(array('cache_dir' => $this->cacheDir));
-		$template->setCache($cache);
+		$template->setFiles($cache);
 		$this->assertEquals($cache, $template::getCache());
 	}
 

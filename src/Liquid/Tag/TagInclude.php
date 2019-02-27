@@ -93,13 +93,14 @@ class TagInclude extends AbstractTag
 		parent::__construct($markup, $tokens, $viewFinder);
 	}
 
-	/**
-	 * Parses the tokens
-	 *
-	 * @param array $tokens
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
+    /**
+     * Parses the tokens
+     *
+     * @param array $tokens
+     *
+     * @throws LiquidException
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
 	public function parse(array &$tokens) {
 		if ($this->viewFinder === null) {
 			throw new LiquidException("No file system");
@@ -109,32 +110,32 @@ class TagInclude extends AbstractTag
 		$source = file_get_contents($this->viewFinder->find($this->templateName));
 
 		$this->hash = md5($source);
-
-		$cache = Template::getCache();
-
-        if (($this->document = $cache->get($this->hash)) != false && $this->document->checkIncludes() != true) {
-        } else {
+        $file = $this->hash . '.liquid';
+        $path = Template::getCompiledPath() . '/' . $file;
+        if(!Template::getFiles()->exists($path) || !($this->document = @unserialize(Template::getFiles()->get($path))) || !($this->document->checkIncludes() != true)) {
             $templateTokens = Template::tokenize($source);
             $this->document = new Document($templateTokens, $this->viewFinder);
-            $cache->put($this->hash, $this->document, Template::getCacheExpire());
+            Template::getFiles()->put($path, serialize($this->document));
         }
 	}
 
-	/**
-	 * check for cached includes
-	 *
-	 * @return boolean
-	 */
+    /**
+     * check for cached includes
+     *
+     * @return boolean
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
 	public function checkIncludes() {
-		$cache = Template::getCache();
-
 		if ($this->document->checkIncludes() == true) {
 			return true;
 		}
 
-		$source = file_get_contents($this->viewFinder->find($this->templateName));
+		$source = Template::getFiles()->get($this->viewFinder->find($this->templateName));
 
-		if ($cache->has(md5($source)) && $this->hash == md5($source)) {
+        $file = md5($source) . '.liquid';
+        $path = Template::getCompiledPath() . '/' . $file;
+
+		if (Template::getFiles()->exists($path) && $this->hash == md5($source)) {
 			return false;
 		}
 

@@ -157,35 +157,38 @@ class TagExtends extends AbstractTag
 
 		$this->hash = md5($source);
 
-		$cache = Template::getCache();
-
-        if (($this->document = $cache->get($this->hash)) != false && $this->document->checkIncludes() != true) {
-        } else {
-            $this->document = new Document($rest, $this->viewFinder);
-            $cache->put($this->hash, $this->document, Template::getCacheExpire());
+        $file = $this->hash . '.liquid';
+        $path = Template::getCompiledPath() . '/' . $file;
+        if(!Template::getFiles()->exists($path) || !($this->document = @unserialize(Template::getFiles()->get($path))) || !($this->document->checkIncludes() != true)) {
+            $templateTokens = Template::tokenize($source);
+            $this->document = new Document($templateTokens, $this->viewFinder);
+            Template::getFiles()->put($path, serialize($this->document));
         }
+
 	}
 
-	/**
-	 * Check for cached includes
-	 *
-	 * @return boolean
-	 */
-	public function checkIncludes() {
-		$cache = Template::getCache();
+    /**
+     * check for cached includes
+     *
+     * @return boolean
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function checkIncludes() {
+        if ($this->document->checkIncludes() == true) {
+            return true;
+        }
 
-		if ($this->document->checkIncludes() == true) {
-			return true;
-		}
+        $source = Template::getFiles()->get($this->viewFinder->find($this->templateName));
 
-		$source = file_get_contents($this->viewFinder->find($this->templateName));
+        $file = md5($source) . '.liquid';
+        $path = Template::getCompiledPath() . '/' . $file;
 
-		if ($cache->has(md5($source)) && $this->hash == md5($source)) {
-			return false;
-		}
+        if (Template::getFiles()->exists($path) && $this->hash == md5($source)) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
     /**
      * Renders the node

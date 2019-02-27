@@ -13,20 +13,6 @@ return [
 
     /*
      |--------------------------------------------------------------------------
-     | Liquid cache driver
-     |--------------------------------------------------------------------------
-     |
-     | By default DebugBar route served from the same domain that request served.
-     | To override default domain, specify it as a non-empty value.
-     */
-    'cache' => [
-        'driver' => env('LIQUID_CACHE_DRIVER', 'file'),
-
-        'expire' => 60 //minutes
-    ],
-
-    /*
-     |--------------------------------------------------------------------------
      | Liquid config
      |--------------------------------------------------------------------------
      */
