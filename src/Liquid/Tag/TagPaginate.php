@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Liquid;
@@ -75,14 +76,15 @@ class TagPaginate extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
+     * @param ViewFinderInterface $viewFinder
      *
-	 * @throws \Liquid\LiquidException
-     *
+     * @param Filesystem|null $files
+     * @param null $compiled
+     * @throws LiquidException
      */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
 
-        parent::__construct($markup, $tokens, $viewFinder);
+        parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
         $syntax = new Regexp('/(' . Liquid::get('VARIABLE_NAME') . ')\s+by\s+(\w+)/');
 

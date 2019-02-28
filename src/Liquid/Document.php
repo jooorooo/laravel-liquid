@@ -11,6 +11,7 @@
 
 namespace Liquid;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Tag\TagInclude;
 use Liquid\Tag\TagExtends;
@@ -20,22 +21,28 @@ use Liquid\Tag\TagExtends;
  */
 class Document extends AbstractBlock
 {
-	/**
-	 * Constructor.
-	 *
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
-	 */
-	public function __construct(array &$tokens, ViewFinderInterface $viewFinder = null) {
+    /**
+     * Constructor.
+     *
+     * @param array $tokens
+     * @param ViewFinderInterface $viewFinder
+     * @param Filesystem|null $files
+     * @param null $compiled
+     * @throws LiquidException
+     */
+	public function __construct(array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
 		$this->viewFinder = $viewFinder;
+        $this->files = $files;
+        $this->compiled = $compiled;
 		$this->parse($tokens);
 	}
 
-	/**
-	 * Check for cached includes
-	 *
-	 * @return string
-	 */
+    /**
+     * Check for cached includes
+     *
+     * @return string
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
 	public function checkIncludes() {
 		foreach ($this->nodelist as $token) {
 			if (is_object($token)) {

@@ -66,25 +66,25 @@ class DropTest extends TestCase
 	 * @expectedExceptionMessage worked
 	 */
 	public function testProductDrop() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse(' {{ product.top_sales }} ');
 		$template->render(array('product' => new ProductDrop));
 	}
 
 	public function testTextDrop() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse(' {{ product.texts.text }} ');
 		$output = $template->render(array('product' => new ProductDrop()));
 		$this->assertEquals(' text1 ', $output);
 
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse(' {{ product.catchall.unknown }} ');
 		$output = $template->render(array('product' => new ProductDrop()));
 		$this->assertEquals(' method: unknown ', $output);
 	}
 
 	public function testTextArrayDrop() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('{% for text in product.texts.get_array %} {{text}} {% endfor %}');
 		$output = $template->render(array('product' => new ProductDrop()));
 
@@ -92,14 +92,14 @@ class DropTest extends TestCase
 	}
 
 	public function testContextDrop() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse(' {{ context.bar }} ');
 		$output = $template->render(array('context' => new ContextDrop(), 'bar' => 'carrot'));
 		$this->assertEquals(' carrot ', $output);
 	}
 
 	public function testNestedContextDrop() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse(' {{ product.context.foo }} ');
 		$output = $template->render(array('product' => new ProductDrop(), 'foo' => 'monkey'));
 		$this->assertEquals(' monkey ', $output);

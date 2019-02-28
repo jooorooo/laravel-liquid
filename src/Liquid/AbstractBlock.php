@@ -49,7 +49,7 @@ class AbstractBlock extends AbstractTag
             return;
         }
 
-        $tags = Template::getTags();
+        $tags = LiquidEngine::getTags();
 
         while (count($tokens)) {
             $token = array_shift($tokens);
@@ -71,7 +71,7 @@ class AbstractBlock extends AbstractTag
                     }
 
                     if ($tagName !== null) {
-                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->viewFinder);
+                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->viewFinder, $this->files, $this->compiled);
                         if ($tagRegexp->matches[1] == 'extends') {
                             return;
                         }

@@ -11,8 +11,8 @@
 
 namespace Liquid\Tag;
 
+use Liquid\LiquidEngine;
 use Liquid\TestCase;
-use Liquid\Template;
 
 class TagForTest extends TestCase
 {
@@ -20,7 +20,7 @@ class TagForTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testForInvalidSyntax() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse("{% for elem %}{% endfor %}");
 	}
 

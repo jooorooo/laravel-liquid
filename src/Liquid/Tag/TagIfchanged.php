@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 
@@ -26,19 +25,6 @@ class TagIfchanged extends AbstractBlock
 	 * @var string
 	 */
 	private $lastValue = '';
-
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
-		parent::__construct($markup, $tokens, $viewFinder);
-	}
 
 	/**
 	 * Renders the block

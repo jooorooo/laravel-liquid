@@ -216,7 +216,7 @@ class ContextTest extends TestCase
 	}
 
 	public function testOverrideGlobalFilter() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->registerFilter(new GlobalFilter());
 
 		$template->parse("{{'test' | notice }}");

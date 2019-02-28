@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Liquid;
@@ -44,17 +45,19 @@ class TagTablerow extends AbstractBlock
 	 */
 	public $attributes;
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
-		parent::__construct($markup, $tokens, $viewFinder);
+    /**
+     * Constructor
+     *
+     * @param string $markup
+     * @param array $tokens
+     * @param ViewFinderInterface $viewFinder
+     *
+     * @param Filesystem|null $files
+     * @param null $compiled
+     * @throws LiquidException
+     */
+	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
+		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
 		$syntax = new Regexp('/(\w+)\s+in\s+(' . Liquid::get('VARIABLE_NAME') . ')/');
 

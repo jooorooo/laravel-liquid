@@ -11,14 +11,15 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Liquid;
 use Liquid\Context;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
-use Liquid\Template;
 
 /**
  * Extends a template by another one.
@@ -44,16 +45,18 @@ class TagExtends extends AbstractTag
 	 */
 	protected $hash;
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+    /**
+     * Constructor
+     *
+     * @param string $markup
+     * @param array $tokens
+     * @param ViewFinderInterface $viewFinder
+     *
+     * @param Filesystem|null $files
+     * @param null $compiled
+     * @throws LiquidException
+     */
+	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
 		$regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
 
 		if ($regex->match($markup)) {
@@ -62,7 +65,7 @@ class TagExtends extends AbstractTag
 			throw new LiquidException("Error in tag 'extends' - Valid syntax: extends '[template name]'");
 		}
 
-		parent::__construct($markup, $tokens, $viewFinder);
+		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 	}
 
 	/**
@@ -109,7 +112,7 @@ class TagExtends extends AbstractTag
 		$source = file_get_contents($this->viewFinder->find($this->templateName));
 
 		// tokens in this new document
-		$maintokens = Template::tokenize($source);
+		$maintokens = LiquidEngine::tokenize($source);
 
 		$eRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*extends (.*)?' . Liquid::get('TAG_END') . '$/');
 		foreach ($maintokens as $maintoken)
@@ -158,11 +161,11 @@ class TagExtends extends AbstractTag
 		$this->hash = md5($source);
 
         $file = $this->hash . '.liquid';
-        $path = Template::getCompiledPath() . '/' . $file;
-        if(!Template::getFiles()->exists($path) || !($this->document = @unserialize(Template::getFiles()->get($path))) || !($this->document->checkIncludes() != true)) {
-            $templateTokens = Template::tokenize($source);
-            $this->document = new Document($templateTokens, $this->viewFinder);
-            Template::getFiles()->put($path, serialize($this->document));
+        $path = $this->compiled . '/' . $file;
+        if(!$this->files->exists($path) || !($this->document = @unserialize($this->files->get($path))) || !($this->document->checkIncludes() != true)) {
+            $templateTokens = LiquidEngine::tokenize($source);
+            $this->document = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
+            $this->files->put($path, serialize($this->document));
         }
 
 	}
@@ -178,12 +181,12 @@ class TagExtends extends AbstractTag
             return true;
         }
 
-        $source = Template::getFiles()->get($this->viewFinder->find($this->templateName));
+        $source = $this->files->get($this->viewFinder->find($this->templateName));
 
         $file = md5($source) . '.liquid';
-        $path = Template::getCompiledPath() . '/' . $file;
+        $path = $this->compiled . '/' . $file;
 
-        if (Template::getFiles()->exists($path) && $this->hash == md5($source)) {
+        if ($this->files->exists($path) && $this->hash == md5($source)) {
             return false;
         }
 

@@ -11,8 +11,8 @@
 
 namespace Liquid\Tag;
 
+use Liquid\LiquidEngine;
 use Liquid\TestCase;
-use Liquid\Template;
 
 class TagCycleTest extends TestCase
 {
@@ -20,7 +20,7 @@ class TagCycleTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testInvalidSyntax() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse("{% cycle %}");
 	}
 

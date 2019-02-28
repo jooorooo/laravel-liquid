@@ -79,7 +79,7 @@ class LiquidServiceProvider extends ViewServiceProvider
             //Merge liqud config
             Liquid::$config = array_merge(Liquid::$config, config('liquid.liquid', []));
 
-            return new Template($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
+            return new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
         });
     }
 

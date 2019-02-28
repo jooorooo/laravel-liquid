@@ -15,7 +15,7 @@ class ParsingQuirksTest extends TestCase
 {
 	public function testErrorWithCss() {
 		$text = " div { font-weight: bold; } ";
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse($text);
 
 		$nodelist = $template->getRoot()->getNodelist();

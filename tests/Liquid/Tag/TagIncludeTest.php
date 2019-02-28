@@ -11,8 +11,8 @@
 
 namespace Liquid\Tag;
 
+use Liquid\LiquidEngine;
 use Liquid\TestCase;
-use Liquid\Template;
 use Liquid\FileSystem;
 
 /**
@@ -40,7 +40,7 @@ class TagIncludeTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testInvalidSyntaxNoTemplateName() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse("{% include %}");
 	}
 
@@ -48,7 +48,7 @@ class TagIncludeTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testInvalidSyntaxNotQuotedTemplateName() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse("{% include hello %}");
 	}
 
@@ -56,7 +56,7 @@ class TagIncludeTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testInvalidSyntaxInvalidKeyword() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse("{% include 'hello' no_keyword %}");
 	}
 
@@ -64,13 +64,12 @@ class TagIncludeTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testInvalidSyntaxNoObjectCollection() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse("{% include 'hello' with %}");
 	}
 
 	public function testIncludeTag() {
-		$template = new Template();
-		$template->setFileSystem(new LiquidTestFileSystem());
+		$template = new LiquidEngine();
 
 		$template->parse("Outer-{% include 'inner' with 'value' other:23 %}-Outer{% include 'inner' for var other:'loop' %}");
 
@@ -80,8 +79,7 @@ class TagIncludeTest extends TestCase
 	}
 
 	public function testIncludeTagNoWith() {
-		$template = new Template();
-		$template->setFileSystem(new LiquidTestFileSystem());
+		$template = new LiquidEngine();
 
 		$template->parse("Outer-{% include 'inner' %}-Outer-{% include 'inner' other:'23' %}");
 

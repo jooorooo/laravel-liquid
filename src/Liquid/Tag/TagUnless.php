@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Decision;
 use Liquid\Context;
@@ -51,12 +52,12 @@ class TagUnless extends Decision
 	 * @param array $tokens
 	 * @param ViewFinderInterface $viewFinder
 	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
 		$this->nodelist = & $this->nodelistHolders[count($this->blocks)];
 
 		array_push($this->blocks, array('unless', $markup, &$this->nodelist));
 
-		parent::__construct($markup, $tokens, $viewFinder);
+		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 	}
 
 	/**

@@ -22,11 +22,11 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
  *
  * Example:
  *
- *     $tpl = new \Liquid\Template();
+ *     $tpl = new \Liquid\LiquidEngine();
  *     $tpl->parse(template_source);
  *     $tpl->render(array('foo'=>1, 'bar'=>2);
  */
-class Template implements Engine
+class LiquidEngine implements Engine
 {
     /**
      * @var Document The root of the node tree
@@ -51,12 +51,12 @@ class Template implements Engine
     /**
      * @var Filesystem
      */
-    private static $files;
+    private $files;
 
     /**
-     * @var integer
+     * @var string
      */
-    private static $compiled;
+    private $compiled;
 
     /**
      * A stack of the last compiled templates.
@@ -64,6 +64,16 @@ class Template implements Engine
      * @var array
      */
     protected $lastCompiled = [];
+
+
+    // Separator between filters.
+    const FILTER_SEPARATOR = '\|';
+
+    // Separator for arguments.
+    const ARGUMENT_SEPARATOR = ',';
+
+    // Separator for argument names and values.
+    const FILTER_ARGUMENT_SEPARATOR = ':';
 
     /**
      * Constructor.
@@ -75,54 +85,8 @@ class Template implements Engine
     public function __construct(ViewFinderInterface $viewFinder, Filesystem $files, $compiled)
     {
         $this->viewFinder = $viewFinder;
-        $this->setFiles($files);
-        $this->setCompiledPath($compiled);
-    }
-
-    /**
-     * @param ViewFinderInterface $viewFinder
-     * @return Template
-     */
-    public function setFileSystem(ViewFinderInterface $viewFinder)
-    {
-        $this->viewFinder = $viewFinder;
-        return $this;
-    }
-
-    /**
-     * @param Filesystem $files
-     * @return Template
-     */
-    public function setFiles(Filesystem $files)
-    {
-        self::$files = $files;
-        return $this;
-    }
-
-    /**
-     * @param string $compiled
-     * @return Template
-     */
-    public function setCompiledPath($compiled)
-    {
-        self::$compiled = $compiled;
-        return $this;
-    }
-
-    /**
-     * @return Filesystem
-     */
-    public static function getFiles()
-    {
-        return self::$files;
-    }
-
-    /**
-     * @return integer
-     */
-    public static function getCompiledPath()
-    {
-        return self::$compiled;
+        $this->files = $files;
+        $this->compiled = $compiled;
     }
 
     /**
@@ -181,18 +145,19 @@ class Template implements Engine
      *
      * @param string $source
      *
-     * @return Template
+     * @return LiquidEngine
+     * @throws LiquidException
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function parse($source)
     {
         $file = md5($source) . '.liquid';
-        $path = self::getCompiledPath() . '/' . $file;
+        $path = $this->compiled . '/' . $file;
 
-        if(!Template::getFiles()->exists($path) || !($this->root = @unserialize(Template::getFiles()->get($path))) || !($this->root->checkIncludes() != true)) {
-            $templateTokens = Template::tokenize($source);
-            $this->root = new Document($templateTokens, $this->viewFinder);
-            Template::getFiles()->put($path, serialize($this->root));
+        if(!$this->files->exists($path) || !($this->root = @unserialize($this->files->get($path))) || !($this->root->checkIncludes() != true)) {
+            $templateTokens = self::tokenize($source);
+            $this->root = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
+            $this->files->put($path, serialize($this->root));
         }
 
         return $this;
@@ -206,6 +171,7 @@ class Template implements Engine
      * @param array $registers additional registers for the template
      *
      * @return string
+     * @throws LiquidException
      */
     public function render(array $assigns = array(), $filters = null, array $registers = array())
     {
@@ -233,7 +199,6 @@ class Template implements Engine
      * @param array $data
      * @return string|null
      * @throws ErrorException
-     * @throws \Psr\SimpleCache\InvalidArgumentException
      */
     public function get($path, array $data = [])
     {

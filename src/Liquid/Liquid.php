@@ -23,25 +23,7 @@ class Liquid
 	 * @var array configuration array
 	 */
 	public static $config = array(
-		// The method is called on objects when resolving variables to see
-		// if a given property exists.
-		'HAS_PROPERTY_METHOD' => 'field_exists',
 
-		// This method is called on object when resolving variables when
-		// a given property exists.
-		'GET_PROPERTY_METHOD' => 'get',
-
-		// Separator between filters.
-		'FILTER_SEPARATOR' => '\|',
-
-		// Separator for arguments.
-		'ARGUMENT_SEPARATOR' => ',',
-
-		// Separator for argument names and values.
-		'FILTER_ARGUMENT_SEPARATOR' => ':',
-
-		// Separator for variable attributes.
-		'VARIABLE_ATTRIBUTE_SEPARATOR' => '.',
 
 		// Allow template names with extension in include and extends tags.
 		'INCLUDE_ALLOW_EXT' => false,
@@ -82,10 +64,6 @@ class Liquid
 	 * @return string
 	 */
 	public static function get($key) {
-		// backward compatibility
-		if ($key === 'ALLOWED_VARIABLE_CHARS') {
-			return substr(self::$config['VARIABLE_NAME'], 0, -1);
-		}
 		if (array_key_exists($key, self::$config)) {
 			return self::$config[$key];
 		} else {
@@ -112,11 +90,6 @@ class Liquid
 	 * @param string $value
 	 */
 	public static function set($key, $value) {
-		// backward compatibility
-		if ($key === 'ALLOWED_VARIABLE_CHARS') {
-			$key = 'VARIABLE_NAME';
-			$value .= '+';
-		}
 		self::$config[$key] = $value;
 	}
 

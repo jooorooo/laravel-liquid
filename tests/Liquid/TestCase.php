@@ -53,7 +53,7 @@ class TestCase extends \PHPUnit_Framework_TestCase
 	 * @param string $message
 	 */
 	public function assertTemplateResult($expected, $templateString, array $assigns = array(), $message = "%s") {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse($templateString);
 
 		$this->assertEquals($expected, $template->render($assigns, $this->filters), $message);

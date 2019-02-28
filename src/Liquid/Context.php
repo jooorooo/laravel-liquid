@@ -325,12 +325,12 @@ class Context
             }
 
             // if it has `get` or `field_exists` methods
-            if (method_exists($object, Liquid::get('HAS_PROPERTY_METHOD'))) {
-                if (!call_user_func(array($object, Liquid::get('HAS_PROPERTY_METHOD')), $nextPartName)) {
+            if (method_exists($object, 'field_exists')) {
+                if (!$object->field_exists($nextPartName)) {
                     return null;
                 }
 
-                $object = call_user_func(array($object, Liquid::get('GET_PROPERTY_METHOD')), $nextPartName);
+                $object = $object->get($nextPartName);
                 continue;
             }
 

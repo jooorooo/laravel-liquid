@@ -11,8 +11,8 @@
 
 namespace Liquid\Tag;
 
+use Liquid\LiquidEngine;
 use Liquid\TestCase;
-use Liquid\Template;
 
 /**
  * Basic tests for the assignment of one variable to another. This also tests the
@@ -26,7 +26,7 @@ class TagAssignTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testInvalidAssign() {
-		$template = new Template();
+		$template = new LiquidEngine();
 
 		$template->parse('{% assign test %}');
 	}
@@ -35,7 +35,7 @@ class TagAssignTest extends TestCase
 	 * Tests a simple assignment with no filters
 	 */
 	public function testSimpleAssign() {
-		$template = new Template();
+		$template = new LiquidEngine();
 
 		$template->parse('{% assign test = "hello" %}{{ test }}');
 		$this->assertTrue($template->render() === 'hello');
@@ -45,7 +45,7 @@ class TagAssignTest extends TestCase
 	 * Tests filtered value assignment
 	 */
 	public function testAssignWithFilters() {
-		$template = new Template();
+		$template = new LiquidEngine();
 
 		$template->parse('{% assign test = "hello" | upcase %}{{ test }}');
 		$this->assertTrue($template->render() === 'HELLO');

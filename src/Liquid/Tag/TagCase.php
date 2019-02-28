@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Decision;
 use Liquid\Context;
@@ -55,20 +56,22 @@ class TagCase extends Decision
 	 */
 	public $right;
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+    /**
+     * Constructor
+     *
+     * @param string $markup
+     * @param array $tokens
+     * @param ViewFinderInterface $viewFinder
+     *
+     * @param Filesystem|null $files
+     * @param null $compiled
+     * @throws LiquidException
+     */
+	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
 		$this->nodelists = array();
 		$this->elseNodelist = array();
 
-		parent::__construct($markup, $tokens, $viewFinder);
+		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
 		$syntaxRegexp = new Regexp('/' . Liquid::get('QUOTED_FRAGMENT') . '/');
 

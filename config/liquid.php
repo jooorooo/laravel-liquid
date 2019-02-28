@@ -17,25 +17,6 @@ return [
      |--------------------------------------------------------------------------
      */
     'liquid' => [
-        // The method is called on objects when resolving variables to see
-        // if a given property exists.
-        'HAS_PROPERTY_METHOD' => 'field_exists',
-
-        // This method is called on object when resolving variables when
-        // a given property exists.
-        'GET_PROPERTY_METHOD' => 'get',
-
-        // Separator between filters.
-        'FILTER_SEPARATOR' => '\|',
-
-        // Separator for arguments.
-        'ARGUMENT_SEPARATOR' => ',',
-
-        // Separator for argument names and values.
-        'FILTER_ARGUMENT_SEPARATOR' => ':',
-
-        // Separator for variable attributes.
-        'VARIABLE_ATTRIBUTE_SEPARATOR' => '.',
 
         // Allow template names with extension in include and extends tags.
         'INCLUDE_ALLOW_EXT' => false,

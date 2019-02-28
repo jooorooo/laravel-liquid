@@ -40,12 +40,10 @@ class TagIncrement extends AbstractTag
 	 * Constructor
 	 *
 	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
 	 *
 	 * @throws \Liquid\LiquidException
 	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+	public function __construct($markup) {
 		$syntax = new Regexp('/(' . Liquid::get('VARIABLE_NAME') . ')/');
 
 		if ($syntax->match($markup)) {

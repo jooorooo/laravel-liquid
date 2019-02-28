@@ -35,7 +35,7 @@ class TemplateTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testSetCacheInvalidKey() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->setFiles(array());
 	}
 
@@ -43,44 +43,44 @@ class TemplateTest extends TestCase
 	 * @expectedException \Liquid\LiquidException
 	 */
 	public function testSetCacheInvalidClass() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->setFiles(array('cache' => 'no_such_class'));
 	}
 
 	public function testSetCacheThroughArray() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->setFiles(array('cache' => 'file', 'cache_dir' => $this->cacheDir));
 		$this->assertInstanceOf('\Liquid\Cache\File', $template::getCache());
 	}
 
 	public function testSetCacheThroughCacheObject() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$cache = new Cache\File(array('cache_dir' => $this->cacheDir));
 		$template->setFiles($cache);
 		$this->assertEquals($cache, $template::getCache());
 	}
 
 	public function testTokenizeStrings() {
-		$this->assertEquals(array(' '), Template::tokenize(' '));
-		$this->assertEquals(array('hello world'), Template::tokenize('hello world'));
+		$this->assertEquals(array(' '), LiquidEngine::tokenize(' '));
+		$this->assertEquals(array('hello world'), LiquidEngine::tokenize('hello world'));
 	}
 
 	public function testTokenizeVariables() {
-		$this->assertEquals(array('{{funk}}'), Template::tokenize('{{funk}}'));
-		$this->assertEquals(array(' ', '{{funk}}', ' '), Template::tokenize(' {{funk}} '));
-		$this->assertEquals(array(' ', '{{funk}}', ' ', '{{so}}', ' ', '{{brother}}', ' '), Template::tokenize(' {{funk}} {{so}} {{brother}} '));
-		$this->assertEquals(array(' ', '{{  funk  }}', ' '), Template::tokenize(' {{  funk  }} '));
+		$this->assertEquals(array('{{funk}}'), LiquidEngine::tokenize('{{funk}}'));
+		$this->assertEquals(array(' ', '{{funk}}', ' '), LiquidEngine::tokenize(' {{funk}} '));
+		$this->assertEquals(array(' ', '{{funk}}', ' ', '{{so}}', ' ', '{{brother}}', ' '), LiquidEngine::tokenize(' {{funk}} {{so}} {{brother}} '));
+		$this->assertEquals(array(' ', '{{  funk  }}', ' '), LiquidEngine::tokenize(' {{  funk  }} '));
 	}
 
 	public function testTokenizeBlocks() {
-		$this->assertEquals(array('{%comment%}'), Template::tokenize('{%comment%}'));
-		$this->assertEquals(array(' ', '{%comment%}', ' '), Template::tokenize(' {%comment%} '));
-		$this->assertEquals(array(' ', '{%comment%}', ' ', '{%endcomment%}', ' '), Template::tokenize(' {%comment%} {%endcomment%} '));
-		$this->assertEquals(array('  ', '{% comment %}', ' ', '{% endcomment %}', ' '), Template::tokenize("  {% comment %} {% endcomment %} "));
+		$this->assertEquals(array('{%comment%}'), LiquidEngine::tokenize('{%comment%}'));
+		$this->assertEquals(array(' ', '{%comment%}', ' '), LiquidEngine::tokenize(' {%comment%} '));
+		$this->assertEquals(array(' ', '{%comment%}', ' ', '{%endcomment%}', ' '), LiquidEngine::tokenize(' {%comment%} {%endcomment%} '));
+		$this->assertEquals(array('  ', '{% comment %}', ' ', '{% endcomment %}', ' '), LiquidEngine::tokenize("  {% comment %} {% endcomment %} "));
 	}
 
 	public function testBlackspace() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('  ');
 
 		$nodelist = $template->getRoot()->getNodelist();
@@ -89,7 +89,7 @@ class TemplateTest extends TestCase
 	}
 
 	public function testVariableBeginning() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('{{funk}}  ');
 
 		$nodelist = $template->getRoot()->getNodelist();
@@ -100,7 +100,7 @@ class TemplateTest extends TestCase
 	}
 
 	public function testVariableEnd() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('  {{funk}}');
 
 		$nodelist = $template->getRoot()->getNodelist();
@@ -111,7 +111,7 @@ class TemplateTest extends TestCase
 	}
 
 	public function testVariableMiddle() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('  {{funk}}  ');
 
 		$nodelist = $template->getRoot()->getNodelist();
@@ -123,7 +123,7 @@ class TemplateTest extends TestCase
 	}
 
 	public function testVariableManyEmbeddedFragments() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('  {{funk}}  {{soul}}  {{brother}} ');
 
 		$nodelist = $template->getRoot()->getNodelist();
@@ -139,7 +139,7 @@ class TemplateTest extends TestCase
 	}
 
 	public function testWithBlock() {
-		$template = new Template();
+		$template = new LiquidEngine();
 		$template->parse('  {% comment %}  {% endcomment %} ');
 
 		$nodelist = $template->getRoot()->getNodelist();

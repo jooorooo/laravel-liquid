@@ -11,14 +11,15 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
 use Liquid\Liquid;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
-use Liquid\Template;
 
 /**
  * Includes another, partial, template
@@ -74,7 +75,7 @@ class TagInclude extends AbstractTag
 	 *
 	 * @throws \Liquid\LiquidException
 	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
 		$regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . Liquid::get('QUOTED_FRAGMENT') . '+))?/');
 
 		if ($regex->match($markup)) {
@@ -90,7 +91,7 @@ class TagInclude extends AbstractTag
 			throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
 		}
 
-		parent::__construct($markup, $tokens, $viewFinder);
+		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 	}
 
     /**
@@ -111,11 +112,11 @@ class TagInclude extends AbstractTag
 
 		$this->hash = md5($source);
         $file = $this->hash . '.liquid';
-        $path = Template::getCompiledPath() . '/' . $file;
-        if(!Template::getFiles()->exists($path) || !($this->document = @unserialize(Template::getFiles()->get($path))) || !($this->document->checkIncludes() != true)) {
-            $templateTokens = Template::tokenize($source);
-            $this->document = new Document($templateTokens, $this->viewFinder);
-            Template::getFiles()->put($path, serialize($this->document));
+        $path = $this->compiled . '/' . $file;
+        if(!$this->files->exists($path) || !($this->document = @unserialize($this->files->get($path))) || !($this->document->checkIncludes() != true)) {
+            $templateTokens = LiquidEngine::tokenize($source);
+            $this->document = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
+            $this->files->put($path, serialize($this->document));
         }
 	}
 
@@ -130,25 +131,26 @@ class TagInclude extends AbstractTag
 			return true;
 		}
 
-		$source = Template::getFiles()->get($this->viewFinder->find($this->templateName));
+		$source = $this->files->get($this->viewFinder->find($this->templateName));
 
         $file = md5($source) . '.liquid';
-        $path = Template::getCompiledPath() . '/' . $file;
+        $path = $this->compiled . '/' . $file;
 
-		if (Template::getFiles()->exists($path) && $this->hash == md5($source)) {
+		if ($this->files->exists($path) && $this->hash == md5($source)) {
 			return false;
 		}
 
 		return true;
 	}
 
-	/**
-	 * Renders the node
-	 *
-	 * @param Context $context
-	 *
-	 * @return string
-	 */
+    /**
+     * Renders the node
+     *
+     * @param Context $context
+     *
+     * @return string
+     * @throws LiquidException
+     */
 	public function render(Context $context) {
 		$result = '';
 		$variable = $context->get($this->variable);

@@ -50,12 +50,10 @@ class TagCycle extends AbstractTag
 	 * Constructor
 	 *
 	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
 	 *
 	 * @throws LiquidException
 	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+	public function __construct($markup) {
 		$simpleSyntax = new Regexp("/" . Liquid::get('QUOTED_FRAGMENT') . "/");
 		$namedSyntax = new Regexp("/(" . Liquid::get('QUOTED_FRAGMENT') . ")\s*\:\s*(.*)/");
 

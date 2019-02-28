@@ -13,14 +13,14 @@ $loader = require __DIR__ . '/../vendor/autoload.php';
 $loader->addPsr4('Liquid\\', __DIR__ . '/../src/Liquid');
 
 use Liquid\Liquid;
-use Liquid\Template;
+use Liquid\LiquidEngine;
 
 Liquid::set('INCLUDE_SUFFIX', 'tpl');
 Liquid::set('INCLUDE_PREFIX', '');
 
 $protectedPath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR;
 
-$liquid = new Template($protectedPath . 'templates' . DIRECTORY_SEPARATOR);
+$liquid = new LiquidEngine($protectedPath . 'templates' . DIRECTORY_SEPARATOR);
 
 // Uncomment the following lines to enable cache
 //$cache = array('cache' => 'file', 'cache_dir' => $protectedPath . 'cache' . DIRECTORY_SEPARATOR);

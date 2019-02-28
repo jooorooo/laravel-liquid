@@ -14,6 +14,7 @@ namespace Liquid\Tag;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Liquid;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Context;
@@ -42,18 +43,16 @@ class TagAssign extends AbstractTag
 	 * Constructor
 	 *
 	 * @param string $markup
-	 * @param array $tokens
-	 * @param ViewFinderInterface $viewFinder
 	 *
 	 * @throws \Liquid\LiquidException
 	 */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null) {
+	public function __construct($markup) {
 		$syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . Liquid::get('QUOTED_FRAGMENT') . '+)/');
 
-		$filterSeperatorRegexp = new Regexp('/' . Liquid::get('FILTER_SEPARATOR') . '\s*(.*)/');
-		$filterSplitRegexp = new Regexp('/' . Liquid::get('FILTER_SEPARATOR') . '/');
+		$filterSeperatorRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '\s*(.*)/');
+		$filterSplitRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '/');
 		$filterNameRegexp = new Regexp('/\s*(\w+)/');
-		$filterArgumentRegexp = new Regexp('/(?:' . Liquid::get('FILTER_ARGUMENT_SEPARATOR') . '|' . Liquid::get('ARGUMENT_SEPARATOR') . ')\s*(' . Liquid::get('QUOTED_FRAGMENT') . ')/');
+		$filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . Liquid::get('QUOTED_FRAGMENT') . ')/');
 
 		$this->filters = array();
 
