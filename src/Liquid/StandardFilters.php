@@ -384,6 +384,18 @@ class StandardFilters
         return is_string($input) ? Str::title($input) : $input;
     }
 
+    /**
+     * Camelize text
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function camelize($input)
+    {
+        return is_string($input) ? Str::camel($input) : $input;
+    }
+
 
     /**
      * @param mixed $input number
