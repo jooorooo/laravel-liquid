@@ -78,6 +78,7 @@ class TagTablerow extends AbstractBlock
      * @param Context $context
      *
      * @return string
+     * @throws LiquidException
      */
     public function render(Context $context)
     {

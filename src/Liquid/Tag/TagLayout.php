@@ -21,13 +21,14 @@ use Liquid\LiquidException;
 use Liquid\Regexp;
 
 /**
+ * https://github.com/harrydeluxe/php-liquid/wiki/Template-Inheritance
  * Extends a template by another one.
  *
  * Example:
  *
- *     {% extends "base" %}
+ *     {% layout "base" %}
  */
-class TagExtends extends AbstractTag
+class TagLayout extends AbstractTag
 {
     /**
      * @var string The name of the template
@@ -62,7 +63,7 @@ class TagExtends extends AbstractTag
         if ($regex->match($markup)) {
             $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
         } else {
-            throw new LiquidException("Error in tag 'extends' - Valid syntax: extends '[template name]'");
+            throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template name]'");
         }
 
         parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
@@ -116,7 +117,7 @@ class TagExtends extends AbstractTag
         // tokens in this new document
         $maintokens = LiquidEngine::tokenize($source);
 
-        $eRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*extends (.*)?' . LiquidEngine::TAG_END . '$/');
+        $eRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*layout (.*)?' . LiquidEngine::TAG_END . '$/');
         foreach ($maintokens as $maintoken)
             if ($eRegexp->match($maintoken)) {
                 $m = $eRegexp->matches[1];
@@ -164,12 +165,12 @@ class TagExtends extends AbstractTag
 
         $file = $this->hash . '.liquid';
         $path = $this->compiled . '/' . $file;
-        if (!$this->files->exists($path) || !($this->document = @unserialize($this->files->get($path))) || !($this->document->checkIncludes() != true)) {
-            $templateTokens = LiquidEngine::tokenize($source);
-            $this->document = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
+
+        if($this->files->exists($path) && ($this->document = @unserialize($this->files->get($path))) && !($this->document->checkIncludes() != true)) {
+        } else {
+            $this->document = new Document($rest, $this->viewFinder, $this->files, $this->compiled);
             $this->files->put($path, serialize($this->document));
         }
-
     }
 
     /**

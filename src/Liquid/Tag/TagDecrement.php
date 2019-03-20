@@ -59,6 +59,7 @@ class TagDecrement extends AbstractTag
      * @param Context $context
      *
      * @return string|void
+     * @throws LiquidException
      */
     public function render(Context $context)
     {

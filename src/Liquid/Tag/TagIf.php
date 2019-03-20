@@ -77,6 +77,7 @@ class TagIf extends Decision
      * @param array $params
      * @param array $tokens
      * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function unknownTag($tag, $params, array $tokens)
     {

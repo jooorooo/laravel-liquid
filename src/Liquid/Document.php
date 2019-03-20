@@ -14,7 +14,7 @@ namespace Liquid;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Tag\TagInclude;
-use Liquid\Tag\TagExtends;
+use Liquid\Tag\TagLayout;
 
 /**
  * This class represents the entire template document.
@@ -30,12 +30,13 @@ class Document extends AbstractBlock
      * @param null $compiled
      * @throws LiquidException
      */
-	public function __construct(array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
-		$this->viewFinder = $viewFinder;
+    public function __construct(array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    {
+        $this->viewFinder = $viewFinder;
         $this->files = $files;
         $this->compiled = $compiled;
-		$this->parse($tokens);
-	}
+        $this->parse($tokens);
+    }
 
     /**
      * Check for cached includes
@@ -43,33 +44,36 @@ class Document extends AbstractBlock
      * @return string
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
-	public function checkIncludes() {
-		foreach ($this->nodelist as $token) {
-			if (is_object($token)) {
-				if ($token instanceof TagInclude || $token instanceof TagExtends) {
-					/** @var TagInclude|TagExtends $token */
-					if ($token->checkIncludes() == true) {
-						return true;
-					}
-				}
-			}
-		}
+    public function checkIncludes()
+    {
+        foreach ($this->nodelist as $token) {
+            if (is_object($token)) {
+                if ($token instanceof TagInclude || $token instanceof TagLayout) {
+                    /** @var TagInclude|TagLayout $token */
+                    if ($token->checkIncludes() == true) {
+                        return true;
+                    }
+                }
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * There isn't a real delimiter
-	 *
-	 * @return string
-	 */
-	protected function blockDelimiter() {
-		return '';
-	}
+    /**
+     * There isn't a real delimiter
+     *
+     * @return string
+     */
+    protected function blockDelimiter()
+    {
+        return '';
+    }
 
-	/**
-	 * Document blocks don't need to be terminated since they are not actually opened
-	 */
-	protected function assertMissingDelimitation() {
-	}
+    /**
+     * Document blocks don't need to be terminated since they are not actually opened
+     */
+    protected function assertMissingDelimitation()
+    {
+    }
 }

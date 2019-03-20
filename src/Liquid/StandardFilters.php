@@ -22,6 +22,18 @@ class StandardFilters
 {
 
     /**
+     * Escape a string
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function escape($input)
+    {
+        return is_string($input) ? htmlentities($input, ENT_QUOTES) : $input;
+    }
+
+    /**
      * Add one string to another
      *
      * @param string $input
@@ -34,164 +46,45 @@ class StandardFilters
         return $input . $string;
     }
 
-
     /**
-     * Capitalize words in the input sentence
+     * Prepend a string to another
      *
      * @param string $input
+     * @param string $string
      *
      * @return string
      */
-    public static function capitalize($input)
+    public static function prepend($input, $string)
     {
-        return is_string($input) ? Str::title($input) : $input;
+        return $string . $input;
     }
 
-
     /**
-     * @param mixed $input number
-     *
-     * @return int
-     */
-    public static function ceil($input)
-    {
-        return (int)ceil((float)$input);
-    }
-
-
-    /**
-     * Formats a date using strftime
+     * Return the size of an array or of an string
      *
      * @param mixed $input
-     * @param string $format
-     *
-     * @return string
-     */
-    public static function date($input, $format)
-    {
-        if($input instanceof Carbon) {
-            $input = $input->timestamp;
-        } elseif (!is_numeric($input)) {
-            $input = strtotime($input);
-        }
-
-        if ($format == 'r')
-            return date($format, $input);
-
-        return strftime($format, $input);
-
-    }
-
-
-    /**
-     * Default
-     *
-     * @param string $input
-     * @param string $default_value
-     *
-     * @return string
-     */
-    public static function _default($input, $default_value)
-    {
-        $isBlank = $input == '' || $input === false || $input === null;
-        return $isBlank ? $default_value : $input;
-    }
-
-
-    /**
-     * division
-     *
-     * @param int $input
-     * @param int $operand
      *
      * @return int
      */
-    public static function divided_by($input, $operand)
+    public static function size($input)
     {
-        return (int)$input / (int)$operand;
-    }
+        if ($input instanceof Collection) {
+            return $input->count();
+        } elseif ($input instanceof \Iterator) {
+            return iterator_count($input);
+        }
+        if (is_string($input) || is_numeric($input)) {
+            return strlen($input);
+        } elseif (is_array($input)) {
+            return count($input);
+        } elseif (is_object($input)) {
+            if (method_exists($input, 'size')) {
+                return $input->size();
+            }
+        }
 
-
-    /**
-     * Convert an input to lowercase
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function downcase($input)
-    {
-        return is_string($input) ? Str::lower($input) : $input;
-    }
-
-
-    /**
-     * Pseudo-filter: negates auto-added escape filter
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function raw($input)
-    {
         return $input;
     }
-
-    /**
-     * Escape a string
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function escape($input)
-    {
-        return is_string($input) ? htmlentities($input, ENT_QUOTES) : $input;
-    }
-
-
-    /**
-     * Escape a string once, keeping all previous HTML entities intact
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function escape_once($input)
-    {
-        return is_string($input) ? htmlentities($input, ENT_QUOTES, null, false) : $input;
-    }
-
-
-    /**
-     * Returns the first element of an array
-     *
-     * @param array|\Iterator $input
-     *
-     * @return mixed
-     */
-    public static function first($input)
-    {
-        if($input instanceof Collection) {
-            return $input->first();
-        } elseif ($input instanceof \Iterator) {
-            $input->rewind();
-            return $input->current();
-        }
-        return is_array($input) ? reset($input) : $input;
-    }
-
-
-    /**
-     * @param mixed $input number
-     *
-     * @return int
-     */
-    public static function floor($input)
-    {
-        return (int)floor((float)$input);
-    }
-
 
     /**
      * Joins elements of an array with a given character between them
@@ -218,6 +111,130 @@ class StandardFilters
         return is_array($input) ? implode($glue, $input) : $input;
     }
 
+    /**
+     * Convert an input to lowercase
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function downcase($input)
+    {
+        return is_string($input) ? Str::lower($input) : $input;
+    }
+
+    /**
+     * Convert an input to uppercase
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function upcase($input)
+    {
+        return is_string($input) ? Str::upper($input) : $input;
+    }
+
+    /**
+     * Removes html tags from text
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function strip_html($input)
+    {
+        return is_string($input) ? strip_tags($input) : $input;
+    }
+
+    /**
+     * Strip all newlines (\n, \r) from string
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function strip_newlines($input)
+    {
+        return is_string($input) ? str_replace(array(
+            "\n", "\r"
+        ), '', $input) : $input;
+    }
+
+    /**
+     * Truncate a string down to x characters
+     *
+     * @param string $input
+     * @param int $characters
+     * @param string $ending string to append if truncated
+     *
+     * @return string
+     */
+    public static function truncate($input, $characters = 100, $ending = '...')
+    {
+        if (is_string($input) || is_numeric($input)) {
+            if (strlen($input) > $characters) {
+                return substr($input, 0, $characters) . $ending;
+            }
+        }
+
+        return $input;
+    }
+
+
+    /**
+     * Truncate string down to x words
+     *
+     * @param string $input
+     * @param int $words
+     * @param string $ending string to append if truncated
+     *
+     * @return string
+     */
+    public static function truncatewords($input, $words = 15, $ending = '...')
+    {
+        return is_string($input) ? Str::words($input, $words, $ending) : $input;
+    }
+
+    /**
+     * Formats a date using strftime
+     *
+     * @param mixed $input
+     * @param string $format
+     *
+     * @return string
+     */
+    public static function date($input, $format)
+    {
+        if($input instanceof Carbon) {
+            $input = $input->timestamp;
+        } elseif (!is_numeric($input)) {
+            $input = strtotime($input);
+        }
+
+        if ($format == 'r')
+            return date($format, $input);
+
+        return strftime($format, $input);
+    }
+
+    /**
+     * Returns the first element of an array
+     *
+     * @param array|\Iterator $input
+     *
+     * @return mixed
+     */
+    public static function first($input)
+    {
+        if($input instanceof Collection) {
+            return $input->first();
+        } elseif ($input instanceof \Iterator) {
+            $input->rewind();
+            return $input->current();
+        }
+        return is_array($input) ? reset($input) : $input;
+    }
 
     /**
      * Returns the last element of an array
@@ -238,6 +255,192 @@ class StandardFilters
             return $last;
         }
         return is_array($input) ? end($input) : $input;
+    }
+
+    /**
+     * Replace each newline (\n) with html break
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function newline_to_br($input)
+    {
+        return is_string($input) ? str_replace(array(
+            "\n", "\r"
+        ), '<br />', $input) : $input;
+    }
+
+    /**
+     * Replace occurrences of a string with another
+     *
+     * @param string $input
+     * @param string $string
+     * @param string $replacement
+     *
+     * @return string
+     */
+    public static function replace($input, $string, $replacement = '')
+    {
+        return str_replace($string, $replacement, $input);
+    }
+
+
+    /**
+     * Replace the first occurrences of a string with another
+     *
+     * @param string $input
+     * @param string $string
+     * @param string $replacement
+     *
+     * @return string
+     */
+    public static function replace_first($input, $string, $replacement = '')
+    {
+        return Str::replaceFirst($string, $replacement, $input);
+    }
+
+    /**
+     * Remove a substring
+     *
+     * @param string $input
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function remove($input, $string)
+    {
+        return str_replace($string, '', $input);
+    }
+
+
+    /**
+     * Remove the first occurrences of a substring
+     *
+     * @param string $input
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function remove_first($input, $string)
+    {
+        return static::replace_first($string, $input);
+    }
+
+    /**
+     * Split input string into an array of substrings separated by given pattern.
+     *
+     * @param string $input
+     * @param string $pattern
+     *
+     * @return array
+     */
+    public static function split($input, $pattern)
+    {
+        // Unlike PHP explode function, empty string after split filtering is empty array in Liquid.
+        if (!is_string($input) || $input === '') {
+            return array();
+        }
+        return explode($pattern, $input);
+    }
+
+    /**
+     * addition
+     *
+     * @param float $input
+     * @param float $operand
+     *
+     * @return float
+     */
+    public static function plus($input, $operand)
+    {
+        $input = is_numeric($input) ? $input : 0;
+        $operand = is_numeric($operand) ? $operand : 0;
+        return $input + $operand;
+    }
+
+    /**
+     * subtraction
+     *
+     * @param int $input
+     * @param int $operand
+     *
+     * @return int
+     */
+    public static function minus($input, $operand)
+    {
+        return (int)$input - (int)$operand;
+    }
+
+    /**
+     * Capitalize words in the input sentence
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function capitalize($input)
+    {
+        return is_string($input) ? Str::title($input) : $input;
+    }
+
+
+    /**
+     * @param mixed $input number
+     *
+     * @return int
+     */
+    public static function ceil($input)
+    {
+        return (int)ceil((float)$input);
+    }
+
+    /**
+     * division
+     *
+     * @param int $input
+     * @param int $operand
+     *
+     * @return int
+     */
+    public static function divided_by($input, $operand)
+    {
+        return (int)$input / (int)$operand;
+    }
+
+    /**
+     * Pseudo-filter: negates auto-added escape filter
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function raw($input)
+    {
+        return $input;
+    }
+
+
+    /**
+     * Escape a string once, keeping all previous HTML entities intact
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function escape_once($input)
+    {
+        return is_string($input) ? htmlentities($input, ENT_QUOTES, null, false) : $input;
+    }
+
+    /**
+     * @param mixed $input number
+     *
+     * @return int
+     */
+    public static function floor($input)
+    {
+        return (int)floor((float)$input);
     }
 
 
@@ -280,21 +483,6 @@ class StandardFilters
         }, $input);
     }
 
-
-    /**
-     * subtraction
-     *
-     * @param int $input
-     * @param int $operand
-     *
-     * @return int
-     */
-    public static function minus($input, $operand)
-    {
-        return (int)$input - (int)$operand;
-    }
-
-
     /**
      * modulo
      *
@@ -307,110 +495,6 @@ class StandardFilters
     {
         return (int)$input % (int)$operand;
     }
-
-
-    /**
-     * Replace each newline (\n) with html break
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function newline_to_br($input)
-    {
-        return is_string($input) ? str_replace(array(
-            "\n", "\r"
-        ), '<br />', $input) : $input;
-    }
-
-
-    /**
-     * addition
-     *
-     * @param float $input
-     * @param float $operand
-     *
-     * @return float
-     */
-    public static function plus($input, $operand)
-    {
-        $input = is_numeric($input) ? $input : 0;
-        $operand = is_numeric($operand) ? $operand : 0;
-        return $input + $operand;
-    }
-
-
-    /**
-     * Prepend a string to another
-     *
-     * @param string $input
-     * @param string $string
-     *
-     * @return string
-     */
-    public static function prepend($input, $string)
-    {
-        return $string . $input;
-    }
-
-
-    /**
-     * Remove a substring
-     *
-     * @param string $input
-     * @param string $string
-     *
-     * @return string
-     */
-    public static function remove($input, $string)
-    {
-        return str_replace($string, '', $input);
-    }
-
-
-    /**
-     * Remove the first occurrences of a substring
-     *
-     * @param string $input
-     * @param string $string
-     *
-     * @return string
-     */
-    public static function remove_first($input, $string)
-    {
-        return static::replace_first($string, $input);
-    }
-
-
-    /**
-     * Replace occurrences of a string with another
-     *
-     * @param string $input
-     * @param string $string
-     * @param string $replacement
-     *
-     * @return string
-     */
-    public static function replace($input, $string, $replacement = '')
-    {
-        return str_replace($string, $replacement, $input);
-    }
-
-
-    /**
-     * Replace the first occurrences of a string with another
-     *
-     * @param string $input
-     * @param string $string
-     * @param string $replacement
-     *
-     * @return string
-     */
-    public static function replace_first($input, $string, $replacement = '')
-    {
-        return Str::replaceFirst($string, $replacement, $input);
-    }
-
 
     /**
      * Reverse the elements of an array
@@ -453,35 +537,6 @@ class StandardFilters
     {
         return rtrim($input);
     }
-
-
-    /**
-     * Return the size of an array or of an string
-     *
-     * @param mixed $input
-     *
-     * @return int
-     */
-    public static function size($input)
-    {
-        if ($input instanceof Collection) {
-            return $input->count();
-        } elseif ($input instanceof \Iterator) {
-            return iterator_count($input);
-        }
-        if (is_string($input) || is_numeric($input)) {
-            return strlen($input);
-        } elseif (is_array($input)) {
-            return count($input);
-        } elseif (is_object($input)) {
-            if (method_exists($input, 'size')) {
-                return $input->size();
-            }
-        }
-
-        return $input;
-    }
-
 
     /**
      * @param array|\Iterator|string $input
@@ -542,25 +597,6 @@ class StandardFilters
         return $input;
     }
 
-
-    /**
-     * Split input string into an array of substrings separated by given pattern.
-     *
-     * @param string $input
-     * @param string $pattern
-     *
-     * @return array
-     */
-    public static function split($input, $pattern)
-    {
-        // Unlike PHP explode function, empty string after split filtering is empty array in Liquid.
-        if (!is_string($input) || $input === '') {
-            return array();
-        }
-        return explode($pattern, $input);
-    }
-
-
     /**
      * @param string $input
      *
@@ -569,34 +605,6 @@ class StandardFilters
     public static function strip($input)
     {
         return trim($input);
-    }
-
-
-    /**
-     * Removes html tags from text
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function strip_html($input)
-    {
-        return is_string($input) ? strip_tags($input) : $input;
-    }
-
-
-    /**
-     * Strip all newlines (\n, \r) from string
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function strip_newlines($input)
-    {
-        return is_string($input) ? str_replace(array(
-            "\n", "\r"
-        ), '', $input) : $input;
     }
 
 
@@ -613,43 +621,6 @@ class StandardFilters
         return (int)$input * (int)$operand;
     }
 
-
-    /**
-     * Truncate a string down to x characters
-     *
-     * @param string $input
-     * @param int $characters
-     * @param string $ending string to append if truncated
-     *
-     * @return string
-     */
-    public static function truncate($input, $characters = 100, $ending = '...')
-    {
-        if (is_string($input) || is_numeric($input)) {
-            if (strlen($input) > $characters) {
-                return substr($input, 0, $characters) . $ending;
-            }
-        }
-
-        return $input;
-    }
-
-
-    /**
-     * Truncate string down to x words
-     *
-     * @param string $input
-     * @param int $words
-     * @param string $ending string to append if truncated
-     *
-     * @return string
-     */
-    public static function truncatewords($input, $words = 3, $ending = '...')
-    {
-        return is_string($input) ? Str::words($input, $words, $ending) : $input;
-    }
-
-
     /**
      * Remove duplicate elements from an array
      *
@@ -665,18 +636,6 @@ class StandardFilters
             $input = iterator_to_array($input);
         }
         return array_unique($input);
-    }
-
-    /**
-     * Convert an input to uppercase
-     *
-     * @param string $input
-     *
-     * @return string
-     */
-    public static function upcase($input)
-    {
-        return is_string($input) ? strtoupper($input) : $input;
     }
 
     /**
@@ -701,11 +660,25 @@ class StandardFilters
      * @return string
      *
      */
-    public function __call($name, $arguments)
+//    public function __call($name, $arguments)
+//    {
+//        if ($name === 'default') {
+//            return $this->_default($arguments[0], $arguments[1]);
+//        }
+//    }
+
+    /**
+     * Default
+     *
+     * @param string $input
+     * @param string $default_value
+     *
+     * @return string
+     */
+    public static function default($input, $default_value)
     {
-        if ($name === 'default') {
-            return $this->_default($arguments[0], $arguments[1]);
-        }
+        $isBlank = $input == '' || $input === false || $input === null;
+        return $isBlank ? $default_value : $input;
     }
 
 }
