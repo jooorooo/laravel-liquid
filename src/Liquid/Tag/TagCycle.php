@@ -11,10 +11,9 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
-use Liquid\Liquid;
 use Liquid\Context;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Variable;
@@ -54,8 +53,8 @@ class TagCycle extends AbstractTag
 	 * @throws LiquidException
 	 */
 	public function __construct($markup) {
-		$simpleSyntax = new Regexp("/" . Liquid::get('QUOTED_FRAGMENT') . "/");
-		$namedSyntax = new Regexp("/(" . Liquid::get('QUOTED_FRAGMENT') . ")\s*\:\s*(.*)/");
+		$simpleSyntax = new Regexp("/" . LiquidEngine::QUOTED_FRAGMENT . "/");
+		$namedSyntax = new Regexp("/(" . LiquidEngine::QUOTED_FRAGMENT . ")\s*\:\s*(.*)/");
 
 		if ($namedSyntax->match($markup)) {
 			$this->variables = $this->variablesFromString($namedSyntax->matches[2]);
@@ -108,7 +107,7 @@ class TagCycle extends AbstractTag
 	 * @return array;
 	 */
 	private function variablesFromString($markup) {
-		$regexp = new Regexp('/\s*(' . Liquid::get('QUOTED_FRAGMENT') . ')\s*/');
+		$regexp = new Regexp('/\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')\s*/');
 		$parts = explode(',', $markup);
 		$result = array();
 

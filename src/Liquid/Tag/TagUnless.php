@@ -15,7 +15,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Decision;
 use Liquid\Context;
-use Liquid\Liquid;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -92,7 +92,7 @@ class TagUnless extends Decision
 		$context->push();
 
 		$logicalRegex = new Regexp('/\s+(and|or)\s+/');
-		$conditionalRegex = new Regexp('/(' . Liquid::get('QUOTED_FRAGMENT') . ')\s*([=!<>a-z_]+)?\s*(' . Liquid::get('QUOTED_FRAGMENT') . ')?/');
+		$conditionalRegex = new Regexp('/(' . LiquidEngine::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')?/');
 
 		$result = '';
 		foreach ($this->blocks as $block) {
@@ -134,10 +134,10 @@ class TagUnless extends Decision
 				foreach ($logicalOperators as $k => $logicalOperator) {
 					$r = $this->interpretCondition($conditions[$k]['left'], $conditions[$k]['right'], $conditions[$k]['operator'], $context);
 					if ($logicalOperator == 'and') {
-						$boolean = $boolean && Liquid::isTruthy($r);
+						$boolean = $boolean && LiquidEngine::isTruthy($r);
 					} else {
 						$results[] = $boolean;
-						$boolean = Liquid::isTruthy($r);
+						$boolean = LiquidEngine::isTruthy($r);
 					}
 				}
 

@@ -12,11 +12,7 @@
 $loader = require __DIR__ . '/../vendor/autoload.php';
 $loader->addPsr4('Liquid\\', __DIR__ . '/../src/Liquid');
 
-use Liquid\Liquid;
 use Liquid\LiquidEngine;
-
-Liquid::set('INCLUDE_SUFFIX', 'tpl');
-Liquid::set('INCLUDE_PREFIX', '');
 
 $liquid = new LiquidEngine();
 $liquid->parse('{{ hello }} {{ goback }}');

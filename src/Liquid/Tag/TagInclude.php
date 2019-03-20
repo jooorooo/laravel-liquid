@@ -16,7 +16,6 @@ use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
-use Liquid\Liquid;
 use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
@@ -76,7 +75,7 @@ class TagInclude extends AbstractTag
 	 * @throws \Liquid\LiquidException
 	 */
 	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
-		$regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . Liquid::get('QUOTED_FRAGMENT') . '+))?/');
+		$regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . LiquidEngine::QUOTED_FRAGMENT . '+))?/');
 
 		if ($regex->match($markup)) {
 			$this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);

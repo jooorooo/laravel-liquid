@@ -20,11 +20,8 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
 /**
  * The Template class.
  *
- * Example:
+ * http://cheat.markdunkley.com/
  *
- *     $tpl = new \Liquid\LiquidEngine();
- *     $tpl->parse(template_source);
- *     $tpl->render(array('foo'=>1, 'bar'=>2);
  */
 class LiquidEngine implements Engine
 {
@@ -65,15 +62,44 @@ class LiquidEngine implements Engine
      */
     protected $lastCompiled = [];
 
-
     // Separator between filters.
     const FILTER_SEPARATOR = '\|';
+
+    // Tag start.
+    const TAG_START = '{%';
+
+    // Tag end.
+    const TAG_END = '%}';
+
+    // Variable start.
+    const VARIABLE_START = '{{';
+
+    // Variable end.
+    const VARIABLE_END = '}}';
+
+    // Variable name.
+    const VARIABLE_NAME = '[a-zA-Z_][a-zA-Z_0-9.-]*';
+
+    const QUOTED_STRING = '"[^"]*"|\'[^\']*\'';
+
+    const QUOTED_FRAGMENT = self::QUOTED_STRING . '|(?:[^\s,\|\'"]|' . self::QUOTED_STRING . ')+';
+
+    const QUOTED_STRING_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'';
+
+    const QUOTED_FRAGMENT_FILTER_ARGUMENT = self::QUOTED_STRING_FILTER_ARGUMENT . '|(?:[^\s:,\|\'"]|' . self::QUOTED_STRING_FILTER_ARGUMENT . ')+';
+
+    const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
+
+    const TOKENIZATION_REGEXP = '/(' . self::TAG_START . '.*?' . self::TAG_END . '|' . self::VARIABLE_START . '.*?' . self::VARIABLE_END . ')/';
 
     // Separator for arguments.
     const ARGUMENT_SEPARATOR = ',';
 
     // Separator for argument names and values.
     const FILTER_ARGUMENT_SEPARATOR = ':';
+
+    // Automatically escape any variables unless told otherwise by a "raw" filter
+    const ESCAPE_BY_DEFAULT = true;
 
     /**
      * Constructor.
@@ -137,7 +163,7 @@ class LiquidEngine implements Engine
     {
         return empty($source)
             ? array()
-            : preg_split(Liquid::get('TOKENIZATION_REGEXP'), $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+            : preg_split(LiquidEngine::TOKENIZATION_REGEXP, $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
     }
 
     /**
@@ -246,5 +272,50 @@ class LiquidEngine implements Engine
     protected function getMessage(\Exception $e)
     {
         return $e->getMessage().' (View: '.realpath(last($this->lastCompiled)).')';
+    }
+
+    /**
+     * Flatten a multidimensional array into a single array. Does not maintain keys.
+     *
+     * @param array $array
+     *
+     * @return array
+     */
+    public static function arrayFlatten($array)
+    {
+        $return = array();
+
+        foreach ($array as $element) {
+            if (is_array($element)) {
+                $return = array_merge($return, self::arrayFlatten($element));
+            } else {
+                $return[] = $element;
+            }
+        }
+        return $return;
+    }
+
+    /**
+     * All values in PHP Liquid are truthy except null and false.
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    public static function isTruthy($value)
+    {
+        return !self::isFalsy($value);
+    }
+
+    /**
+     * The falsy values in PHP Liquid are null and false.
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    public static function isFalsy($value)
+    {
+        return $value === false || $value === null;
     }
 }

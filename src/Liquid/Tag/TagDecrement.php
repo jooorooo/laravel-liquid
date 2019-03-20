@@ -11,10 +11,9 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
-use Liquid\Liquid;
 use Liquid\Context;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -44,7 +43,7 @@ class TagDecrement extends AbstractTag
 	 * @throws \Liquid\LiquidException
 	 */
 	public function __construct($markup) {
-		$syntax = new Regexp('/(' . Liquid::get('VARIABLE_NAME') . ')/');
+		$syntax = new Regexp('/(' . LiquidEngine::VARIABLE_NAME . ')/');
 
 		if ($syntax->match($markup)) {
 			$this->toDecrement = $syntax->matches[0];

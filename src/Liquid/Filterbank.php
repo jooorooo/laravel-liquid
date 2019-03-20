@@ -38,11 +38,12 @@ class Filterbank
 	 */
 	private $context;
 
-	/**
-	 * Constructor
-	 *
-	 * @param $context
-	 */
+    /**
+     * Constructor
+     *
+     * @param Context $context
+     * @throws LiquidException
+     */
 	public function __construct(Context $context) {
 		$this->context = $context;
 

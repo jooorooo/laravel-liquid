@@ -15,7 +15,6 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Document;
-use Liquid\Liquid;
 use Liquid\Context;
 use Liquid\LiquidEngine;
 use Liquid\LiquidException;
@@ -74,8 +73,8 @@ class TagExtends extends AbstractTag
 	 * @return array
 	 */
 	private function findBlocks(array $tokens) {
-		$blockstartRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*block (\w+)\s*(.*)?' . Liquid::get('TAG_END') . '$/');
-		$blockendRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*endblock\s*?' . Liquid::get('TAG_END') . '$/');
+		$blockstartRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*block (\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
+		$blockendRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*endblock\s*?' . LiquidEngine::TAG_END . '$/');
 
 		$b = array();
 		$name = null;
@@ -114,7 +113,7 @@ class TagExtends extends AbstractTag
 		// tokens in this new document
 		$maintokens = LiquidEngine::tokenize($source);
 
-		$eRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*extends (.*)?' . Liquid::get('TAG_END') . '$/');
+		$eRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*extends (.*)?' . LiquidEngine::TAG_END . '$/');
 		foreach ($maintokens as $maintoken)
 			if ($eRegexp->match($maintoken)) {
 				$m = $eRegexp->matches[1];
@@ -126,8 +125,8 @@ class TagExtends extends AbstractTag
 		} else {
 			$childtokens = $this->findBlocks($tokens);
 
-			$blockstartRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*block (\w+)\s*(.*)?' . Liquid::get('TAG_END') . '$/');
-			$blockendRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*endblock\s*?' . Liquid::get('TAG_END') . '$/');
+			$blockstartRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*block (\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
+			$blockendRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*endblock\s*?' . LiquidEngine::TAG_END . '$/');
 
 			$name = null;
 

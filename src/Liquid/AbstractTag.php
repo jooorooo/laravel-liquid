@@ -103,7 +103,7 @@ abstract class AbstractTag
     {
         $this->attributes = array();
 
-        $attributeRegexp = new Regexp(Liquid::get('TAG_ATTRIBUTES'));
+        $attributeRegexp = new Regexp(LiquidEngine::TAG_ATTRIBUTES);
 
         $matches = $attributeRegexp->scan($markup);
 

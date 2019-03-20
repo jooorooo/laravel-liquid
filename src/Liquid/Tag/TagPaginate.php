@@ -14,8 +14,8 @@ namespace Liquid\Tag;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
-use Liquid\Liquid;
 use Liquid\Context;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -86,7 +86,7 @@ class TagPaginate extends AbstractBlock
 
         parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
-        $syntax = new Regexp('/(' . Liquid::get('VARIABLE_NAME') . ')\s+by\s+(\w+)/');
+        $syntax = new Regexp('/(' . LiquidEngine::VARIABLE_NAME . ')\s+by\s+(\w+)/');
 
         if ($syntax->match($markup)) {
             $this->collectionName = $syntax->matches[1];

@@ -76,9 +76,6 @@ class LiquidServiceProvider extends ViewServiceProvider
     public function registerLiquidEngine($resolver)
     {
         $resolver->register('liquid', function () {
-            //Merge liqud config
-            Liquid::$config = array_merge(Liquid::$config, config('liquid.liquid', []));
-
             return new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
         });
     }

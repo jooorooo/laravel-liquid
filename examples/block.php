@@ -12,10 +12,7 @@
 $loader = require __DIR__ . '/../vendor/autoload.php';
 $loader->addPsr4('Liquid\\', __DIR__ . '/../src/Liquid');
 
-use Liquid\Liquid;
 use Liquid\LiquidEngine;
-
-Liquid::set('INCLUDE_ALLOW_EXT', true);
 
 $protectedPath = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'protected' . DIRECTORY_SEPARATOR;
 
@@ -27,7 +24,7 @@ $liquid = new LiquidEngine($protectedPath . 'templates' . DIRECTORY_SEPARATOR);
 //$cache = array('cache' => 'apc');
 //$liquid->setCache($cache);
 
-$liquid->parse(file_get_contents($protectedPath . 'templates' . DIRECTORY_SEPARATOR . 'child.tpl'));
+$liquid->parse(file_get_contents($protectedPath . 'templates' . DIRECTORY_SEPARATOR . 'child'));
 
 $assigns = array(
 	'document' => array(

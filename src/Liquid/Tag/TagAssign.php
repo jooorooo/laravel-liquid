@@ -11,9 +11,7 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
-use Liquid\Liquid;
 use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
@@ -47,12 +45,12 @@ class TagAssign extends AbstractTag
 	 * @throws \Liquid\LiquidException
 	 */
 	public function __construct($markup) {
-		$syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . Liquid::get('QUOTED_FRAGMENT') . '+)/');
+		$syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidEngine::QUOTED_FRAGMENT . '+)/');
 
 		$filterSeperatorRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '\s*(.*)/');
 		$filterSplitRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '/');
 		$filterNameRegexp = new Regexp('/\s*(\w+)/');
-		$filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . Liquid::get('QUOTED_FRAGMENT') . ')/');
+		$filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')/');
 
 		$this->filters = array();
 
@@ -64,7 +62,7 @@ class TagAssign extends AbstractTag
 				$filtername = $filterNameRegexp->matches[1];
 
 				$filterArgumentRegexp->matchAll($filter);
-				$matches = Liquid::arrayFlatten($filterArgumentRegexp->matches[1]);
+				$matches = LiquidEngine::arrayFlatten($filterArgumentRegexp->matches[1]);
 
 				array_push($this->filters, array($filtername, $matches));
 			}
@@ -78,13 +76,14 @@ class TagAssign extends AbstractTag
 		}
 	}
 
-	/**
-	 * Renders the tag
-	 *
-	 * @param Context $context
-	 *
-	 * @return string|void
-	 */
+    /**
+     * Renders the tag
+     *
+     * @param Context $context
+     *
+     * @return string|void
+     * @throws LiquidException
+     */
 	public function render(Context $context) {
 		$output = $context->get($this->from);
 

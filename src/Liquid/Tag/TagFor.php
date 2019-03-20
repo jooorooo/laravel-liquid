@@ -14,8 +14,8 @@ namespace Liquid\Tag;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
-use Liquid\Liquid;
 use Liquid\Context;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -87,7 +87,7 @@ class TagFor extends AbstractBlock
 
 		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
-		$syntaxRegexp = new Regexp('/(\w+)\s+in\s+(' . Liquid::get('VARIABLE_NAME') . ')/');
+		$syntaxRegexp = new Regexp('/(\w+)\s+in\s+(' . LiquidEngine::VARIABLE_NAME . ')/');
 
 		if ($syntaxRegexp->match($markup)) {
 
@@ -98,7 +98,7 @@ class TagFor extends AbstractBlock
 			
 		} else {
 			
-			$syntaxRegexp = new Regexp('/(\w+)\s+in\s+\((\d+|' . Liquid::get('VARIABLE_NAME') . ')\s*\.\.\s*(\d+|' . Liquid::get('VARIABLE_NAME') . ')\)/');
+			$syntaxRegexp = new Regexp('/(\w+)\s+in\s+\((\d+|' . LiquidEngine::VARIABLE_NAME . ')\s*\.\.\s*(\d+|' . LiquidEngine::VARIABLE_NAME . ')\)/');
 			if ($syntaxRegexp->match($markup)) {
 				$this->type = 'digit';
 				$this->variableName = $syntaxRegexp->matches[1];

@@ -34,14 +34,15 @@ class AbstractBlock extends AbstractTag
      *
      * @param array $tokens
      *
-     * @throws \Liquid\LiquidException
      * @return void
+     * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function parse(array &$tokens)
     {
-        $startRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '/');
-        $tagRegexp = new Regexp('/^' . Liquid::get('TAG_START') . '\s*(\w+)\s*(.*)?' . Liquid::get('TAG_END') . '$/');
-        $variableStartRegexp = new Regexp('/^' . Liquid::get('VARIABLE_START') . '/');
+        $startRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '/');
+        $tagRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*(\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
+        $variableStartRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_START . '/');
 
         $this->nodelist = array();
 
@@ -146,7 +147,8 @@ class AbstractBlock extends AbstractTag
      * @param string $params
      * @param array $tokens
      *
-     * @throws \Liquid\LiquidException
+     * @throws LiquidException
+     * @throws \ReflectionException
      */
     protected function unknownTag($tag, $params, array $tokens)
     {
@@ -164,8 +166,9 @@ class AbstractBlock extends AbstractTag
      * This method is called at the end of parsing, and will through an error unless
      * this method is subclassed, like it is for Document
      *
-     * @throws \Liquid\LiquidException
-     * @return bool
+     * @return void
+     * @throws LiquidException
+     * @throws \ReflectionException
      */
     protected function assertMissingDelimitation()
     {
@@ -176,6 +179,7 @@ class AbstractBlock extends AbstractTag
      * Returns the string that delimits the end of the block
      *
      * @return string
+     * @throws \ReflectionException
      */
     protected function blockDelimiter()
     {
@@ -186,6 +190,7 @@ class AbstractBlock extends AbstractTag
      * Returns the name of the block
      *
      * @return string
+     * @throws \ReflectionException
      */
     private function blockName()
     {
@@ -203,7 +208,7 @@ class AbstractBlock extends AbstractTag
      */
     private function createVariable($token)
     {
-        $variableRegexp = new Regexp('/^' . Liquid::get('VARIABLE_START') . '(.*)' . Liquid::get('VARIABLE_END') . '$/');
+        $variableRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_START . '(.*)' . LiquidEngine::VARIABLE_END . '$/');
         if ($variableRegexp->match($token)) {
             return new Variable($variableRegexp->matches[1]);
         }

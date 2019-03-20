@@ -15,7 +15,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Decision;
 use Liquid\Context;
-use Liquid\Liquid;
+use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -73,7 +73,7 @@ class TagCase extends Decision
 
 		parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
-		$syntaxRegexp = new Regexp('/' . Liquid::get('QUOTED_FRAGMENT') . '/');
+		$syntaxRegexp = new Regexp('/' . LiquidEngine::QUOTED_FRAGMENT . '/');
 
 		if ($syntaxRegexp->match($markup)) {
 			$this->left = $syntaxRegexp->matches[0];
@@ -99,7 +99,7 @@ class TagCase extends Decision
 	 * @throws \Liquid\LiquidException
 	 */
 	public function unknownTag($tag, $params, array $tokens) {
-		$whenSyntaxRegexp = new Regexp('/' . Liquid::get('QUOTED_FRAGMENT') . '/');
+		$whenSyntaxRegexp = new Regexp('/' . LiquidEngine::QUOTED_FRAGMENT . '/');
 
 		switch ($tag) {
 			case 'when':
