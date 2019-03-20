@@ -39,10 +39,23 @@ class Filterbank
     private $context;
 
     /**
+     * List with magick methods to ignore for filters
+     *
+     * @var array
+     */
+    private $magick_methods = [
+        '__construct', '__destruct', '__call',
+        '__callstatic', '__get', '__set', '__isset',
+        '__unset', '__sleep', '__wakeup', '__tostring',
+        '__invoke', '__set_state', '__clone', '__debuginfo',
+    ];
+
+    /**
      * Constructor
      *
      * @param Context $context
      * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function __construct(Context $context)
     {
@@ -58,8 +71,9 @@ class Filterbank
      * @param mixed $filter Can either be an object, the name of a class (in which case the
      *                        filters will be called statically) or the name of a function.
      *
-     * @throws LiquidException
      * @return bool
+     * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function addFilter($filter)
     {
@@ -78,9 +92,11 @@ class Filterbank
 
         // If the filter is a class, register all its methods
         if (class_exists($filter)) {
-            $methods = array_flip(get_class_methods($filter));
-            foreach ($methods as $method => $null) {
-                $this->methodMap[$method] = $filter;
+            $reflection = new \ReflectionClass($filter);
+            foreach($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) AS $method) {
+                if(($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->magick_methods)) {
+                    $this->methodMap[$methodName] = $filter;
+                }
             }
 
             return true;
@@ -121,7 +137,7 @@ class Filterbank
             if ($class === false) {
                 return call_user_func_array($name, $args);
             } else {
-                return call_user_func_array(array($class, $name), $args);
+                return call_user_func_array([$class, $name], $args);
             }
         }
 

@@ -198,6 +198,7 @@ class LiquidEngine implements Engine
      *
      * @return string
      * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function render(array $assigns = array(), $filters = null, array $registers = array())
     {

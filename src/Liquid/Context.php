@@ -51,6 +51,8 @@ class Context
      *
      * @param array $assigns
      * @param array $registers
+     * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function __construct(array $assigns = array(), array $registers = array())
     {
@@ -66,6 +68,7 @@ class Context
      *
      * @param mixed $filter
      * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function addFilters($filter)
     {
@@ -360,8 +363,7 @@ class Context
 
         // if everything else fails, throw up
         if (is_object($object) && !($object instanceof \Traversable)) {
-            $class = get_class($object);
-            throw new LiquidException("Value of type $class has no `toLiquid` nor `__toString` methods");
+            throw new LiquidException(sprintf("Value of type %s has no `toLiquid` nor `__toString` methods", get_class($object)));
         }
 
         return $object;
