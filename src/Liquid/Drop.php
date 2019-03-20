@@ -34,68 +34,74 @@ namespace Liquid;
  */
 abstract class Drop
 {
-	/**
-	 * @var Context
-	 */
-	protected $context;
+    /**
+     * @var Context
+     */
+    protected $context;
 
-	/**
-	 * Catch all method that is invoked before a specific method
-	 *
-	 * @param string $method
-	 *
-	 * @return null
-	 */
-	protected function beforeMethod($method) {
-		return null;
-	}
+    /**
+     * Catch all method that is invoked before a specific method
+     *
+     * @param string $method
+     *
+     * @return null
+     */
+    protected function beforeMethod($method)
+    {
+        return null;
+    }
 
-	/**
-	 * @param Context $context
-	 */
-	public function setContext(Context $context) {
-		$this->context = $context;
-	}
+    /**
+     * @param Context $context
+     */
+    public function setContext(Context $context)
+    {
+        $this->context = $context;
+    }
 
-	/**
-	 * Invoke a specific method
-	 *
-	 * @param string $method
-	 *
-	 * @return mixed
-	 */
-	public function invokeDrop($method) {
-		$result = $this->beforeMethod($method);
+    /**
+     * Invoke a specific method
+     *
+     * @param string $method
+     *
+     * @return mixed
+     */
+    public function invokeDrop($method)
+    {
+        $result = $this->beforeMethod($method);
 
-		if (is_null($result) && is_callable(array($this, $method))) {
-			$result = $this->$method();
-		}
+        if (is_null($result) && is_callable(array($this, $method))) {
+            $result = $this->$method();
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Returns true if the drop supports the given method
-	 *
-	 * @param string $name
-	 *
-	 * @return bool
-	 */
-	public function hasKey($name) {
-		return true;
-	}
+    /**
+     * Returns true if the drop supports the given method
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasKey($name)
+    {
+        return true;
+    }
 
-	/**
-	 * @return Drop
-	 */
-	public function toLiquid() {
-		return $this;
-	}
+    /**
+     * @return Drop
+     */
+    public function toLiquid()
+    {
+        return $this;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function __toString() {
-		return get_class($this);
-	}
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return get_class($this);
+    }
 }
