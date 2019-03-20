@@ -23,14 +23,15 @@ use Liquid\Context;
  */
 class TagComment extends AbstractBlock
 {
-	/**
-	 * Renders the block
-	 *
-	 * @param Context $context
-	 *
-	 * @return string empty string
-	 */
-	public function render(Context $context) {
-		return '';
-	}
+    /**
+     * Renders the block
+     *
+     * @param Context $context
+     *
+     * @return string empty string
+     */
+    public function render(Context $context)
+    {
+        return '';
+    }
 }

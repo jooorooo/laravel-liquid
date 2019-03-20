@@ -26,12 +26,12 @@ use Liquid\Regexp;
  */
 class TagBlock extends AbstractBlock
 {
-	/**
-	 * The variable to assign to
-	 *
-	 * @var string
-	 */
-	private $block;
+    /**
+     * The variable to assign to
+     *
+     * @var string
+     */
+    private $block;
 
     /**
      * Constructor
@@ -44,14 +44,15 @@ class TagBlock extends AbstractBlock
      * @param null $compiled
      * @throws LiquidException
      */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
-		$syntaxRegexp = new Regexp('/(\w+)/');
+    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    {
+        $syntaxRegexp = new Regexp('/(\w+)/');
 
-		if ($syntaxRegexp->match($markup)) {
-			$this->block = $syntaxRegexp->matches[1];
-			parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
-		} else {
-			throw new LiquidException("Syntax Error in 'block' - Valid syntax: block [name]");
-		}
-	}
+        if ($syntaxRegexp->match($markup)) {
+            $this->block = $syntaxRegexp->matches[1];
+            parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        } else {
+            throw new LiquidException("Syntax Error in 'block' - Valid syntax: block [name]");
+        }
+    }
 }

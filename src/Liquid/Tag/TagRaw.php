@@ -27,29 +27,30 @@ use Liquid\Regexp;
  */
 class TagRaw extends AbstractBlock
 {
-	/**
-	 * @param array $tokens
-	 */
-	public function parse(array &$tokens) {
-		$tagRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*(\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
+    /**
+     * @param array $tokens
+     */
+    public function parse(array &$tokens)
+    {
+        $tagRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*(\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
 
-		$this->nodelist = array();
+        $this->nodelist = array();
 
-		if (!is_array($tokens)) {
-			return;
-		}
+        if (!is_array($tokens)) {
+            return;
+        }
 
-		while (count($tokens)) {
-			$token = array_shift($tokens);
+        while (count($tokens)) {
+            $token = array_shift($tokens);
 
-			if ($tagRegexp->match($token)) {
-				// If we found the proper block delimiter just end parsing here and let the outer block proceed
-				if ($tagRegexp->matches[1] == $this->blockDelimiter()) {
-					return;
-				}
-			}
+            if ($tagRegexp->match($token)) {
+                // If we found the proper block delimiter just end parsing here and let the outer block proceed
+                if ($tagRegexp->matches[1] == $this->blockDelimiter()) {
+                    return;
+                }
+            }
 
-			$this->nodelist[] = $token;
-		}
-	}
+            $this->nodelist[] = $token;
+        }
+    }
 }

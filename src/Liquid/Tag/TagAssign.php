@@ -27,54 +27,58 @@ use Liquid\Context;
  */
 class TagAssign extends AbstractTag
 {
-	/**
-	 * @var string The variable to assign from
-	 */
-	private $from;
+    /**
+     * @var string The variable to assign from
+     */
+    private $from;
 
-	/**
-	 * @var string The variable to assign to
-	 */
-	private $to;
+    /**
+     * @var string The variable to assign to
+     */
+    private $to;
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 *
-	 * @throws \Liquid\LiquidException
-	 */
-	public function __construct($markup) {
-		$syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidEngine::QUOTED_FRAGMENT . '+)/');
+    /**
+     * @var array
+     */
+    private $filters = [];
 
-		$filterSeperatorRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '\s*(.*)/');
-		$filterSplitRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '/');
-		$filterNameRegexp = new Regexp('/\s*(\w+)/');
-		$filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')/');
+    /**
+     * Constructor
+     *
+     * @param string $markup
+     *
+     * @throws \Liquid\LiquidException
+     */
+    public function __construct($markup)
+    {
+        $syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidEngine::QUOTED_FRAGMENT . '+)/');
 
-		$this->filters = array();
+        $filterSeperatorRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '\s*(.*)/');
+        $filterSplitRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '/');
+        $filterNameRegexp = new Regexp('/\s*(\w+)/');
+        $filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')/');
 
-		if ($filterSeperatorRegexp->match($markup)) {
-			$filters = $filterSplitRegexp->split($filterSeperatorRegexp->matches[1]);
+        if ($filterSeperatorRegexp->match($markup)) {
+            $filters = $filterSplitRegexp->split($filterSeperatorRegexp->matches[1]);
 
-			foreach ($filters as $filter) {
-				$filterNameRegexp->match($filter);
-				$filtername = $filterNameRegexp->matches[1];
+            foreach ($filters as $filter) {
+                $filterNameRegexp->match($filter);
+                $filtername = $filterNameRegexp->matches[1];
 
-				$filterArgumentRegexp->matchAll($filter);
-				$matches = LiquidEngine::arrayFlatten($filterArgumentRegexp->matches[1]);
+                $filterArgumentRegexp->matchAll($filter);
+                $matches = LiquidEngine::arrayFlatten($filterArgumentRegexp->matches[1]);
 
-				array_push($this->filters, array($filtername, $matches));
-			}
-		}
+                array_push($this->filters, array($filtername, $matches));
+            }
+        }
 
-		if ($syntaxRegexp->match($markup)) {
-			$this->to = $syntaxRegexp->matches[1];
-			$this->from = $syntaxRegexp->matches[2];
-		} else {
-			throw new LiquidException("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]");
-		}
-	}
+        if ($syntaxRegexp->match($markup)) {
+            $this->to = $syntaxRegexp->matches[1];
+            $this->from = $syntaxRegexp->matches[2];
+        } else {
+            throw new LiquidException("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]");
+        }
+    }
 
     /**
      * Renders the tag
@@ -84,21 +88,22 @@ class TagAssign extends AbstractTag
      * @return string|void
      * @throws LiquidException
      */
-	public function render(Context $context) {
-		$output = $context->get($this->from);
+    public function render(Context $context)
+    {
+        $output = $context->get($this->from);
 
-		foreach ($this->filters as $filter) {
-			list($filtername, $filterArgKeys) = $filter;
+        foreach ($this->filters as $filter) {
+            list($filtername, $filterArgKeys) = $filter;
 
-			$filterArgValues = array();
+            $filterArgValues = array();
 
-			foreach ($filterArgKeys as $arg_key) {
-				$filterArgValues[] = $context->get($arg_key);
-			}
+            foreach ($filterArgKeys as $arg_key) {
+                $filterArgValues[] = $context->get($arg_key);
+            }
 
-			$output = $context->invoke($filtername, $output, $filterArgValues);
-		}
+            $output = $context->invoke($filtername, $output, $filterArgValues);
+        }
 
-		$context->set($this->to, $output, true);
-	}
+        $context->set($this->to, $output, true);
+    }
 }

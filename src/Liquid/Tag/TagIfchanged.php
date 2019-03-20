@@ -19,29 +19,30 @@ use Liquid\Context;
  */
 class TagIfchanged extends AbstractBlock
 {
-	/**
-	 * The last value
-	 *
-	 * @var string
-	 */
-	private $lastValue = '';
+    /**
+     * The last value
+     *
+     * @var string
+     */
+    private $lastValue = '';
 
-	/**
-	 * Renders the block
-	 *
-	 * @param Context $context
-	 *
-	 * @return string
-	 */
-	public function render(Context $context) {
-		$output = parent::render($context);
+    /**
+     * Renders the block
+     *
+     * @param Context $context
+     *
+     * @return string
+     */
+    public function render(Context $context)
+    {
+        $output = parent::render($context);
 
-		if ($this->lastValue == $output) {
-			return '';
-		} else {
-			$this->lastValue = $output;
-			return $this->lastValue;		
-		}
-		
-	}
+        if ($this->lastValue == $output) {
+            return '';
+        } else {
+            $this->lastValue = $output;
+            return $this->lastValue;
+        }
+
+    }
 }

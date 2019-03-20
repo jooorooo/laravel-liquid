@@ -27,12 +27,12 @@ use Liquid\Regexp;
  */
 class TagCapture extends AbstractBlock
 {
-	/**
-	 * The variable to assign to
-	 *
-	 * @var string
-	 */
-	private $to;
+    /**
+     * The variable to assign to
+     *
+     * @var string
+     */
+    private $to;
 
     /**
      * Constructor
@@ -45,28 +45,30 @@ class TagCapture extends AbstractBlock
      * @param null $compiled
      * @throws LiquidException
      */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
-		$syntaxRegexp = new Regexp('/(\w+)/');
+    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    {
+        $syntaxRegexp = new Regexp('/(\w+)/');
 
-		if ($syntaxRegexp->match($markup)) {
-			$this->to = $syntaxRegexp->matches[1];
-			parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
-		} else {
-			throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var] [value]");
-		}
-	}
+        if ($syntaxRegexp->match($markup)) {
+            $this->to = $syntaxRegexp->matches[1];
+            parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        } else {
+            throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var] [value]");
+        }
+    }
 
-	/**
-	 * Renders the block
-	 *
-	 * @param Context $context
-	 *
-	 * @return string
-	 */
-	public function render(Context $context) {
-		$output = parent::render($context);
+    /**
+     * Renders the block
+     *
+     * @param Context $context
+     *
+     * @return string
+     */
+    public function render(Context $context)
+    {
+        $output = parent::render($context);
 
-		$context->set($this->to, $output);
-		return '';
-	}
+        $context->set($this->to, $output);
+        return '';
+    }
 }

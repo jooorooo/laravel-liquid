@@ -35,7 +35,8 @@ class TagContinue extends AbstractTag
      *
      * @return string|void
      */
-    public function render(Context $context) {
+    public function render(Context $context)
+    {
         $context->registers['continue'] = true;
     }
 }

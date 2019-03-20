@@ -24,17 +24,16 @@ use Liquid\Regexp;
  *
  * Example:
  *
- *	{% paginate collection.products by 5 %}
- * 		{% for product in collection.products %}
- * 			<!--show product details here -->
- * 		{% endfor %}
- * 	{% endpaginate %}
+ *    {% paginate collection.products by 5 %}
+ *        {% for product in collection.products %}
+ *            <!--show product details here -->
+ *        {% endfor %}
+ *    {% endpaginate %}
  *
  */
-
 class TagPaginate extends AbstractBlock
 {
-	/**
+    /**
      * @var string The collection to paginate
      */
     private $collectionName;
@@ -50,7 +49,7 @@ class TagPaginate extends AbstractBlock
      */
     private $collectionSize;
 
-	/**
+    /**
      * @var int The number of items to paginate by
      */
     private $numberItems;
@@ -82,7 +81,8 @@ class TagPaginate extends AbstractBlock
      * @param null $compiled
      * @throws LiquidException
      */
-	public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null) {
+    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    {
 
         parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
 
@@ -106,47 +106,48 @@ class TagPaginate extends AbstractBlock
      * @return string
      *
      */
-    public function render(Context $context) {
+    public function render(Context $context)
+    {
 
-        $this->currentPage = ( is_numeric($context->get('page')) ) ? $context->get('page') : 1;
+        $this->currentPage = (is_numeric($context->get('page'))) ? $context->get('page') : 1;
         $this->currentOffset = ($this->currentPage - 1) * $this->numberItems;
-    	$this->collection = $context->get($this->collectionName);
-		if ($this->collection instanceof \Traversable) {
-			$this->collection = iterator_to_array($this->collection);
-		}
-    	$this->collectionSize = count($this->collection);
-    	$this->totalPages = (int) ceil($this->collectionSize / $this->numberItems);
-    	$paginatedCollection =  array_slice($this->collection, $this->currentOffset, $this->numberItems);
+        $this->collection = $context->get($this->collectionName);
+        if ($this->collection instanceof \Traversable) {
+            $this->collection = iterator_to_array($this->collection);
+        }
+        $this->collectionSize = count($this->collection);
+        $this->totalPages = (int)ceil($this->collectionSize / $this->numberItems);
+        $paginatedCollection = array_slice($this->collection, $this->currentOffset, $this->numberItems);
 
-    	// Sets the collection if it's a key of another collection (ie search.results, collection.products, blog.articles)
-    	$segments = explode('.', $this->collectionName);
-    	if (count($segments) == 2) {
-	    	$context->set($segments[0], array($segments[1] => $paginatedCollection));
-    	} else {
-	    	$context->set($this->collectionName, $paginatedCollection);
-    	}
-    	
-    	$paginate = array(
-    		'page_size' => $this->numberItems,
-    		'current_page' => $this->currentPage,
-    		'current_offset' => $this->currentOffset,
-    		'pages' => $this->totalPages,
-    		'items' => $this->collectionSize
-    	);
-    	
-    	if ( $this->currentPage != 1 ) {
-	    	$paginate['previous']['title'] = 'Previous';
-	    	$paginate['previous']['url'] = $this->currentUrl($context) . '?page=' . ($this->currentPage - 1);
-    	
-    	}
-    	
-    	if ( $this->currentPage != $this->totalPages ) {
-	    	$paginate['next']['title'] = 'Next';
-	    	$paginate['next']['url'] = $this->currentUrl($context) . '?page=' . ($this->currentPage + 1);
-    	}
+        // Sets the collection if it's a key of another collection (ie search.results, collection.products, blog.articles)
+        $segments = explode('.', $this->collectionName);
+        if (count($segments) == 2) {
+            $context->set($segments[0], array($segments[1] => $paginatedCollection));
+        } else {
+            $context->set($this->collectionName, $paginatedCollection);
+        }
 
-    	$context->set('paginate', $paginate);
-    	
+        $paginate = array(
+            'page_size' => $this->numberItems,
+            'current_page' => $this->currentPage,
+            'current_offset' => $this->currentOffset,
+            'pages' => $this->totalPages,
+            'items' => $this->collectionSize
+        );
+
+        if ($this->currentPage != 1) {
+            $paginate['previous']['title'] = 'Previous';
+            $paginate['previous']['url'] = $this->currentUrl($context) . '?page=' . ($this->currentPage - 1);
+
+        }
+
+        if ($this->currentPage != $this->totalPages) {
+            $paginate['next']['title'] = 'Next';
+            $paginate['next']['url'] = $this->currentUrl($context) . '?page=' . ($this->currentPage + 1);
+        }
+
+        $context->set('paginate', $paginate);
+
         return parent::render($context);
 
     }
@@ -159,16 +160,17 @@ class TagPaginate extends AbstractBlock
      * @return string
      *
      */
-    public function currentUrl($context) {
+    public function currentUrl($context)
+    {
 
-	    $uri = explode('?', $context->get('REQUEST_URI'));
+        $uri = explode('?', $context->get('REQUEST_URI'));
 
-	    $url = 'http';
-		if ($context->get('HTTPS') == 'on') $url .= 's';
-		$url .= '://' . $context->get('HTTP_HOST') . reset($uri);
-		
-		return $url;
-		
+        $url = 'http';
+        if ($context->get('HTTPS') == 'on') $url .= 's';
+        $url .= '://' . $context->get('HTTP_HOST') . reset($uri);
+
+        return $url;
+
     }
 
 }

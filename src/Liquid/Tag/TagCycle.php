@@ -35,90 +35,93 @@ use Liquid\Variable;
  */
 class TagCycle extends AbstractTag
 {
-	/**
-	 * @var string The name of the cycle; if none is given one is created using the value list
-	 */
-	private $name;
+    /**
+     * @var string The name of the cycle; if none is given one is created using the value list
+     */
+    private $name;
 
-	/**
-	 * @var Variable[] The variables to cycle between
-	 */
-	private $variables = array();
+    /**
+     * @var Variable[] The variables to cycle between
+     */
+    private $variables = array();
 
-	/**
-	 * Constructor
-	 *
-	 * @param string $markup
-	 *
-	 * @throws LiquidException
-	 */
-	public function __construct($markup) {
-		$simpleSyntax = new Regexp("/" . LiquidEngine::QUOTED_FRAGMENT . "/");
-		$namedSyntax = new Regexp("/(" . LiquidEngine::QUOTED_FRAGMENT . ")\s*\:\s*(.*)/");
+    /**
+     * Constructor
+     *
+     * @param string $markup
+     *
+     * @throws LiquidException
+     */
+    public function __construct($markup)
+    {
+        $simpleSyntax = new Regexp("/" . LiquidEngine::QUOTED_FRAGMENT . "/");
+        $namedSyntax = new Regexp("/(" . LiquidEngine::QUOTED_FRAGMENT . ")\s*\:\s*(.*)/");
 
-		if ($namedSyntax->match($markup)) {
-			$this->variables = $this->variablesFromString($namedSyntax->matches[2]);
-			$this->name = $namedSyntax->matches[1];
-		} elseif ($simpleSyntax->match($markup)) {
-			$this->variables = $this->variablesFromString($markup);
-			$this->name = "'" . implode($this->variables) . "'";
-		} else {
-			throw new LiquidException("Syntax Error in 'cycle' - Valid syntax: cycle [name :] var [, var2, var3 ...]");
-		}
-	}
+        if ($namedSyntax->match($markup)) {
+            $this->variables = $this->variablesFromString($namedSyntax->matches[2]);
+            $this->name = $namedSyntax->matches[1];
+        } elseif ($simpleSyntax->match($markup)) {
+            $this->variables = $this->variablesFromString($markup);
+            $this->name = "'" . implode($this->variables) . "'";
+        } else {
+            throw new LiquidException("Syntax Error in 'cycle' - Valid syntax: cycle [name :] var [, var2, var3 ...]");
+        }
+    }
 
-	/**
-	 * Renders the tag
-	 *
-	 * @var Context $context
-	 * @return string
-	 */
-	public function render(Context $context) {
-		$context->push();
+    /**
+     * Renders the tag
+     *
+     * @var Context $context
+     * @return string
+     */
+    public function render(Context $context)
+    {
+        $context->push();
 
-		$key = $context->get($this->name);
+        $key = $context->get($this->name);
 
-		if (isset($context->registers['cycle'][$key])) {
-			$iteration = $context->registers['cycle'][$key];
-		} else {
-			$iteration = 0;
-		}
+        if (isset($context->registers['cycle'][$key])) {
+            $iteration = $context->registers['cycle'][$key];
+        } else {
+            $iteration = 0;
+        }
 
-		$result = $context->get($this->variables[$iteration]);
+        $result = $context->get($this->variables[$iteration]);
 
-		$iteration += 1;
+        $iteration += 1;
 
-		if ($iteration >= count($this->variables)) {
-			$iteration = 0;
-		}
+        if ($iteration >= count($this->variables)) {
+            $iteration = 0;
+        }
 
-		$context->registers['cycle'][$key] = $iteration;
+        $context->registers['cycle'][$key] = $iteration;
 
-		$context->pop();
+        $context->pop();
 
-		return $result;
-	}
+        return $result;
+    }
 
-	/**
-	 * Extract variables from a string of markup
-	 *
-	 * @param string $markup
-	 *
-	 * @return array;
-	 */
-	private function variablesFromString($markup) {
-		$regexp = new Regexp('/\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')\s*/');
-		$parts = explode(',', $markup);
-		$result = array();
+    /**
+     * Extract variables from a string of markup
+     *
+     * @param string $markup
+     *
+     * @return array;
+     */
+    private function variablesFromString($markup)
+    {
+        $regexp = new Regexp('/\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')\s*/');
+        $parts = explode(',', $markup);
+        $result = array();
 
-		foreach ($parts as $part) {
-			$regexp->match($part);
+        foreach ($parts as $part) {
+            $regexp->match($part);
 
-			if (!empty($regexp->matches[1])) {
-				$result[] = $regexp->matches[1];
-			}
-		}
+            if (!empty($regexp->matches[1])) {
+                $result[] = $regexp->matches[1];
+            }
+        }
 
-		return $result;
-	}
+        return $result;
+    }
 }
