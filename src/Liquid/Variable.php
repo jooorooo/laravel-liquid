@@ -11,11 +11,16 @@
 
 namespace Liquid;
 
+use Liquid\Traits\HelpersTrait;
+
 /**
  * Implements a template variable.
  */
 class Variable
 {
+
+    use HelpersTrait;
+
     /**
      * @var array The filters to execute on the variable
      */
@@ -58,7 +63,7 @@ class Variable
                 $filtername = $filterNameRegexp->matches[1];
 
                 $filterArgumentRegexp->matchAll($filter);
-                $matches = LiquidEngine::arrayFlatten($filterArgumentRegexp->matches[1]);
+                $matches = $this->arrayFlatten($filterArgumentRegexp->matches[1]);
 
                 $this->filters[] = array($filtername, $matches);
             }

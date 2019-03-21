@@ -20,7 +20,7 @@ namespace Liquid;
  *
  * Example:
  *
- *     class ProductDrop extends LiquidDrop {
+ *     class ProductDrop extends \Liquid\Drop {
  *         public function topSales() {
  *             Products::find('all', array('order' => 'sales', 'limit' => 10 ));
  *         }

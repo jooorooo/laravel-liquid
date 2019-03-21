@@ -62,7 +62,6 @@ class Filterbank
         $this->context = $context;
 
         $this->addFilter('\Liquid\StandardFilters');
-        $this->addFilter('\Liquid\CustomFilters');
     }
 
     /**
@@ -93,8 +92,8 @@ class Filterbank
         // If the filter is a class, register all its methods
         if (class_exists($filter)) {
             $reflection = new \ReflectionClass($filter);
-            foreach($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) AS $method) {
-                if(($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->magick_methods)) {
+            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) AS $method) {
+                if (($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->magick_methods)) {
                     $this->methodMap[$methodName] = $filter;
                 }
             }

@@ -13,11 +13,12 @@ namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
-use Liquid\Decision;
+use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Traits\DecisionTrait;
 
 /**
  * A switch statement
@@ -26,8 +27,10 @@ use Liquid\Regexp;
  *
  *     {% case condition %}{% when foo %} foo {% else %} bar {% endcase %}
  */
-class TagCase extends Decision
+class TagCase extends AbstractBlock
 {
+    use DecisionTrait;
+
     /**
      * Stack of nodelists
      *

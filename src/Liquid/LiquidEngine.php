@@ -180,7 +180,7 @@ class LiquidEngine implements Engine
         $file = md5($source) . '.liquid';
         $path = $this->compiled . '/' . $file;
 
-        if(!$this->files->exists($path) || !($this->root = @unserialize($this->files->get($path))) || !($this->root->checkIncludes() != true)) {
+        if (!$this->files->exists($path) || !($this->root = @unserialize($this->files->get($path))) || !($this->root->checkIncludes() != true)) {
             $templateTokens = self::tokenize($source);
             $this->root = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
             $this->files->put($path, serialize($this->root));
@@ -247,8 +247,8 @@ class LiquidEngine implements Engine
     /**
      * Handle a view exception.
      *
-     * @param  \Exception  $e
-     * @param  int  $obLevel
+     * @param  \Exception $e
+     * @param  int $obLevel
      * @return void
      *
      * @throws $e
@@ -267,56 +267,11 @@ class LiquidEngine implements Engine
     /**
      * Get the exception message for an exception.
      *
-     * @param  \Exception  $e
+     * @param  \Exception $e
      * @return string
      */
     protected function getMessage(\Exception $e)
     {
-        return $e->getMessage().' (View: '.realpath(last($this->lastCompiled)).')';
-    }
-
-    /**
-     * Flatten a multidimensional array into a single array. Does not maintain keys.
-     *
-     * @param array $array
-     *
-     * @return array
-     */
-    public static function arrayFlatten($array)
-    {
-        $return = array();
-
-        foreach ($array as $element) {
-            if (is_array($element)) {
-                $return = array_merge($return, self::arrayFlatten($element));
-            } else {
-                $return[] = $element;
-            }
-        }
-        return $return;
-    }
-
-    /**
-     * All values in PHP Liquid are truthy except null and false.
-     *
-     * @param mixed $value
-     *
-     * @return bool
-     */
-    public static function isTruthy($value)
-    {
-        return !self::isFalsy($value);
-    }
-
-    /**
-     * The falsy values in PHP Liquid are null and false.
-     *
-     * @param mixed $value
-     *
-     * @return bool
-     */
-    public static function isFalsy($value)
-    {
-        return $value === false || $value === null;
+        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)) . ')';
     }
 }

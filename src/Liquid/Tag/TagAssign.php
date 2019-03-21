@@ -16,6 +16,7 @@ use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Context;
+use Liquid\Traits\HelpersTrait;
 
 /**
  * Performs an assignment of one variable to another
@@ -27,6 +28,9 @@ use Liquid\Context;
  */
 class TagAssign extends AbstractTag
 {
+
+    use HelpersTrait;
+
     /**
      * @var string The variable to assign from
      */
@@ -66,7 +70,7 @@ class TagAssign extends AbstractTag
                 $filtername = $filterNameRegexp->matches[1];
 
                 $filterArgumentRegexp->matchAll($filter);
-                $matches = LiquidEngine::arrayFlatten($filterArgumentRegexp->matches[1]);
+                $matches = $this->arrayFlatten($filterArgumentRegexp->matches[1]);
 
                 array_push($this->filters, array($filtername, $matches));
             }

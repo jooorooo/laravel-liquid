@@ -13,11 +13,13 @@ namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\View\ViewFinderInterface;
-use Liquid\Decision;
+use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidEngine;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Traits\DecisionTrait;
+use Liquid\Traits\HelpersTrait;
 
 /**
  * An if statement
@@ -29,8 +31,11 @@ use Liquid\Regexp;
  *     will return:
  *     NO
  */
-class TagUnless extends Decision
+class TagUnless extends AbstractBlock
 {
+
+    use DecisionTrait, HelpersTrait;
+
     /**
      * Array holding the nodes to render for each logical block
      *
@@ -137,10 +142,10 @@ class TagUnless extends Decision
                 foreach ($logicalOperators as $k => $logicalOperator) {
                     $r = $this->interpretCondition($conditions[$k]['left'], $conditions[$k]['right'], $conditions[$k]['operator'], $context);
                     if ($logicalOperator == 'and') {
-                        $boolean = $boolean && LiquidEngine::isTruthy($r);
+                        $boolean = $boolean && $this->isTruthy($r);
                     } else {
                         $results[] = $boolean;
-                        $boolean = LiquidEngine::isTruthy($r);
+                        $boolean = $this->isTruthy($r);
                     }
                 }
 
