@@ -20,19 +20,18 @@ class LiquidServiceProvider extends ViewServiceProvider
     {
         parent::register();
 
-        $this->mergeConfigFrom(__DIR__ . '/../../config/liquid.php', 'liquid');
+        $this->mergeConfigFrom($file = __DIR__ . '/../../config/liquid.php', 'liquid');
+
+        $this->publishes([
+            $file => config_path('liquid.php')
+        ], 'config');
     }
 
     public function boot()
     {
-        $this->publishes([
-            __DIR__ . '/../../config/liquid.php' => config_path('liquid.php')
-        ], 'config');
-
         $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid', function() {
             return new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
         });
-
     }
 
     /**
