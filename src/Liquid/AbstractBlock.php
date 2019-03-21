@@ -66,9 +66,6 @@ class AbstractBlock extends AbstractTag
                     $tagName = null;
                     if (array_key_exists($tagRegexp->matches[1], $tags)) {
                         $tagName = $tags[$tagRegexp->matches[1]];
-                    } else {
-                        $tagName = '\Liquid\Tag\Tag' . ucwords($tagRegexp->matches[1]);
-                        $tagName = (class_exists($tagName) === true) ? $tagName : null;
                     }
 
                     if ($tagName !== null) {

@@ -30,7 +30,13 @@ class LiquidServiceProvider extends ViewServiceProvider
     public function boot()
     {
         $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid', function() {
-            return new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
+            $engine =  new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
+            if($tags = $this->app['config']->get('liquid.tags', [])) {
+                foreach($tags AS $tag => $object) {
+                    $engine->registerTag($tag, $object);
+                }
+            }
+            return $engine;
         });
     }
 
