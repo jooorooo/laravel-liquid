@@ -28,7 +28,10 @@
 		"laravel": {
 			"providers": [
 				"Liquid\\LiquidServiceProvider"
-			]
+			],
+			"aliases": {
+				"Liquid": "Liquid\\Facade"
+			}
 		}
 	}
 }
