@@ -1,5 +1,25 @@
 <?php
 
+use Liquid\Tag\TagAssign;
+use Liquid\Tag\TagBlock;
+use Liquid\Tag\TagBreak;
+use Liquid\Tag\TagCapture;
+use Liquid\Tag\TagCase;
+use Liquid\Tag\TagComment;
+use Liquid\Tag\TagContinue;
+use Liquid\Tag\TagCycle;
+use Liquid\Tag\TagDecrement;
+use Liquid\Tag\TagFor;
+use Liquid\Tag\TagIf;
+use Liquid\Tag\TagIfchanged;
+use Liquid\Tag\TagInclude;
+use Liquid\Tag\TagIncrement;
+use Liquid\Tag\TagLayout;
+use Liquid\Tag\TagPaginate;
+use Liquid\Tag\TagRaw;
+use Liquid\Tag\TagTablerow;
+use Liquid\Tag\TagUnless;
+
 return [
 
     /*
@@ -17,25 +37,25 @@ return [
      |--------------------------------------------------------------------------
      */
     'tags' => [
-        'assign' => Liquid\Tag\TagAssign::class,
-        'block' => Liquid\Tag\TagBlock::class,
-        'break' => Liquid\Tag\TagBreak::class,
-        'capture' => Liquid\Tag\TagCapture::class,
-        'case' => Liquid\Tag\TagCase::class,
-        'comment' => Liquid\Tag\TagComment::class,
-        'continue' => Liquid\Tag\TagContinue::class,
-        'cycle' => Liquid\Tag\TagCycle::class,
-        'decrement' => Liquid\Tag\TagDecrement::class,
-        'for' => Liquid\Tag\TagFor::class,
-        'if' => Liquid\Tag\TagIf::class,
-        'ifchanged' => Liquid\Tag\TagIfchanged::class,
-        'include' => Liquid\Tag\TagInclude::class,
-        'increment' => Liquid\Tag\TagIncrement::class,
-        'layout' => Liquid\Tag\TagLayout::class,
-        'paginate' => Liquid\Tag\TagPaginate::class,
-        'raw' => Liquid\Tag\TagRaw::class,
-        'tablerow' => Liquid\Tag\TagTablerow::class,
-        'unless' => Liquid\Tag\TagUnless::class,
+        'assign' => TagAssign::class,
+        'block' => TagBlock::class,
+        'break' => TagBreak::class,
+        'capture' => TagCapture::class,
+        'case' => TagCase::class,
+        'comment' => TagComment::class,
+        'continue' => TagContinue::class,
+        'cycle' => TagCycle::class,
+        'decrement' => TagDecrement::class,
+        'for' => TagFor::class,
+        'if' => TagIf::class,
+        'ifchanged' => TagIfchanged::class,
+        'include' => TagInclude::class,
+        'increment' => TagIncrement::class,
+        'layout' => TagLayout::class,
+        'paginate' => TagPaginate::class,
+        'raw' => TagRaw::class,
+        'tablerow' => TagTablerow::class,
+        'unless' => TagUnless::class,
     ],
 
 ];

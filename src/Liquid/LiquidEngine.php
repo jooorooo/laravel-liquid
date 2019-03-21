@@ -45,7 +45,7 @@ class LiquidEngine implements Engine
     /**
      * @var array Custom tags
      */
-    private static $tags = array();
+    private static $tags = [];
 
     /**
      * @var Filesystem
