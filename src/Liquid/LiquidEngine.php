@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * JS: https://github.com/harttle/liquidjs
+ *
  * This file is part of the Liquid package.
  *
  * For the full copyright and license information, please view the LICENSE
@@ -233,7 +235,7 @@ class LiquidEngine implements Engine
 
         $obLevel = ob_get_level();
         try {
-            $results = $this->parse(file_get_contents($path))->render($data);
+            $results = $this->parse($this->files->get($path))->render($data);
             array_pop($this->lastCompiled);
             return $results;
         } catch (\Exception $e) {

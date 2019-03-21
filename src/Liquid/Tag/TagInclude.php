@@ -109,7 +109,7 @@ class TagInclude extends AbstractTag
         }
 
         // read the source of the template and create a new sub document
-        $source = file_get_contents($this->viewFinder->find($this->templateName));
+        $source = $this->files->get($this->viewFinder->find($this->templateName));
 
         $this->hash = md5($source);
         $file = $this->hash . '.liquid';

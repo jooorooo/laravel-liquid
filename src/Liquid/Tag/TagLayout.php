@@ -112,7 +112,7 @@ class TagLayout extends AbstractTag
         }
 
         // read the source of the template and create a new sub document
-        $source = file_get_contents($this->viewFinder->find($this->templateName));
+        $source = $this->files->get($this->viewFinder->find($this->templateName));
 
         // tokens in this new document
         $maintokens = LiquidEngine::tokenize($source);
