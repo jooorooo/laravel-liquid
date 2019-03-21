@@ -8,8 +8,6 @@
 
 namespace Liquid;
 
-use Illuminate\View\Engines\EngineResolver;
-use Illuminate\View\Factory;
 use Illuminate\View\FileViewFinder;
 use Illuminate\View\ViewServiceProvider;
 
@@ -29,13 +27,11 @@ class LiquidServiceProvider extends ViewServiceProvider
 
     public function boot()
     {
-        $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid', function() {
+        $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid.compiler', function() {
             $engine =  new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
-            if($tags = $this->app['config']->get('liquid.tags', [])) {
-                foreach($tags AS $tag => $object) {
-                    $engine->registerTag($tag, $object);
-                }
-            }
+            $engine->setTags($this->app['config']->get('liquid.tags', []));
+            $engine->setFilters($this->app['config']->get('liquid.filters', []));
+            $engine->setAutoEscape($this->app['config']->get('liquid.auto_escape', true));
             return $engine;
         });
     }

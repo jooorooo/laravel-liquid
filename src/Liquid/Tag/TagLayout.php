@@ -76,8 +76,8 @@ class TagLayout extends AbstractTag
      */
     private function findBlocks(array $tokens)
     {
-        $blockstartRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*block (\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
-        $blockendRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*endblock\s*?' . LiquidEngine::TAG_END . '$/');
+        $blockstartRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+        $blockendRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
 
         $b = array();
         $name = null;
@@ -117,7 +117,7 @@ class TagLayout extends AbstractTag
         // tokens in this new document
         $maintokens = LiquidEngine::tokenize($source);
 
-        $eRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*layout (.*)?' . LiquidEngine::TAG_END . '$/');
+        $eRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*layout (.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
         foreach ($maintokens as $maintoken)
             if ($eRegexp->match($maintoken)) {
                 $m = $eRegexp->matches[1];
@@ -129,8 +129,8 @@ class TagLayout extends AbstractTag
         } else {
             $childtokens = $this->findBlocks($tokens);
 
-            $blockstartRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*block (\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
-            $blockendRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*endblock\s*?' . LiquidEngine::TAG_END . '$/');
+            $blockstartRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+            $blockendRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
 
             $name = null;
 

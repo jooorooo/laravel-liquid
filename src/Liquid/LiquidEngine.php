@@ -48,6 +48,11 @@ class LiquidEngine implements Engine
     private static $tags = [];
 
     /**
+     * @var bool $auto_escape
+     */
+    private static $auto_escape = true;
+
+    /**
      * @var Filesystem
      */
     private $files;
@@ -67,41 +72,28 @@ class LiquidEngine implements Engine
     // Separator between filters.
     const FILTER_SEPARATOR = '\|';
 
-    // Tag start.
-    const TAG_START = '{%';
+    // Operations tags.
+    const OPERATION_TAGS = ['{%', '%}'];
 
-    // Tag end.
-    const TAG_END = '%}';
-
-    // Variable start.
-    const VARIABLE_START = '{{';
-
-    // Variable end.
-    const VARIABLE_END = '}}';
+    // Variable tags.
+    const VARIABLE_TAG = ['{{', '}}'];
 
     // Variable name.
     const VARIABLE_NAME = '[a-zA-Z_][a-zA-Z_0-9.-]*';
 
-    const QUOTED_STRING = '"[^"]*"|\'[^\']*\'';
+    const QUOTED_FRAGMENT = '"[^"]*"|\'[^\']*\'|(?:[^\s,\|\'"]|"[^"]*"|\'[^\']*\')+';
 
-    const QUOTED_FRAGMENT = self::QUOTED_STRING . '|(?:[^\s,\|\'"]|' . self::QUOTED_STRING . ')+';
-
-    const QUOTED_STRING_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'';
-
-    const QUOTED_FRAGMENT_FILTER_ARGUMENT = self::QUOTED_STRING_FILTER_ARGUMENT . '|(?:[^\s:,\|\'"]|' . self::QUOTED_STRING_FILTER_ARGUMENT . ')+';
+    const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
 
-    const TOKENIZATION_REGEXP = '/(' . self::TAG_START . '.*?' . self::TAG_END . '|' . self::VARIABLE_START . '.*?' . self::VARIABLE_END . ')/';
+    const TOKENIZATION_REGEXP = '/(' . self::OPERATION_TAGS[0] . '.*?' . self::OPERATION_TAGS[1] . '|' . self::VARIABLE_TAG[0] . '.*?' . self::VARIABLE_TAG[1] . ')/';
 
     // Separator for arguments.
     const ARGUMENT_SEPARATOR = ',';
 
     // Separator for argument names and values.
     const FILTER_ARGUMENT_SEPARATOR = ':';
-
-    // Automatically escape any variables unless told otherwise by a "raw" filter
-    const ESCAPE_BY_DEFAULT = true;
 
     /**
      * Constructor.
@@ -118,11 +110,39 @@ class LiquidEngine implements Engine
     }
 
     /**
+     * @return bool
+     */
+    public static function getAutoEscape()
+    {
+        return self::$auto_escape;
+    }
+
+    /**
+     * Set tags
+     *
+     * @param bool $value
+     */
+    public static function setAutoEscape($value)
+    {
+        self::$auto_escape = $value;
+    }
+
+    /**
      * @return Document
      */
     public function getRoot()
     {
         return $this->root;
+    }
+
+    /**
+     * Set tags
+     *
+     * @param array $tags
+     */
+    public function setTags(array $tags)
+    {
+        self::$tags = $tags;
     }
 
     /**
@@ -152,6 +172,16 @@ class LiquidEngine implements Engine
     public function registerFilter($filter)
     {
         $this->filters[] = $filter;
+    }
+
+    /**
+     * Set the filters
+     *
+     * @param array $filters
+     */
+    public function setFilters(array $filters)
+    {
+        $this->filters = $filters;
     }
 
     /**

@@ -32,7 +32,7 @@ class TagRaw extends AbstractBlock
      */
     public function parse(array &$tokens)
     {
-        $tagRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*(\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
+        $tagRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
 
         $this->nodelist = array();
 

@@ -20,7 +20,24 @@ use Liquid\Tag\TagRaw;
 use Liquid\Tag\TagTablerow;
 use Liquid\Tag\TagUnless;
 
+use Liquid\Filters\Str;
+use Liquid\Filters\Escape;
+use Liquid\Filters\Def;
+use Liquid\Filters\Arr;
+use Liquid\Filters\Multy;
+use Liquid\Filters\Math;
+use Liquid\Filters\Date;
+
 return [
+
+    /*
+     |--------------------------------------------------------------------------
+     | Liquid auto escape html
+     |--------------------------------------------------------------------------
+     |
+     | By default is on.
+     */
+    'auto_escape' => true,
 
     /*
      |--------------------------------------------------------------------------
@@ -56,6 +73,21 @@ return [
         'raw' => TagRaw::class,
         'tablerow' => TagTablerow::class,
         'unless' => TagUnless::class,
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Liquid allowed filters
+     |--------------------------------------------------------------------------
+     */
+    'filters' => [
+        Str::class,
+        Escape::class,
+        Def::class,
+        Arr::class,
+        Multy::class,
+        Math::class,
+        Date::class,
     ],
 
 ];

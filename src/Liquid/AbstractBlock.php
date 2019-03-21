@@ -40,9 +40,9 @@ class AbstractBlock extends AbstractTag
      */
     public function parse(array &$tokens)
     {
-        $startRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '/');
-        $tagRegexp = new Regexp('/^' . LiquidEngine::TAG_START . '\s*(\w+)\s*(.*)?' . LiquidEngine::TAG_END . '$/');
-        $variableStartRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_START . '/');
+        $startRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '/');
+        $tagRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+        $variableStartRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_TAG[0] . '/');
 
         $this->nodelist = array();
 
@@ -205,7 +205,7 @@ class AbstractBlock extends AbstractTag
      */
     private function createVariable($token)
     {
-        $variableRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_START . '(.*)' . LiquidEngine::VARIABLE_END . '$/');
+        $variableRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_TAG[0] . '(.*)' . LiquidEngine::VARIABLE_TAG[1] . '$/');
         if ($variableRegexp->match($token)) {
             return new Variable($variableRegexp->matches[1]);
         }

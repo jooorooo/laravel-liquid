@@ -11,9 +11,11 @@
 
 namespace Liquid;
 
+use Exception;
+
 /**
  * LiquidException class.
  */
-class LiquidException extends \Exception
+class LiquidException extends Exception
 {
 }

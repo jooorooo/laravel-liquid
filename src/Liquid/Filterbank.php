@@ -54,14 +54,10 @@ class Filterbank
      * Constructor
      *
      * @param Context $context
-     * @throws LiquidException
-     * @throws \ReflectionException
      */
     public function __construct(Context $context)
     {
         $this->context = $context;
-
-        $this->addFilter('\Liquid\StandardFilters');
     }
 
     /**

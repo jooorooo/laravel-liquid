@@ -72,7 +72,7 @@ class Variable
             $this->filters = array();
         }
 
-        if (LiquidEngine::ESCAPE_BY_DEFAULT) {
+        if (LiquidEngine::getAutoEscape()) {
             // if auto_escape is enabled, and
             // - there's no raw filter, and
             // - no escape filter
