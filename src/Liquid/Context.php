@@ -63,6 +63,20 @@ class Context
         $this->environments = array(array(), $_SERVER);
     }
 
+
+    /**
+     * @return array
+     */
+    public function getAssigns()
+    {
+        foreach($this->assigns AS $a) {
+            if($a) {
+                return $a;
+            }
+        }
+        return [];
+    }
+
     /**
      * Add a filter to the context
      *
