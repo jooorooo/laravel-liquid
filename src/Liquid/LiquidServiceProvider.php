@@ -23,17 +23,13 @@ class LiquidServiceProvider extends ViewServiceProvider
         $this->publishes([
             $file => config_path('liquid.php')
         ], 'config');
+
+        $this->registerLiquidEngine($this->app['view.engine.resolver']);
     }
 
     public function boot()
     {
-        $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid.compiler', function() {
-            $engine =  new LiquidEngine($this->app['view.finder'], $this->app['files'], $this->app['config']['view.compiled']);
-            $engine->setTags($this->app['config']->get('liquid.tags', []));
-            $engine->setFilters($this->app['config']->get('liquid.filters', []));
-            $engine->setAutoEscape($this->app['config']->get('liquid.auto_escape', true));
-            return $engine;
-        });
+        $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid');
     }
 
     /**
@@ -47,6 +43,28 @@ class LiquidServiceProvider extends ViewServiceProvider
             $finder = new FileViewFinder($app['files'], $app['config']['view.paths']);
             $finder->addExtension($this->app['config']->get('liquid.extension'));
             return $finder;
+        });
+    }
+
+    /**
+     * Register the Blade engine implementation.
+     *
+     * @param  \Illuminate\View\Engines\EngineResolver  $resolver
+     * @return void
+     */
+    public function registerLiquidEngine($resolver)
+    {
+        // The Compiler engine requires an instance of the CompilerInterface, which in
+        // this case will be the Blade compiler, so we'll first create the compiler
+        // instance to pass into the engine so it can compile the views properly.
+        $this->app->singleton('liquid.compiler', function () {
+            return new LiquidCompiler(
+                $this->app['files'], $this->app['config']['view.compiled']
+            );
+        });
+
+        $resolver->register('liquid', function () {
+            return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });
     }
 

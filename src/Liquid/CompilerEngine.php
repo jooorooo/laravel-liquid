@@ -12,7 +12,7 @@ class CompilerEngine extends PhpEngine
     /**
      * The Blade compiler instance.
      *
-     * @var LiquidEngine
+     * @var LiquidCompiler
      */
     protected $compiler;
 
@@ -26,12 +26,18 @@ class CompilerEngine extends PhpEngine
     /**
      * Create a new Blade view engine instance.
      *
-     * @param  \Illuminate\View\Compilers\CompilerInterface  $compiler
-     * @return void
+     * @param  \Illuminate\View\Compilers\CompilerInterface $compiler
+     * @param array $config
      */
-    public function __construct(CompilerInterface $compiler)
+    public function __construct(CompilerInterface $compiler, array $config = [])
     {
         $this->compiler = $compiler;
+
+        foreach($config AS $key => $value) {
+            if(method_exists($this->compiler, $method = camel_case('set_' . $key))) {
+                $this->compiler->$method($value);
+            }
+        }
     }
 
     /**
@@ -48,8 +54,14 @@ class CompilerEngine extends PhpEngine
 
         $obLevel = ob_get_level();
         try {
-            $results = $this->compiler->parse($this->files->get($path))->render($data);
+            if ($this->compiler->isExpired($path)) {
+                $this->compiler->compile($path);
+            }
+
+            $results = $this->compiler->render($path, $data);
+
             array_pop($this->lastCompiled);
+
             return $results;
         } catch (\Exception $e) {
             $this->handleViewException($e, $obLevel);

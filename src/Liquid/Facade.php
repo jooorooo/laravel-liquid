@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Facade AS IlluminateFacade;
  * @method static Document getRoot()
  * @method static array getTags()
  * @method static void registerFilter($filter)
- * @method static LiquidEngine parse($source)
+ * @method static LiquidCompiler parse($source)
  * @method static string render(array $assigns = array(), $filters = null, array $registers = array())
  * @method static null|string get($path, array $data = [])
  * @method static array arrayFlatten($array)
@@ -30,6 +30,6 @@ class Facade extends IlluminateFacade
      */
     protected static function getFacadeAccessor()
     {
-        return static::$app['view']->getEngineResolver()->resolve('liquid');
+        return static::$app['view']->getEngineResolver()->resolve('liquid')->getCompiler();
     }
 }

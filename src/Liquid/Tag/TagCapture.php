@@ -12,7 +12,6 @@
 namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidException;
@@ -39,19 +38,18 @@ class TagCapture extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      *
      * @param Filesystem|null $files
      * @param null $compiled
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
         $syntaxRegexp = new Regexp('/(\w+)/');
 
         if ($syntaxRegexp->match($markup)) {
             $this->to = $syntaxRegexp->matches[1];
-            parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+            parent::__construct($markup, $tokens, $files, $compiled);
         } else {
             throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var] [value]");
         }

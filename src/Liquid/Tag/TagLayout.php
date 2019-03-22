@@ -12,11 +12,10 @@
 namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -41,22 +40,16 @@ class TagLayout extends AbstractTag
     private $document;
 
     /**
-     * @var string The Source Hash
-     */
-    protected $hash;
-
-    /**
      * Constructor
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      *
      * @param Filesystem|null $files
      * @param null $compiled
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
 
@@ -66,7 +59,7 @@ class TagLayout extends AbstractTag
             throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template name]'");
         }
 
-        parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        parent::__construct($markup, $tokens, $files, $compiled);
     }
 
     /**
@@ -76,8 +69,8 @@ class TagLayout extends AbstractTag
      */
     private function findBlocks(array $tokens)
     {
-        $blockstartRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
-        $blockendRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+        $blockstartRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+        $blockendRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
 
         $b = array();
         $name = null;
@@ -107,17 +100,13 @@ class TagLayout extends AbstractTag
      */
     public function parse(array &$tokens)
     {
-        if ($this->viewFinder === null) {
-            throw new LiquidException("No file system");
-        }
-
         // read the source of the template and create a new sub document
-        $source = $this->files->get($this->viewFinder->find($this->templateName));
+        $source = $this->files->get(app('view.finder')->find($this->templateName));
 
         // tokens in this new document
-        $maintokens = LiquidEngine::tokenize($source);
+        $maintokens = LiquidCompiler::tokenize($source);
 
-        $eRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*layout (.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+        $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*layout (.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
         foreach ($maintokens as $maintoken)
             if ($eRegexp->match($maintoken)) {
                 $m = $eRegexp->matches[1];
@@ -129,8 +118,8 @@ class TagLayout extends AbstractTag
         } else {
             $childtokens = $this->findBlocks($tokens);
 
-            $blockstartRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
-            $blockendRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+            $blockstartRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+            $blockendRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
 
             $name = null;
 
@@ -161,40 +150,7 @@ class TagLayout extends AbstractTag
             }
         }
 
-        $this->hash = md5($source);
-
-        $file = $this->hash . '.liquid';
-        $path = $this->compiled . '/' . $file;
-
-        if($this->files->exists($path) && ($this->document = @unserialize($this->files->get($path))) && !($this->document->checkIncludes() != true)) {
-        } else {
-            $this->document = new Document($rest, $this->viewFinder, $this->files, $this->compiled);
-            $this->files->put($path, serialize($this->document));
-        }
-    }
-
-    /**
-     * check for cached includes
-     *
-     * @return boolean
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
-    public function checkIncludes()
-    {
-        if ($this->document->checkIncludes() == true) {
-            return true;
-        }
-
-        $source = $this->files->get($this->viewFinder->find($this->templateName));
-
-        $file = md5($source) . '.liquid';
-        $path = $this->compiled . '/' . $file;
-
-        if ($this->files->exists($path) && $this->hash == md5($source)) {
-            return false;
-        }
-
-        return true;
+        $this->document = new Document($rest, $this->files, $this->compiled);
     }
 
     /**

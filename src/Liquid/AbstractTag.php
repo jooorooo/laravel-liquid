@@ -12,7 +12,6 @@
 namespace Liquid;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 
 /**
  * Base class for tags.
@@ -25,13 +24,6 @@ abstract class AbstractTag
      * @var string
      */
     protected $markup;
-
-    /**
-     * Filesystem object is used to load included template files
-     *
-     * @var ViewFinderInterface
-     */
-    protected $viewFinder;
 
     /**
      * Filesystem object is used to store and load compiled files
@@ -59,14 +51,12 @@ abstract class AbstractTag
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      * @param Filesystem|null $files
      * @param null $compiled
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
         $this->markup = $markup;
-        $this->viewFinder = $viewFinder;
         $this->files = $files;
         $this->compiled = $compiled;
         $this->parse($tokens);
@@ -103,7 +93,7 @@ abstract class AbstractTag
     {
         $this->attributes = array();
 
-        $attributeRegexp = new Regexp(LiquidEngine::TAG_ATTRIBUTES);
+        $attributeRegexp = new Regexp(LiquidCompiler::TAG_ATTRIBUTES);
 
         $matches = $attributeRegexp->scan($markup);
 

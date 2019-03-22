@@ -12,10 +12,9 @@
 namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Context;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Traits\DecisionTrait;
@@ -62,17 +61,16 @@ class TagIf extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      * @param Filesystem|null $files
      * @param null $compiled
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
         $this->nodelist = &$this->nodelistHolders[count($this->blocks)];
 
         array_push($this->blocks, array('if', $markup, &$this->nodelist));
 
-        parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        parent::__construct($markup, $tokens, $files, $compiled);
     }
 
     /**
@@ -111,7 +109,7 @@ class TagIf extends AbstractBlock
         $context->push();
 
         $logicalRegex = new Regexp('/\s+(and|or)\s+/');
-        $conditionalRegex = new Regexp('/(' . LiquidEngine::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')?/');
+        $conditionalRegex = new Regexp('/(' . LiquidCompiler::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')?/');
 
         $result = '';
         foreach ($this->blocks as $block) {

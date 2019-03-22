@@ -13,7 +13,7 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
 use Liquid\Context;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -44,7 +44,7 @@ class TagDecrement extends AbstractTag
      */
     public function __construct($markup)
     {
-        $syntax = new Regexp('/(' . LiquidEngine::VARIABLE_NAME . ')/');
+        $syntax = new Regexp('/(' . LiquidCompiler::VARIABLE_NAME . ')/');
 
         if ($syntax->match($markup)) {
             $this->toDecrement = $syntax->matches[0];

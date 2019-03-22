@@ -12,7 +12,7 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\Regexp;
 
 /**
@@ -32,7 +32,7 @@ class TagRaw extends AbstractBlock
      */
     public function parse(array &$tokens)
     {
-        $tagRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
+        $tagRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
 
         $this->nodelist = array();
 

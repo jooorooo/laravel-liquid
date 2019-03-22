@@ -14,10 +14,8 @@
 namespace Liquid;
 
 use ErrorException;
-use Illuminate\Contracts\View\Engine;
-use Illuminate\View\ViewFinderInterface;
-use Illuminate\Filesystem\Filesystem;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
+use Illuminate\View\Compilers\Compiler;
+use Illuminate\View\Compilers\CompilerInterface;
 
 /**
  * The Template class.
@@ -25,17 +23,12 @@ use Symfony\Component\Debug\Exception\FatalThrowableError;
  * http://cheat.markdunkley.com/
  *
  */
-class LiquidEngine implements Engine
+class LiquidCompiler extends Compiler implements CompilerInterface
 {
     /**
      * @var Document The root of the node tree
      */
     private $root;
-
-    /**
-     * @var ViewFinderInterface The file system to use for includes
-     */
-    protected $viewFinder;
 
     /**
      * @var array Globally included filters
@@ -53,9 +46,9 @@ class LiquidEngine implements Engine
     private static $auto_escape = true;
 
     /**
-     * @var Filesystem
+     * @var string
      */
-    private $files;
+    private $path;
 
     /**
      * @var string
@@ -96,17 +89,34 @@ class LiquidEngine implements Engine
     const FILTER_ARGUMENT_SEPARATOR = ':';
 
     /**
-     * Constructor.
+     * Get the path currently being compiled.
      *
-     * @param ViewFinderInterface $viewFinder
-     * @param Filesystem $files
-     * @param $compiled
+     * @return string
      */
-    public function __construct(ViewFinderInterface $viewFinder, Filesystem $files, $compiled)
+    public function getPath()
     {
-        $this->viewFinder = $viewFinder;
-        $this->files = $files;
-        $this->compiled = $compiled;
+        return $this->path;
+    }
+
+    /**
+     * Set the path currently being compiled.
+     *
+     * @param  string  $path
+     * @return void
+     */
+    public function setPath($path)
+    {
+        $this->path = $path;
+    }
+
+    /**
+     * Set view extension
+     *
+     * @param string $value
+     */
+    public function setExtension($value)
+    {
+        app('view')->getFinder()->addExtension($value);
     }
 
     /**
@@ -195,85 +205,59 @@ class LiquidEngine implements Engine
     {
         return empty($source)
             ? array()
-            : preg_split(LiquidEngine::TOKENIZATION_REGEXP, $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+            : preg_split(LiquidCompiler::TOKENIZATION_REGEXP, $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
     }
 
     /**
-     * Parses the given source string
+     * Compile the view at the given path.
      *
-     * @param string $source
-     *
-     * @return LiquidEngine
+     * @param  string $path
+     * @return void
      * @throws LiquidException
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws \ReflectionException
      */
-    public function parse($source)
+    public function compile($path = null)
     {
-        $file = md5($source) . '.liquid';
-        $path = $this->compiled . '/' . $file;
-
-        if (!$this->files->exists($path) || !($this->root = @unserialize($this->files->get($path))) || !($this->root->checkIncludes() != true)) {
-            $templateTokens = self::tokenize($source);
-            $this->root = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
-            $this->files->put($path, serialize($this->root));
+        if ($path) {
+            $this->setPath($path);
         }
 
-        return $this;
+        $source = $this->files->get($path);
+
+        $templateTokens = self::tokenize($source);
+
+        $this->root = new Document($templateTokens, $this->files, $this->compiled);
+
+        $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
     }
 
     /**
      * Renders the current template
      *
+     * @param string $path
      * @param array $assigns an array of values for the template
-     * @param array $filters additional filters for the template
-     * @param array $registers additional registers for the template
      *
      * @return string
      * @throws LiquidException
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      * @throws \ReflectionException
      */
-    public function render(array $assigns = array(), $filters = null, array $registers = array())
+    public function render($path, array $assigns = array())
     {
-        $context = new Context($assigns, $registers);
+        $context = new Context($assigns);
 
-        if (!is_null($filters)) {
-            if (is_array($filters)) {
-                $this->filters = array_merge($this->filters, $filters);
-            } else {
-                $this->filters[] = $filters;
+        if($this->filters) {
+            foreach ($this->filters as $filter) {
+                $context->addFilters($filter);
             }
         }
 
-        foreach ($this->filters as $filter) {
-            $context->addFilters($filter);
+        if(is_null($this->root)) {
+            $this->root = unserialize($this->files->get($this->getCompiledPath($path)));
         }
 
         return $this->root->render($context);
-    }
-
-    /**
-     * Get the evaluated contents of the view.
-     *
-     * @param string $path
-     * @param array $data
-     * @return string|null
-     * @throws ErrorException
-     */
-    public function get($path, array $data = [])
-    {
-        $this->lastCompiled[] = $path;
-
-        $obLevel = ob_get_level();
-        try {
-            $results = $this->parse($this->files->get($path))->render($data);
-            array_pop($this->lastCompiled);
-            return $results;
-        } catch (\Exception $e) {
-            $this->handleViewException($e, $obLevel);
-        } catch (\Throwable $e) {
-            $this->handleViewException(new FatalThrowableError($e), $obLevel);
-        }
-        return null;
     }
 
     /**

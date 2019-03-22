@@ -45,11 +45,11 @@ class Variable
     {
         $this->markup = $markup;
 
-        $quotedFragmentRegexp = new Regexp('/\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')/');
-        $filterSeperatorRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '\s*(.*)/');
-        $filterSplitRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '/');
+        $quotedFragmentRegexp = new Regexp('/\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
+        $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');
+        $filterSplitRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '/');
         $filterNameRegexp = new Regexp('/\s*(\w+)/');
-        $filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::FILTER_ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . LiquidEngine::QUOTED_FRAGMENT_FILTER_ARGUMENT . ')/');
+        $filterArgumentRegexp = new Regexp('/(?:' . LiquidCompiler::FILTER_ARGUMENT_SEPARATOR . '|' . LiquidCompiler::ARGUMENT_SEPARATOR . ')\s*(' . LiquidCompiler::QUOTED_FRAGMENT_FILTER_ARGUMENT . ')/');
 
         $quotedFragmentRegexp->match($markup);
 
@@ -72,7 +72,7 @@ class Variable
             $this->filters = array();
         }
 
-        if (LiquidEngine::getAutoEscape()) {
+        if (LiquidCompiler::getAutoEscape()) {
             // if auto_escape is enabled, and
             // - there's no raw filter, and
             // - no escape filter

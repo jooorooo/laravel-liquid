@@ -12,11 +12,10 @@
 namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -61,22 +60,16 @@ class TagInclude extends AbstractTag
     private $document;
 
     /**
-     * @var string The Source Hash
-     */
-    protected $hash;
-
-    /**
      * Constructor
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      *
      * @throws \Liquid\LiquidException
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
-        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . LiquidEngine::QUOTED_FRAGMENT . '+))?/');
+        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . LiquidCompiler::QUOTED_FRAGMENT . '+))?/');
 
         if ($regex->match($markup)) {
             $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
@@ -91,7 +84,7 @@ class TagInclude extends AbstractTag
             throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
         }
 
-        parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        parent::__construct($markup, $tokens, $files, $compiled);
     }
 
     /**
@@ -104,45 +97,11 @@ class TagInclude extends AbstractTag
      */
     public function parse(array &$tokens)
     {
-        if ($this->viewFinder === null) {
-            throw new LiquidException("No file system");
-        }
-
         // read the source of the template and create a new sub document
-        $source = $this->files->get($this->viewFinder->find($this->templateName));
+        $source = $this->files->get(app('view.finder')->find($this->templateName));
 
-        $this->hash = md5($source);
-        $file = $this->hash . '.liquid';
-        $path = $this->compiled . '/' . $file;
-        if (!$this->files->exists($path) || !($this->document = @unserialize($this->files->get($path))) || !($this->document->checkIncludes() != true)) {
-            $templateTokens = LiquidEngine::tokenize($source);
-            $this->document = new Document($templateTokens, $this->viewFinder, $this->files, $this->compiled);
-            $this->files->put($path, serialize($this->document));
-        }
-    }
-
-    /**
-     * check for cached includes
-     *
-     * @return boolean
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
-    public function checkIncludes()
-    {
-        if ($this->document->checkIncludes() == true) {
-            return true;
-        }
-
-        $source = $this->files->get($this->viewFinder->find($this->templateName));
-
-        $file = md5($source) . '.liquid';
-        $path = $this->compiled . '/' . $file;
-
-        if ($this->files->exists($path) && $this->hash == md5($source)) {
-            return false;
-        }
-
-        return true;
+        $templateTokens = LiquidCompiler::tokenize($source);
+        $this->document = new Document($templateTokens, $this->files, $this->compiled);
     }
 
     /**

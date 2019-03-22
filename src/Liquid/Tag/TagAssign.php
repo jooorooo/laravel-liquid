@@ -12,7 +12,7 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Context;
@@ -55,12 +55,12 @@ class TagAssign extends AbstractTag
      */
     public function __construct($markup)
     {
-        $syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidEngine::QUOTED_FRAGMENT . '+)/');
+        $syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidCompiler::QUOTED_FRAGMENT . '+)/');
 
-        $filterSeperatorRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '\s*(.*)/');
-        $filterSplitRegexp = new Regexp('/' . LiquidEngine::FILTER_SEPARATOR . '/');
+        $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');
+        $filterSplitRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '/');
         $filterNameRegexp = new Regexp('/\s*(\w+)/');
-        $filterArgumentRegexp = new Regexp('/(?:' . LiquidEngine::ARGUMENT_SEPARATOR . '|' . LiquidEngine::ARGUMENT_SEPARATOR . ')\s*(' . LiquidEngine::QUOTED_FRAGMENT . ')/');
+        $filterArgumentRegexp = new Regexp('/(?:' . LiquidCompiler::ARGUMENT_SEPARATOR . '|' . LiquidCompiler::ARGUMENT_SEPARATOR . ')\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
 
         if ($filterSeperatorRegexp->match($markup)) {
             $filters = $filterSplitRegexp->split($filterSeperatorRegexp->matches[1]);

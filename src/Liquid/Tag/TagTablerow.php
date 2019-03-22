@@ -12,10 +12,9 @@
 namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Context;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -50,17 +49,16 @@ class TagTablerow extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      *
      * @param Filesystem|null $files
      * @param null $compiled
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
-        parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        parent::__construct($markup, $tokens, $files, $compiled);
 
-        $syntax = new Regexp('/(\w+)\s+in\s+(' . LiquidEngine::VARIABLE_NAME . ')/');
+        $syntax = new Regexp('/(\w+)\s+in\s+(' . LiquidCompiler::VARIABLE_NAME . ')/');
 
         if ($syntax->match($markup)) {
             $this->variableName = $syntax->matches[1];

@@ -12,10 +12,9 @@
 namespace Liquid\Tag;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\View\ViewFinderInterface;
 use Liquid\AbstractBlock;
 use Liquid\Context;
-use Liquid\LiquidEngine;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Traits\DecisionTrait;
@@ -64,20 +63,19 @@ class TagCase extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
-     * @param ViewFinderInterface $viewFinder
      *
      * @param Filesystem|null $files
      * @param null $compiled
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, ViewFinderInterface $viewFinder = null, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
     {
         $this->nodelists = array();
         $this->elseNodelist = array();
 
-        parent::__construct($markup, $tokens, $viewFinder, $files, $compiled);
+        parent::__construct($markup, $tokens, $files, $compiled);
 
-        $syntaxRegexp = new Regexp('/' . LiquidEngine::QUOTED_FRAGMENT . '/');
+        $syntaxRegexp = new Regexp('/' . LiquidCompiler::QUOTED_FRAGMENT . '/');
 
         if ($syntaxRegexp->match($markup)) {
             $this->left = $syntaxRegexp->matches[0];
@@ -105,7 +103,7 @@ class TagCase extends AbstractBlock
      */
     public function unknownTag($tag, $params, array $tokens)
     {
-        $whenSyntaxRegexp = new Regexp('/' . LiquidEngine::QUOTED_FRAGMENT . '/');
+        $whenSyntaxRegexp = new Regexp('/' . LiquidCompiler::QUOTED_FRAGMENT . '/');
 
         switch ($tag) {
             case 'when':

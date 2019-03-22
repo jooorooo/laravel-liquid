@@ -40,9 +40,9 @@ class AbstractBlock extends AbstractTag
      */
     public function parse(array &$tokens)
     {
-        $startRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '/');
-        $tagRegexp = new Regexp('/^' . LiquidEngine::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidEngine::OPERATION_TAGS[1] . '$/');
-        $variableStartRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_TAG[0] . '/');
+        $startRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '/');
+        $tagRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+        $variableStartRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '/');
 
         $this->nodelist = array();
 
@@ -50,7 +50,7 @@ class AbstractBlock extends AbstractTag
             return;
         }
 
-        $tags = LiquidEngine::getTags();
+        $tags = LiquidCompiler::getTags();
 
         while (count($tokens)) {
             $token = array_shift($tokens);
@@ -69,7 +69,7 @@ class AbstractBlock extends AbstractTag
                     }
 
                     if ($tagName !== null) {
-                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->viewFinder, $this->files, $this->compiled);
+                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->files, $this->compiled);
                         if ($tagRegexp->matches[1] == 'layout') {
                             return;
                         }
@@ -205,7 +205,7 @@ class AbstractBlock extends AbstractTag
      */
     private function createVariable($token)
     {
-        $variableRegexp = new Regexp('/^' . LiquidEngine::VARIABLE_TAG[0] . '(.*)' . LiquidEngine::VARIABLE_TAG[1] . '$/');
+        $variableRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '(.*)' . LiquidCompiler::VARIABLE_TAG[1] . '$/');
         if ($variableRegexp->match($token)) {
             return new Variable($variableRegexp->matches[1]);
         }
