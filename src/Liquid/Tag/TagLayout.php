@@ -150,7 +150,7 @@ class TagLayout extends AbstractTag
             }
         }
 
-        $this->document = new Document($rest, $this->files, $this->compiled);
+        $this->document = new Document(null, $rest, $this->files);
     }
 
     /**

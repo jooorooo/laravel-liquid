@@ -33,13 +33,6 @@ abstract class AbstractTag
     protected $files;
 
     /**
-     * compiled dir
-     *
-     * @var string
-     */
-    protected $compiled;
-
-    /**
      * Additional attributes
      *
      * @var array
@@ -52,13 +45,11 @@ abstract class AbstractTag
      * @param string $markup
      * @param array $tokens
      * @param Filesystem|null $files
-     * @param null $compiled
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, Filesystem $files = null)
     {
         $this->markup = $markup;
         $this->files = $files;
-        $this->compiled = $compiled;
         $this->parse($tokens);
     }
 

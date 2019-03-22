@@ -19,22 +19,6 @@ use Illuminate\Filesystem\Filesystem;
 class Document extends AbstractBlock
 {
     /**
-     * Constructor.
-     *
-     * @param array $tokens
-     * @param Filesystem|null $files
-     * @param null $compiled
-     * @throws LiquidException
-     * @throws \ReflectionException
-     */
-    public function __construct(array &$tokens, Filesystem $files = null, $compiled = null)
-    {
-        $this->files = $files;
-        $this->compiled = $compiled;
-        $this->parse($tokens);
-    }
-
-    /**
      * There isn't a real delimiter
      *
      * @return string

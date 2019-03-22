@@ -55,6 +55,7 @@ class TagAssign extends AbstractTag
      */
     public function __construct($markup)
     {
+
         $syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidCompiler::QUOTED_FRAGMENT . '+)/');
 
         $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');

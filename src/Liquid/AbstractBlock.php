@@ -69,7 +69,7 @@ class AbstractBlock extends AbstractTag
                     }
 
                     if ($tagName !== null) {
-                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->files, $this->compiled);
+                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->files);
                         if ($tagRegexp->matches[1] == 'layout') {
                             return;
                         }

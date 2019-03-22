@@ -34,7 +34,7 @@ class Variable
     /**
      * @var string The markup of the variable
      */
-    private $markup;
+    protected $markup;
 
     /**
      * Constructor

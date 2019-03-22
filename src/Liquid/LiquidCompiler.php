@@ -51,11 +51,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     private $path;
 
     /**
-     * @var string
-     */
-    private $compiled;
-
-    /**
      * A stack of the last compiled templates.
      *
      * @var array
@@ -227,7 +222,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         $templateTokens = self::tokenize($source);
 
-        $this->root = new Document($templateTokens, $this->files, $this->compiled);
+        $this->root = new Document(null, $templateTokens, $this->files);
 
         $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
     }

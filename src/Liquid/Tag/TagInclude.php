@@ -101,7 +101,7 @@ class TagInclude extends AbstractTag
         $source = $this->files->get(app('view.finder')->find($this->templateName));
 
         $templateTokens = LiquidCompiler::tokenize($source);
-        $this->document = new Document($templateTokens, $this->files, $this->compiled);
+        $this->document = new Document(null, $templateTokens, $this->files);
     }
 
     /**
