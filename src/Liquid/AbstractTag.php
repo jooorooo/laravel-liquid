@@ -11,7 +11,6 @@
 
 namespace Liquid;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\Traits\TokenizeTrait;
 
 /**

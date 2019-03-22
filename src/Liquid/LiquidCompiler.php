@@ -155,10 +155,14 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      * Set tags
      *
      * @param array $tags
+     * @return LiquidCompiler
      */
     public function setTags(array $tags)
     {
-        $this->tags = $tags;
+        foreach($tags AS $key => $value) {
+            $this->registerTag($key, $value);
+        }
+        return $this;
     }
 
     /**
@@ -170,6 +174,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function registerTag($name, $class)
     {
+        if($class instanceof \Closure) {
+            throw new \InvalidArgumentException('Type "Closure" is not allowed for tag!');
+        }
         $this->tags[$name] = $class;
         return $this;
     }
@@ -190,6 +197,10 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function registerFilter($filter)
     {
+        if($filter instanceof \Closure) {
+            throw new \InvalidArgumentException('Type "Closure" is not allowed for filter!');
+        }
+
         $this->filters[] = $filter;
         return $this;
     }
@@ -202,7 +213,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function setFilters(array $filters)
     {
-        $this->filters = $filters;
+        array_map([$this, 'registerFilter'], $filters);
         return $this;
     }
 
