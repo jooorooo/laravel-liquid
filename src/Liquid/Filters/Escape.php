@@ -19,7 +19,7 @@ class Escape
      */
     public static function escape($input)
     {
-        return is_string($input) ? htmlentities($input, ENT_QUOTES) : $input;
+        return is_string($input) ? htmlentities($input, ENT_QUOTES, 'utf-8') : $input;
     }
 
     /**
@@ -43,7 +43,7 @@ class Escape
      */
     public static function escape_once($input)
     {
-        return is_string($input) ? htmlentities($input, ENT_QUOTES, null, false) : $input;
+        return is_string($input) ? htmlentities($input, ENT_QUOTES, 'utf-8', false) : $input;
     }
 
 }
