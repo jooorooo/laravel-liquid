@@ -40,7 +40,7 @@ class LiquidServiceProvider extends ViewServiceProvider
      */
     public function registerViewFinder()
     {
-        $this->app->bind('view.finder', function ($app) {
+        $this->app->singleton('view.finder', function ($app) {
             $finder = new FileViewFinder($app['files'], $app['config']['view.paths']);
             $finder->addExtension($this->app['config']->get('liquid.extension'));
             return $finder;
