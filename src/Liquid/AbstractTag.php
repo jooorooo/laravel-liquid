@@ -12,12 +12,15 @@
 namespace Liquid;
 
 use Illuminate\Filesystem\Filesystem;
+use Liquid\Traits\TokenizeTrait;
 
 /**
  * Base class for tags.
  */
 abstract class AbstractTag
 {
+    use TokenizeTrait;
+
     /**
      * The markup for the tag
      *

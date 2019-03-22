@@ -64,8 +64,7 @@ class LiquidServiceProvider extends ViewServiceProvider
             );
         });
 
-//        $resolver->register('liquid', function () {
-        $this->app->singleton('liquid', function () {
+        $resolver->register('liquid', function () {
             return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });
     }
@@ -74,10 +73,7 @@ class LiquidServiceProvider extends ViewServiceProvider
     {
         $this->app['view']->addExtension(
             $this->app['config']->get('liquid.extension'),
-            'liquid',
-            function () {
-                return $this->app['liquid'];
-            }
+            'liquid'
         );
     }
 

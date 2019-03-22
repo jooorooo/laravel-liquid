@@ -16,6 +16,7 @@ namespace Liquid;
 use ErrorException;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
+use Liquid\Traits\TokenizeTrait;
 
 /**
  * The Template class.
@@ -25,6 +26,9 @@ use Illuminate\View\Compilers\CompilerInterface;
  */
 class LiquidCompiler extends Compiler implements CompilerInterface
 {
+
+    use TokenizeTrait;
+
     /**
      * @var Document The root of the node tree
      */
@@ -190,20 +194,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Tokenizes the given source string
-     *
-     * @param string $source
-     *
-     * @return array
-     */
-    public static function tokenize($source)
-    {
-        return empty($source)
-            ? array()
-            : preg_split(LiquidCompiler::TOKENIZATION_REGEXP, $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-    }
-
-    /**
      * Compile the view at the given path.
      *
      * @param  string $path
@@ -220,7 +210,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         $source = $this->files->get($path);
 
-        $templateTokens = self::tokenize($source);
+        $templateTokens = $this->tokenize($source);
 
         $this->root = new Document(null, $templateTokens, $this->files);
 

@@ -103,7 +103,7 @@ class TagLayout extends AbstractTag
         $source = $this->files->get(app('view.finder')->find($this->templateName));
 
         // tokens in this new document
-        $maintokens = LiquidCompiler::tokenize($source);
+        $maintokens = $this->tokenize($source);
 
         $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*layout (.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
         foreach ($maintokens as $maintoken)
