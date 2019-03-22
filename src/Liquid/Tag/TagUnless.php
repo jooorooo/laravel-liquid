@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
@@ -54,14 +53,15 @@ class TagUnless extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
+     * @param LiquidCompiler|null $compiler
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $this->nodelist = &$this->nodelistHolders[count($this->blocks)];
 
         array_push($this->blocks, array('unless', $markup, &$this->nodelist));
 
-        parent::__construct($markup, $tokens, $files, $compiled);
+        parent::__construct($markup, $tokens, $compiler);
     }
 
     /**
@@ -70,6 +70,8 @@ class TagUnless extends AbstractBlock
      * @param string $tag
      * @param array $params
      * @param array $tokens
+     * @throws LiquidException
+     * @throws \ReflectionException
      */
     public function unknownTag($tag, $params, array $tokens)
     {

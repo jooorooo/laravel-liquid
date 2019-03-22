@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
@@ -50,13 +49,12 @@ class TagTablerow extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
-     * @param Filesystem|null $files
-     * @param null $compiled
+     * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        parent::__construct($markup, $tokens, $files, $compiled);
+        parent::__construct($markup, $tokens, $compiler);
 
         $syntax = new Regexp('/(\w+)\s+in\s+(' . LiquidCompiler::VARIABLE_NAME . ')/');
 

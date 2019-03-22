@@ -8,18 +8,16 @@
 
 namespace Liquid;
 
-use Illuminate\View\FileViewFinder;
-use Illuminate\View\ViewServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
-class LiquidServiceProvider extends ViewServiceProvider
+class LiquidServiceProvider extends ServiceProvider
 {
 
     public function register()
     {
-        parent::register();
         $this->setupConfig();
 
-        $this->registerLiquidEngine($this->app['view.engine.resolver']);
+        $this->registerLiquidEngine();
 
         $this->registerLiquidExtension();
     }
@@ -34,26 +32,11 @@ class LiquidServiceProvider extends ViewServiceProvider
     }
 
     /**
-     * Register the view finder implementation.
+     * Register the Liquid engine implementation.
      *
      * @return void
      */
-    public function registerViewFinder()
-    {
-        $this->app->singleton('view.finder', function ($app) {
-            $finder = new FileViewFinder($app['files'], $app['config']['view.paths']);
-            $finder->addExtension($this->app['config']->get('liquid.extension'));
-            return $finder;
-        });
-    }
-
-    /**
-     * Register the Blade engine implementation.
-     *
-     * @param  \Illuminate\View\Engines\EngineResolver  $resolver
-     * @return void
-     */
-    public function registerLiquidEngine($resolver)
+    public function registerLiquidEngine()
     {
         // The Compiler engine requires an instance of the CompilerInterface, which in
         // this case will be the Blade compiler, so we'll first create the compiler
@@ -64,7 +47,7 @@ class LiquidServiceProvider extends ViewServiceProvider
             );
         });
 
-        $resolver->register('liquid', function () {
+        $this->app['view.engine.resolver']->register('liquid', function () {
             return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });
     }

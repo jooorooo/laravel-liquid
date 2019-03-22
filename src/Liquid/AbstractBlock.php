@@ -50,7 +50,7 @@ class AbstractBlock extends AbstractTag
             return;
         }
 
-        $tags = LiquidCompiler::getTags();
+        $tags = $this->compiler->getTags();
 
         while (count($tokens)) {
             $token = array_shift($tokens);
@@ -69,7 +69,7 @@ class AbstractBlock extends AbstractTag
                     }
 
                     if ($tagName !== null) {
-                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->files);
+                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
                         if ($tagRegexp->matches[1] == 'layout') {
                             return;
                         }
@@ -207,7 +207,7 @@ class AbstractBlock extends AbstractTag
     {
         $variableRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '(.*)' . LiquidCompiler::VARIABLE_TAG[1] . '$/');
         if ($variableRegexp->match($token)) {
-            return new Variable($variableRegexp->matches[1]);
+            return new Variable($variableRegexp->matches[1], $this->compiler);
         }
 
         throw new LiquidException("Variable $token was not properly terminated");

@@ -29,6 +29,7 @@ class TagRaw extends AbstractBlock
 {
     /**
      * @param array $tokens
+     * @throws \ReflectionException
      */
     public function parse(array &$tokens)
     {

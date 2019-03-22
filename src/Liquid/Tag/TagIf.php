@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
@@ -61,16 +60,15 @@ class TagIf extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
-     * @param Filesystem|null $files
-     * @param null $compiled
+     * @param LiquidCompiler|null $compiler
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $this->nodelist = &$this->nodelistHolders[count($this->blocks)];
 
         array_push($this->blocks, array('if', $markup, &$this->nodelist));
 
-        parent::__construct($markup, $tokens, $files, $compiled);
+        parent::__construct($markup, $tokens, $compiler);
     }
 
     /**

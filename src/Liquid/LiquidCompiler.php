@@ -14,8 +14,10 @@
 namespace Liquid;
 
 use ErrorException;
+use Illuminate\Support\Facades\View;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\ViewFinderInterface;
 use Liquid\Traits\TokenizeTrait;
 
 /**
@@ -32,27 +34,27 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     /**
      * @var Document The root of the node tree
      */
-    private $root;
+    protected $root;
 
     /**
      * @var array Globally included filters
      */
-    private $filters = array();
+    protected $filters = array();
 
     /**
      * @var array Custom tags
      */
-    private static $tags = [];
+    protected $tags = [];
 
     /**
      * @var bool $auto_escape
      */
-    private static $auto_escape = true;
+    protected $auto_escape = true;
 
     /**
      * @var string
      */
-    private $path;
+    protected $path;
 
     /**
      * A stack of the last compiled templates.
@@ -112,36 +114,41 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      * Set view extension
      *
      * @param string $value
+     * @return LiquidCompiler
      */
     public function setExtension($value)
     {
         app('view')->getFinder()->addExtension($value);
+        $this->getViewFinder()->addExtension($value);
+        return $this;
+    }
+
+    /**
+     * @return ViewFinderInterface
+     */
+    public function getViewFinder()
+    {
+        return View::shared('__env')->getFinder();
     }
 
     /**
      * @return bool
      */
-    public static function getAutoEscape()
+    public function getAutoEscape()
     {
-        return self::$auto_escape;
+        return $this->auto_escape;
     }
 
     /**
      * Set tags
      *
      * @param bool $value
+     * @return LiquidCompiler
      */
-    public static function setAutoEscape($value)
+    public function setAutoEscape($value)
     {
-        self::$auto_escape = $value;
-    }
-
-    /**
-     * @return Document
-     */
-    public function getRoot()
-    {
-        return $this->root;
+        $this->auto_escape = $value;
+        return $this;
     }
 
     /**
@@ -151,7 +158,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function setTags(array $tags)
     {
-        self::$tags = $tags;
+        $this->tags = $tags;
     }
 
     /**
@@ -159,38 +166,73 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      *
      * @param string $name
      * @param string $class
+     * @return LiquidCompiler
      */
     public function registerTag($name, $class)
     {
-        self::$tags[$name] = $class;
+        $this->tags[$name] = $class;
+        return $this;
     }
 
     /**
      * @return array
      */
-    public static function getTags()
+    public function getTags()
     {
-        return self::$tags;
+        return $this->tags;
     }
 
     /**
      * Register the filter
      *
      * @param string $filter
+     * @return LiquidCompiler
      */
     public function registerFilter($filter)
     {
         $this->filters[] = $filter;
+        return $this;
     }
 
     /**
      * Set the filters
      *
      * @param array $filters
+     * @return LiquidCompiler
      */
     public function setFilters(array $filters)
     {
         $this->filters = $filters;
+        return $this;
+    }
+
+    /**
+     * @param $path
+     * @return string
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function getFileSource($path)
+    {
+        return $this->files->get($path);
+    }
+
+    /**
+     * @param $path
+     * @return string
+     */
+    public function findTemplate($path)
+    {
+        return $this->getViewFinder()->find($path);
+    }
+
+    /**
+     * @param $path
+     * @return string
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function getTemplateSource($path)
+    {
+        return $this->getFileSource($this->findTemplate($path));
     }
 
     /**
@@ -198,9 +240,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      *
      * @param  string $path
      * @return void
-     * @throws LiquidException
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     * @throws \ReflectionException
      */
     public function compile($path = null)
     {
@@ -208,11 +248,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             $this->setPath($path);
         }
 
-        $source = $this->files->get($this->getPath());
+        $templateTokens = $this->tokenize($this->getFileSource($this->getPath()));
 
-        $templateTokens = $this->tokenize($source);
-
-        $this->root = new Document(null, $templateTokens, $this->files);
+        $this->root = new Document(null, $templateTokens, $this);
 
         $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
     }
@@ -228,7 +266,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      * @throws \ReflectionException
      */
-    public function render($path, array $assigns = array())
+    public function render($path, array $assigns = [])
     {
         $context = new Context($assigns);
 
@@ -239,7 +277,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         }
 
         if(is_null($this->root)) {
-            $this->root = unserialize($this->files->get($this->getCompiledPath($path)));
+            $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
         }
 
         return $this->root->render($context);

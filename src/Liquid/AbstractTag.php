@@ -31,9 +31,9 @@ abstract class AbstractTag
     /**
      * Filesystem object is used to store and load compiled files
      *
-     * @var Filesystem
+     * @var LiquidCompiler
      */
-    protected $files;
+    protected $compiler;
 
     /**
      * Additional attributes
@@ -47,12 +47,12 @@ abstract class AbstractTag
      *
      * @param string $markup
      * @param array $tokens
-     * @param Filesystem|null $files
+     * @param LiquidCompiler|null $compiler
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $this->markup = $markup;
-        $this->files = $files;
+        $this->compiler = $compiler;
         $this->parse($tokens);
     }
 

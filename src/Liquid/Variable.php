@@ -37,13 +37,20 @@ class Variable
     protected $markup;
 
     /**
+     * @var LiquidCompiler $compiler
+     */
+    protected $compiler;
+
+    /**
      * Constructor
      *
      * @param string $markup
+     * @param LiquidCompiler $compiler
      */
-    public function __construct($markup)
+    public function __construct($markup, LiquidCompiler $compiler)
     {
         $this->markup = $markup;
+        $this->compiler = $compiler;
 
         $quotedFragmentRegexp = new Regexp('/\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
         $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');
@@ -72,7 +79,7 @@ class Variable
             $this->filters = array();
         }
 
-        if (LiquidCompiler::getAutoEscape()) {
+        if ($this->compiler->getAutoEscape()) {
             // if auto_escape is enabled, and
             // - there's no raw filter, and
             // - no escape filter

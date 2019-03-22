@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
@@ -65,11 +64,12 @@ class TagInclude extends AbstractTag
      * @param string $markup
      * @param array $tokens
      *
-     * @throws \Liquid\LiquidException
+     * @param LiquidCompiler|null $compiler
+     * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . LiquidCompiler::QUOTED_FRAGMENT . '+))?/');
+        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . $compiler::QUOTED_FRAGMENT . '+))?/');
 
         if ($regex->match($markup)) {
             $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
@@ -84,7 +84,7 @@ class TagInclude extends AbstractTag
             throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
         }
 
-        parent::__construct($markup, $tokens, $files, $compiled);
+        parent::__construct($markup, $tokens, $compiler);
     }
 
     /**
@@ -92,16 +92,15 @@ class TagInclude extends AbstractTag
      *
      * @param array $tokens
      *
-     * @throws LiquidException
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function parse(array &$tokens)
     {
         // read the source of the template and create a new sub document
-        $source = $this->files->get(app('view.finder')->find($this->templateName));
+        $source = $this->compiler->getTemplateSource($this->templateName);
 
         $templateTokens = $this->tokenize($source);
-        $this->document = new Document(null, $templateTokens, $this->files);
+        $this->document = new Document(null, $templateTokens, $this->compiler);
     }
 
     /**
@@ -114,7 +113,6 @@ class TagInclude extends AbstractTag
      */
     public function render(Context $context)
     {
-//        dd($this, view()->make($this->templateName, $context->getAssigns())->render());
         $result = '';
         $variable = $context->get($this->variable);
 

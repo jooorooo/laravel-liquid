@@ -40,10 +40,14 @@ class TagDecrement extends AbstractTag
      *
      * @param string $markup
      *
-     * @throws \Liquid\LiquidException
+     * @param array|null $tokens
+     * @param LiquidCompiler|null $compiler
+     * @throws LiquidException
      */
-    public function __construct($markup)
+    public function __construct($markup, array &$tokens = null, LiquidCompiler $compiler = null)
     {
+        parent::__construct(null, $tokens, $compiler);
+
         $syntax = new Regexp('/(' . LiquidCompiler::VARIABLE_NAME . ')/');
 
         if ($syntax->match($markup)) {

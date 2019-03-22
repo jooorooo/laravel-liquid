@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
@@ -45,11 +44,10 @@ class TagLayout extends AbstractTag
      * @param string $markup
      * @param array $tokens
      *
-     * @param Filesystem|null $files
-     * @param null $compiled
+     * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
 
@@ -59,7 +57,7 @@ class TagLayout extends AbstractTag
             throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template name]'");
         }
 
-        parent::__construct($markup, $tokens, $files, $compiled);
+        parent::__construct($markup, $tokens, $compiler);
     }
 
     /**
@@ -100,7 +98,7 @@ class TagLayout extends AbstractTag
     public function parse(array &$tokens)
     {
         // read the source of the template and create a new sub document
-        $source = $this->files->get(app('view.finder')->find($this->templateName));
+        $source = $this->compiler->getTemplateSource($this->templateName);
 
         // tokens in this new document
         $maintokens = $this->tokenize($source);
@@ -149,7 +147,7 @@ class TagLayout extends AbstractTag
             }
         }
 
-        $this->document = new Document(null, $rest, $this->files);
+        $this->document = new Document(null, $rest, $this->compiler);
     }
 
     /**

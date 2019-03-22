@@ -43,7 +43,7 @@ class Filterbank
      *
      * @var array
      */
-    private $magick_methods = [
+    private $_disallow_magick_methods = [
         '__construct', '__destruct', '__call',
         '__callstatic', '__get', '__set', '__isset',
         '__unset', '__sleep', '__wakeup', '__tostring',
@@ -89,7 +89,7 @@ class Filterbank
         if (class_exists($filter)) {
             $reflection = new \ReflectionClass($filter);
             foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) AS $method) {
-                if (($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->magick_methods)) {
+                if (($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->_disallow_magick_methods)) {
                     $this->methodMap[$methodName] = $filter;
                 }
             }

@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
@@ -64,16 +63,15 @@ class TagCase extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
-     * @param Filesystem|null $files
-     * @param null $compiled
+     * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $this->nodelists = array();
         $this->elseNodelist = array();
 
-        parent::__construct($markup, $tokens, $files, $compiled);
+        parent::__construct($markup, $tokens, $compiler);
 
         $syntaxRegexp = new Regexp('/' . LiquidCompiler::QUOTED_FRAGMENT . '/');
 

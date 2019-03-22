@@ -14,7 +14,14 @@
  * @license http://harrydeluxe.mit-license.org
  */
 
-class LiquidTagPaginate extends LiquidBlock
+use Liquid\AbstractBlock;
+use Illuminate\Filesystem\Filesystem;
+use Liquid\LiquidCompiler;
+use Liquid\Regexp;
+use Liquid\LiquidException;
+use Liquid\Context;
+
+class LiquidTagPaginate extends AbstractBlock
 {
 	/**
      * @var array The collection to paginate
@@ -47,20 +54,20 @@ class LiquidTagPaginate extends LiquidBlock
      */
     private $_totalPages;
 
-    
+
     /**
      * Constructor
      *
      * @param string $markup
      * @param array $tokens
-     * @param LiquidFileSystem $fileSystem
-     * @return ForLiquidTag
+     * @param Filesystem $fileSystem
+     * @throws LiquidException
      */
-    public function __construct($markup, &$tokens, &$fileSystem)
+    public function __construct($markup, &$tokens, Filesystem $fileSystem)
     {
         parent::__construct($markup, $tokens, $fileSystem);
 
-        $syntax = new LiquidRegexp('/(' . LIQUID_ALLOWED_VARIABLE_CHARS . '+)\s+by\s+(\w+)/');
+        $syntax = new Regexp('/(' . LiquidCompiler::VARIABLE_NAME . '+)\s+by\s+(\w+)/');
 
         if ($syntax->match($markup))
         {
@@ -79,9 +86,11 @@ class LiquidTagPaginate extends LiquidBlock
     /**
      * Renders the tag
      *
-     * @param LiquidContext $context
+     * @param Context $context
+     * @return string
+     * @throws LiquidException
      */
-    public function render(&$context)
+    public function render(Context $context)
     {
     	$this->_collection = $context->get($this->_collectionName);
     	$this->_collectionSize = count($this->_collection);

@@ -11,9 +11,9 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Filesystem\Filesystem;
 use Liquid\AbstractBlock;
 use Liquid\Context;
+use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
@@ -39,17 +39,16 @@ class TagCapture extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
-     * @param Filesystem|null $files
-     * @param null $compiled
+     * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, Filesystem $files = null, $compiled = null)
+    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $syntaxRegexp = new Regexp('/(\w+)/');
 
         if ($syntaxRegexp->match($markup)) {
             $this->to = $syntaxRegexp->matches[1];
-            parent::__construct($markup, $tokens, $files, $compiled);
+            parent::__construct($markup, $tokens, $compiler);
         } else {
             throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var] [value]");
         }
