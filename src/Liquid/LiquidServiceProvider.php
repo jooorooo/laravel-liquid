@@ -17,19 +17,20 @@ class LiquidServiceProvider extends ViewServiceProvider
     public function register()
     {
         parent::register();
+        $this->setupConfig();
 
+        $this->registerLiquidEngine($this->app['view.engine.resolver']);
+
+        $this->registerLiquidExtension();
+    }
+
+    public function setupConfig()
+    {
         $this->mergeConfigFrom($file = __DIR__ . '/../../config/liquid.php', 'liquid');
 
         $this->publishes([
             $file => config_path('liquid.php')
         ], 'config');
-
-        $this->registerLiquidEngine($this->app['view.engine.resolver']);
-    }
-
-    public function boot()
-    {
-        $this->app['view']->addExtension($this->app['config']->get('liquid.extension'), 'liquid');
     }
 
     /**
@@ -63,9 +64,21 @@ class LiquidServiceProvider extends ViewServiceProvider
             );
         });
 
-        $resolver->register('liquid', function () {
+//        $resolver->register('liquid', function () {
+        $this->app->singleton('liquid', function () {
             return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });
+    }
+
+    public function registerLiquidExtension()
+    {
+        $this->app['view']->addExtension(
+            $this->app['config']->get('liquid.extension'),
+            'liquid',
+            function () {
+                return $this->app['liquid'];
+            }
+        );
     }
 
 }

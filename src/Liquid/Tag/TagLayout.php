@@ -95,8 +95,7 @@ class TagLayout extends AbstractTag
      * Parses the tokens
      *
      * @param array $tokens
-     *
-     * @throws \Liquid\LiquidException
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function parse(array &$tokens)
     {
