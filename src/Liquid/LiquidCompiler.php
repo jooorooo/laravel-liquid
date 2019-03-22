@@ -208,7 +208,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             $this->setPath($path);
         }
 
-        $source = $this->files->get($path);
+        $source = $this->files->get($this->getPath());
 
         $templateTokens = $this->tokenize($source);
 

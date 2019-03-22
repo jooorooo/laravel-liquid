@@ -11,8 +11,6 @@
 
 namespace Liquid;
 
-use Illuminate\Filesystem\Filesystem;
-
 /**
  * This class represents the entire template document.
  */
