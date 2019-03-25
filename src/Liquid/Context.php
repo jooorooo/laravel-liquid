@@ -396,9 +396,6 @@ class Context
             // we'll try casting this object in the next iteration
         }
 
-        if(is_null($object) && is_callable($key) && function_exists($key)) {
-            $object = $key;
-        }
         // finally, resolve an object to a string or a plain value. if collection return it
         if($object instanceof Collection) {
             return $object;
