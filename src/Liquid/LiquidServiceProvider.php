@@ -16,7 +16,10 @@ class LiquidServiceProvider extends ServiceProvider
     public function register()
     {
         $this->setupConfig();
+    }
 
+    public function boot()
+    {
         $this->registerLiquidEngine();
 
         $this->registerLiquidExtension();
