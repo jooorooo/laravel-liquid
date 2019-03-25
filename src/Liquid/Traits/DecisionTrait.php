@@ -8,6 +8,7 @@
 
 namespace Liquid\Traits;
 
+use Illuminate\Support\Collection;
 use Liquid\Context;
 use Liquid\LiquidException;
 
@@ -86,7 +87,11 @@ trait DecisionTrait
     protected function interpretCondition($left, $right, $op, Context $context)
     {
         if (is_null($op)) {
-            $value = $this->stringValue($context->get($left));
+            $value = $context->get($left);
+            if($value instanceof Collection) {
+                $value = $value->isEmpty() ? null : $value->all();
+            }
+            $value = $this->stringValue($value);
             return $value;
         }
 
