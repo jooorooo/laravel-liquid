@@ -1,4 +1,4 @@
-# Liquid template engine for Laravel [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/GeorgiNachev)
+# Liquid template engine for Laravel
 
 Liquid is a PHP port of the [Liquid template engine for Ruby](https://github.com/Shopify/liquid), which was written by Tobias Lutke. Although there are many other templating engines for PHP, including Smarty (from which Liquid was partially inspired), Liquid had some advantages that made porting worthwhile:
 

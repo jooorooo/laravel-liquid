@@ -9,7 +9,10 @@
         {
             "name": "Georgi Nachev",
             "email": "jooorooo@gmail.com",
-			"homepage": "http://simexis.com"
+        },
+        {
+            "name": "CloudCart LTD",
+			"homepage": "https://cloudcart.com"
         }
     ],
     "require": {
