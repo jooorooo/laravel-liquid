@@ -59,34 +59,6 @@ class Variable
             $this->filters[] = array($filter['name'], !empty($filter['arguments']) ? $filter['arguments'] : array());
         }
 
-//        $quotedFragmentRegexp = new Regexp('/\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
-//        $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');
-//        $filterSplitRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '/');
-//        $filterNameRegexp = new Regexp('/\s*(\w+)/');
-//        $filterArgumentRegexp = new Regexp('/(?:' . LiquidCompiler::FILTER_ARGUMENT_SEPARATOR . '|' . LiquidCompiler::ARGUMENT_SEPARATOR . ')\s*(' . LiquidCompiler::QUOTED_FRAGMENT_FILTER_ARGUMENT . ')/');
-//
-//        $quotedFragmentRegexp->match($markup);
-//
-//        $this->name = (isset($quotedFragmentRegexp->matches[1])) ? $quotedFragmentRegexp->matches[1] : null;
-//
-//        if ($filterSeperatorRegexp->match($markup)) {
-//
-//            $filters = $filterSplitRegexp->split($filterSeperatorRegexp->matches[1]);
-//
-//            foreach ($filters as $filter) {
-//                $filterNameRegexp->match($filter);
-//                $filtername = $filterNameRegexp->matches[1];
-//
-//                $filterArgumentRegexp->matchAll($filter);
-//                $matches = $this->arrayFlatten($filterArgumentRegexp->matches[1]);
-//
-//                $this->filters[] = array($filtername, $matches);
-//            }
-//
-//        } else {
-//            $this->filters = array();
-//        }
-
         if ($this->compiler->getAutoEscape()) {
             // if auto_escape is enabled, and
             // - there's no raw filter, and
@@ -112,6 +84,12 @@ class Variable
         }
     }
 
+    /**
+     * Tokenize markup text
+     *
+     * @param string $markup
+     * @return array
+     */
     protected function tokenizeMarkup($markup)
     {
         $finish_name = false;

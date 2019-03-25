@@ -63,9 +63,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     protected $lastCompiled = [];
 
-    // Separator between filters.
-    const FILTER_SEPARATOR = '\|';
-
     // Operations tags.
     const OPERATION_TAGS = ['{%', '%}'];
 
@@ -82,12 +79,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
 
     const TOKENIZATION_REGEXP = '/(' . self::OPERATION_TAGS[0] . '.*?' . self::OPERATION_TAGS[1] . '|' . self::VARIABLE_TAG[0] . '.*?' . self::VARIABLE_TAG[1] . ')/';
-
-    // Separator for arguments.
-    const ARGUMENT_SEPARATOR = ',';
-
-    // Separator for argument names and values.
-    const FILTER_ARGUMENT_SEPARATOR = ':';
 
     /**
      * Get the path currently being compiled.
