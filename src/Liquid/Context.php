@@ -11,6 +11,8 @@
 
 namespace Liquid;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
 /**
@@ -294,7 +296,8 @@ class Context
             }
 
             // first try to cast an object to an array or value
-            if (method_exists($object, 'toLiquid')) {
+            if($object instanceof Model) {
+            } elseif (method_exists($object, 'toLiquid')) {
                 $object = $object->toLiquid();
             } elseif (method_exists($object, 'toArray')) {
                 $object = $object->toArray();
@@ -339,6 +342,27 @@ class Context
 
                 $object = $object->invokeDrop($nextPartName);
                 continue;
+            }
+
+            //
+            if($object instanceof Model) {
+                if(is_callable([$object, $nextPartName]) && method_exists($object, $nextPartName)) {
+                    if($object->relationLoaded($nextPartName)) {
+                        $object = $object->$nextPartName;
+                    } else {
+                        $value = call_user_func([$object, $nextPartName]);
+                        if ($value instanceof Drop) {
+                            $value->setContext($this);
+                        }
+                        $object = $value;
+                    }
+                    if($object instanceof Relation) {
+                        $object = $object->get();
+                    }
+                    continue;
+                } else {
+                    return $object->$nextPartName;
+                }
             }
 
             // if it has `get` or `field_exists` methods
