@@ -24,7 +24,7 @@ trait TokenizeTrait
     {
         return empty($source)
             ? array()
-            : preg_split(LiquidCompiler::TOKENIZATION_REGEXP, $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+            : preg_split('/(' . LiquidCompiler::OPERATION_TAGS[0] . '.*?' . LiquidCompiler::OPERATION_TAGS[1] . '|' . LiquidCompiler::VARIABLE_TAG[0] . '.*?' . LiquidCompiler::VARIABLE_TAG[1] . ')/', $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
     }
 
 }

@@ -77,9 +77,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
-
-    const TOKENIZATION_REGEXP = '/(' . self::OPERATION_TAGS[0] . '.*?' . self::OPERATION_TAGS[1] . '|' . self::VARIABLE_TAG[0] . '.*?' . self::VARIABLE_TAG[1] . ')/';
-
+    
     /**
      * Get the path currently being compiled.
      *
