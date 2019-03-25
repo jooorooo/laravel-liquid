@@ -20,7 +20,7 @@ Liquid was written to meet three templating library requirements: good performan
 
 You can install this lib via [composer](https://getcomposer.org/):
 
-    composer create-project simexis/laravel-liquid
+    composer require simexis/laravel-liquid
     
 Laravel 5.5 uses Package Auto-Discovery, so doesn't require you to manually add the ServiceProvider
 
