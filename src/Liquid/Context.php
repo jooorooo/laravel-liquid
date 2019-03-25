@@ -361,7 +361,13 @@ class Context
                     }
                     continue;
                 } else {
-                    return $object->$nextPartName;
+                    $value =  $object->$nextPartName;
+                    if ($value instanceof Drop) {
+                        $value->setContext($this);
+                        $object = $value;
+                        continue;
+                    }
+                    return $value;
                 }
             }
 
