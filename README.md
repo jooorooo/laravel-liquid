@@ -1,4 +1,4 @@
-# Liquid template engine for Laravel [![Build Status](https://travis-ci.org/jooorooo/laravel-liquid.svg?branch=develop)](https://travis-ci.org/jooorooo/laravel-liquid)
+# Liquid template engine for Laravel [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/GeorgiNachev)
 
 Liquid is a PHP port of the [Liquid template engine for Ruby](https://github.com/Shopify/liquid), which was written by Tobias Lutke. Although there are many other templating engines for PHP, including Smarty (from which Liquid was partially inspired), Liquid had some advantages that made porting worthwhile:
 
@@ -7,7 +7,6 @@ Liquid is a PHP port of the [Liquid template engine for Ruby](https://github.com
  * 100% secure, no possibility of embedding PHP code.
  * Clean OO design, rather than the mix of OO and procedural found in other templating engines.
  * Seperate compiling and rendering stages for improved performance.
- * Easy to extend with your own "tags and filters":https://github.com/harrydeluxe/php-liquid/wiki/Liquid-for-programmers.
  * 100% Markup compatibility with a Ruby templating engine, making templates usable for either.
  * Unit tested: Liquid is fully unit-tested. The library is stable and ready to be used in large projects.
 
@@ -22,6 +21,26 @@ Liquid was written to meet three templating library requirements: good performan
 You can install this lib via [composer](https://getcomposer.org/):
 
     composer create-project simexis/laravel-liquid
+    
+Laravel 5.5 uses Package Auto-Discovery, so doesn't require you to manually add the ServiceProvider
+
+### Laravel 5.5+:
+
+If you don't use auto-discovery, add the ServiceProvider to the providers array in config/app.php
+
+```php
+Liquid\LiquidServiceProvider::class,
+```
+
+If you want to use the facade to compiler:
+
+```php
+'Liquid' => Liquid\Facade::class,
+```
+
+```shell
+php artisan vendor:publish --provider="Liquid\LiquidServiceProvider"
+```
 
 ## Example template
 
@@ -43,38 +62,29 @@ You can install this lib via [composer](https://getcomposer.org/):
 
 ## How to use Liquid
 
-The main class is `Liquid::Template` class. There are two separate stages of working with Liquid templates: parsing and rendering. Here is a simple example:
+    class HomeController extends Comtroller {
+        
+        public function index() 
+        {
+            $products = Products::all();
+            
+            return view('home', [
+                'products' => $products 
+            ]);  
+        }
+        
+    }
 
-    use Liquid\Template;
 
-    $template = new Template();
-    $template->parse("Hello, {{ name }}!");
-    echo $template->render(array('name' => 'World');
-
-	// Will echo
-	// Hello, World!
-
-To find more examples have a look at the `examples` directory or at the original Ruby implementation repository's [wiki page](https://github.com/Shopify/liquid/wiki).
+To find more examples at the original Ruby implementation repository's [wiki page](https://github.com/Shopify/liquid/wiki).
 
 ## Requirements
 
  * PHP 5.3+
+ * [laravel/framework 5.3+](https://github.com/laravel/framework)
 
 ## Issues
 
 Have a bug? Please create an issue here on GitHub!
 
 [https://github.com/jooorooo/laravel-liquid/issues](https://github.com/jooorooo/laravel-liquid/issues)
-
-## Fork notes and contributors
-
-This fork is based on [php-liquid](http://code.google.com/p/php-liquid/) by Mateo Murphy. [kalimatas](https://github.com/kalimatas/php-liquid) has contributed a lot in his fork to bring Liquid to the new state. Thank you so much!
-
-It contains several improvements:
-
- * namespaces
- * installing via composer
- * new standard filters
- * `raw` tag added
-
-Any help is appreciated!
