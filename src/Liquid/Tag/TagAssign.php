@@ -64,7 +64,7 @@ class TagAssign extends AbstractTag
         $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');
         $filterSplitRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '/');
         $filterNameRegexp = new Regexp('/\s*(\w+)/');
-        $filterArgumentRegexp = new Regexp('/(?:' . LiquidCompiler::ARGUMENT_SEPARATOR . '|' . LiquidCompiler::ARGUMENT_SEPARATOR . ')\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
+        $filterArgumentRegexp = new Regexp('/(?:' . LiquidCompiler::FILTER_ARGUMENT_SEPARATOR . '|' . LiquidCompiler::ARGUMENT_SEPARATOR . ')\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
 
         if ($filterSeperatorRegexp->match($markup)) {
             $filters = $filterSplitRegexp->split($filterSeperatorRegexp->matches[1]);
@@ -79,7 +79,7 @@ class TagAssign extends AbstractTag
                 array_push($this->filters, array($filtername, $matches));
             }
         }
-
+        
         if ($syntaxRegexp->match($markup)) {
             $this->to = $syntaxRegexp->matches[1];
             $this->from = $syntaxRegexp->matches[2];
