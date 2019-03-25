@@ -85,53 +85,6 @@ class Variable
     }
 
     /**
-     * Tokenize markup text
-     *
-     * @param string $markup
-     * @return array
-     */
-    protected function tokenizeMarkup($markup)
-    {
-        $finish_name = false;
-        $tokens = token_get_all("<?php $markup ?>");
-        $last = count($tokens) - 1;
-        $filters = [];
-        $filter_num = 0;
-        foreach ($tokens AS $index => $token) {
-            if($index != 0 && $index != $last) {
-                if (is_string($token) && $token === '|') {
-                    if(!$finish_name) {
-                        $finish_name = true;
-                    } else {
-                        $filter_num++;
-                    }
-                    continue;
-                } elseif(!$finish_name && trim(is_array($token) ? $token[1] : $token)) {
-                    $this->name .= is_array($token) ? $token[1] : $token;
-                } elseif ($finish_name && is_array($token) && count($token) == 3) {
-                    if (empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        $filters[$filter_num]['name'] = $token[1];
-                        continue;
-                    } elseif (!empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        if ($token[0] == T_CONSTANT_ENCAPSED_STRING) {
-                            $token = substr($token[1], 1, -1);
-                        } else {
-                            $token = $token[1];
-                        }
-                        if(is_numeric($token)) {
-                            $filters[$filter_num]['arguments'][] = $token;
-                        } else {
-                            $filters[$filter_num]['arguments'][] = sprintf('"%s"', $token);
-                        }
-                    }
-                }
-            }
-        }
-
-        return $filters;
-    }
-
-    /**
      * Gets the variable name
      *
      * @return string The name of the variable
@@ -182,5 +135,52 @@ class Variable
         }
 
         return $output;
+    }
+
+    /**
+     * Tokenize markup text
+     *
+     * @param string $markup
+     * @return array
+     */
+    protected function tokenizeMarkup($markup)
+    {
+        $finish_name = false;
+        $tokens = token_get_all("<?php $markup ?>");
+        $last = count($tokens) - 1;
+        $filters = [];
+        $filter_num = 0;
+        foreach ($tokens AS $index => $token) {
+            if($index != 0 && $index != $last) {
+                if (is_string($token) && $token === '|') {
+                    if(!$finish_name) {
+                        $finish_name = true;
+                    } else {
+                        $filter_num++;
+                    }
+                    continue;
+                } elseif(!$finish_name && trim(is_array($token) ? $token[1] : $token)) {
+                    $this->name .= is_array($token) ? $token[1] : $token;
+                } elseif ($finish_name && is_array($token) && count($token) == 3) {
+                    if (empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
+                        $filters[$filter_num]['name'] = $token[1];
+                        continue;
+                    } elseif (!empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
+                        if ($token[0] == T_CONSTANT_ENCAPSED_STRING) {
+                            $token = substr($token[1], 1, -1);
+                        } else {
+                            $token = $token[1];
+                        }
+                        if(is_numeric($token)) {
+                            $filters[$filter_num]['arguments'][] = $token;
+                        } else {
+                            $filters[$filter_num]['arguments'][] = sprintf('"%s"', $token);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $filters;
     }
 }
