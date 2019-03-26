@@ -46,7 +46,7 @@ return [
      |
      | By default extension is extension.php.
      */
-    'extension' => 'liquid.tpl',
+    'extension' => 'liquid',
 
     /*
      |--------------------------------------------------------------------------
