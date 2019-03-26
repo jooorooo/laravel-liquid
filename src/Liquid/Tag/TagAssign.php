@@ -59,32 +59,21 @@ class TagAssign extends AbstractTag
     {
         parent::__construct(null, $tokens, $compiler);
 
-        $syntaxRegexp = new Regexp('/(\w+)\s*=\s*(' . LiquidCompiler::QUOTED_FRAGMENT . '+)/');
+        list($to, $from, $filters) = $this->tokenizeMarkup($markup);
 
-        $filterSeperatorRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '\s*(.*)/');
-        $filterSplitRegexp = new Regexp('/' . LiquidCompiler::FILTER_SEPARATOR . '/');
-        $filterNameRegexp = new Regexp('/\s*(\w+)/');
-        $filterArgumentRegexp = new Regexp('/(?:' . LiquidCompiler::FILTER_ARGUMENT_SEPARATOR . '|' . LiquidCompiler::ARGUMENT_SEPARATOR . ')\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')/');
-
-        if ($filterSeperatorRegexp->match($markup)) {
-            $filters = $filterSplitRegexp->split($filterSeperatorRegexp->matches[1]);
-
-            foreach ($filters as $filter) {
-                $filterNameRegexp->match($filter);
-                $filtername = $filterNameRegexp->matches[1];
-
-                $filterArgumentRegexp->matchAll($filter);
-                $matches = $this->arrayFlatten($filterArgumentRegexp->matches[1]);
-
-                array_push($this->filters, array($filtername, $matches));
-            }
-        }
-        
-        if ($syntaxRegexp->match($markup)) {
-            $this->to = $syntaxRegexp->matches[1];
-            $this->from = $syntaxRegexp->matches[2];
+        if ($from && $to) {
+            $this->to = $to;
+            $this->from = $from;
         } else {
             throw new LiquidException("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]");
+        }
+
+        if ($filters) {
+            foreach ($filters as $filter) {
+                $matches = $this->arrayFlatten($filter['arguments']);
+
+                array_push($this->filters, array($filter['name'], $matches));
+            }
         }
     }
 
@@ -113,5 +102,66 @@ class TagAssign extends AbstractTag
         }
 
         $context->set($this->to, $output, true);
+    }
+
+    /**
+     * Tokenize markup text
+     *
+     * @param string $markup
+     * @return array
+     */
+    protected function tokenizeMarkup($markup)
+    {
+        $finish_name = false;
+        $finish_sub_name = false;
+        $tokens = token_get_all("<?php $markup ?>");
+        $last = count($tokens) - 1;
+        $filters = [];
+        $filter_num = 0;
+        $name = '';
+        $sub_name = '';
+        foreach ($tokens AS $index => $token) {
+            if($index != 0 && $index != $last) {
+                if (is_string($token) && $token === '=') {
+                    $finish_name = true;
+                    continue;
+                }
+                if (is_string($token) && $token === '|') {
+                    if($finish_name) {
+                        $finish_sub_name = true;
+                    } else {
+                        $filter_num++;
+                    }
+                    continue;
+                }
+                if((!$finish_name || !$finish_sub_name) && trim(is_array($token) ? $token[1] : $token)) {
+                    if($finish_name) {
+                        $sub_name .= is_array($token) ? $token[1] : $token;
+                    } else {
+                        $name .= is_array($token) ? $token[1] : $token;
+                    }
+                } elseif ($finish_name && $finish_sub_name && is_array($token) && count($token) == 3) {
+                    if (empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
+                        $filters[$filter_num] = [
+                            'name' => $token[1], 'arguments' => []
+                        ];
+                        continue;
+                    } elseif (!empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
+                        if ($token[0] == T_CONSTANT_ENCAPSED_STRING) {
+                            $token = substr($token[1], 1, -1);
+                        } else {
+                            $token = $token[1];
+                        }
+                        if(is_numeric($token)) {
+                            $filters[$filter_num]['arguments'][] = $token;
+                        } else {
+                            $filters[$filter_num]['arguments'][] = sprintf('"%s"', $token);
+                        }
+                    }
+                }
+            }
+        }
+
+        return [$name, $sub_name, $filters];
     }
 }

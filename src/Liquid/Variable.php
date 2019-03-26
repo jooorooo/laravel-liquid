@@ -56,7 +56,7 @@ class Variable
 
         $this->filters = array();
         foreach($filters AS $filter) {
-            $this->filters[] = array($filter['name'], !empty($filter['arguments']) ? $filter['arguments'] : array());
+            $this->filters[] = array($filter['name'], $filter['arguments']);
         }
 
         if ($this->compiler->getAutoEscape()) {
@@ -163,7 +163,9 @@ class Variable
                     $this->name .= is_array($token) ? $token[1] : $token;
                 } elseif ($finish_name && is_array($token) && count($token) == 3) {
                     if (empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        $filters[$filter_num]['name'] = $token[1];
+                        $filters[$filter_num] = [
+                            'name' => $token[1], 'arguments' => []
+                        ];
                         continue;
                     } elseif (!empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
                         if ($token[0] == T_CONSTANT_ENCAPSED_STRING) {
