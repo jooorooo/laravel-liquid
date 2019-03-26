@@ -24,6 +24,7 @@ use Liquid\Traits\TokenizeTrait;
  * The Template class.
  *
  * http://cheat.markdunkley.com/
+ * https://stackoverflow.com/questions/29123188/enabling-liquid-templating-syntax-highlight-in-webstorm-phpstorm/29337624#29337624
  *
  */
 class LiquidCompiler extends Compiler implements CompilerInterface
