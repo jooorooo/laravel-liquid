@@ -285,6 +285,17 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
+     * Get the path to the compiled version of a view.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public function getCompiledPath($path)
+    {
+        return $this->cachePath.'/'.sha1($path).'.php';
+    }
+
+    /**
      * Handle a view exception.
      *
      * @param  \Exception $e
