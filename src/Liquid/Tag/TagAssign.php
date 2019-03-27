@@ -61,14 +61,15 @@ class TagAssign extends AbstractTag
     {
         parent::__construct(null, $tokens, $compiler);
 
-        if(preg_match('/(' . Constant::VariableSignaturePartial . '+)\s*=\s*(.*)\s*/ms', $markup, $m)) {
-            $this->to = $m[1];
-            $this->from = trim(array_first(explode('|', $m[2], 2)));
-
-            $this->filters = (new Variable($markup, $compiler))->getFilters();
+        $syntaxRegexp = new Regexp('/(' . Constant::VariableSignaturePartial . '+)\s*=\s*(' . Constant::QuotedFragmentPartial . ')\s*/ms');
+        if($syntaxRegexp->match($markup)) {
+            $this->to = $syntaxRegexp->matches[1];
+            $this->from = $syntaxRegexp->matches[2];
         } else {
             throw new LiquidException("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]");
         }
+
+        $this->filters = (new Variable($markup, $compiler))->getFilters();
     }
 
     /**

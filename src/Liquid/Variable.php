@@ -52,19 +52,25 @@ class Variable
         $this->compiler = $compiler;
         $this->markup = $markup;
 
-        if(preg_match('/(' . Constant::QuotedFragmentPartial . ')(.*)/ms', $markup, $m)) {
-            $this->name = $m[1];
+        $quotedFragmentRegexp = new Regexp('/\s*?(' . Constant::QuotedFragmentPartial . ')(.*)/ms');
+        if($quotedFragmentRegexp->match($markup)) {
+            $this->name = $quotedFragmentRegexp->matches[1];
         }
 
-        if(preg_match('/' . Constant::FilterSeparatorPartial . '\s*(.*)/ms', $markup, $m)) {
-            if(preg_match_all('/(?:\s+|' . Constant::QuotedFragmentPartial . '|' . Constant::ArgumentSeparator . ')+/ms', $m[1], $s)) {
-                foreach($s[0] AS $f) {
-                    $f = trim($f);
-                    if(preg_match_all('/(?:' . Constant::FilterArgumentSeparator . '|' . Constant::ArgumentSeparator . ')\s*((?:\w+\s*\:\s*)?' . Constant::QuotedFragmentPartial . ')/ms', $f, $a, PREG_PATTERN_ORDER)) {
-                        $this->filters[] = array(array_first(explode(Constant::FilterArgumentSeparator, $f)), $a[1]);
-                    } else {
-                        $this->filters[] = array($f, array());
-                    }
+        $filterSeperatorRegexp = new Regexp('/' . Constant::FilterSeparatorPartial . '\s*(.*)/ms');
+        $filterRegexp = new Regexp('/(?:\s+|' . Constant::QuotedFragmentPartial . '|' . Constant::ArgumentSeparator . ')+/ms');
+        $filterNameRegexp = new Regexp('/\s*?(\w+)/');
+        $filterArgumentRegexp = new Regexp('/(?:' . Constant::FilterArgumentSeparator . '|' . Constant::ArgumentSeparator . ')\s*((?:\w+\s*\:\s*)?' . Constant::QuotedFragmentPartial . ')/ms');
+        if($filterSeperatorRegexp->match($markup)) {
+            if($filterRegexp->matchAll($filterSeperatorRegexp->matches[1])) {
+                foreach($filterRegexp->matches[0] AS $filter) {
+                    $filterNameRegexp->match($filter);
+                    $filtername = $filterNameRegexp->matches[1];
+
+                    $filterArgumentRegexp->matchAll($filter);
+
+                    $matches = $this->arrayFlatten(!empty($filterArgumentRegexp->matches[1]) ? $filterArgumentRegexp->matches[1] : array());
+                    $this->filters[] = array($filtername, $matches);
                 }
             }
         }
