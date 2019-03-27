@@ -96,12 +96,12 @@ class TagAssign extends AbstractTag
             $output = $context->invoke($filtername, $output, $filterArgValues);
         }
 
-        $test = $output;
-        try {
-            @eval('$test = ' . $output . ';');
-        } catch (\Throwable $e) {}
-
-        $output = $test;
+//        $test = $output;
+//        try {
+//            @eval('$test = ' . $output . ';');
+//        } catch (\Throwable $e) {}
+//
+//        $output = $test;
 
         $context->set($this->to, $output, true);
     }
