@@ -56,6 +56,18 @@ class Context
     private $methodMap = array();
 
     /**
+     * List with magick methods to ignore for filters
+     *
+     * @var array
+     */
+    private $_disallow_magick_methods = [
+        '__construct', '__destruct', '__call',
+        '__callstatic', '__get', '__set', '__isset',
+        '__unset', '__sleep', '__wakeup', '__tostring',
+        '__invoke', '__set_state', '__clone', '__debuginfo',
+    ];
+
+    /**
      * Constructor
      *
      * @param array $assigns

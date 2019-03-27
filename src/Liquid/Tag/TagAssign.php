@@ -12,11 +12,13 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
+use Liquid\Constant;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Context;
 use Liquid\Traits\HelpersTrait;
+use Liquid\Variable;
 
 /**
  * Performs an assignment of one variable to another
@@ -59,21 +61,13 @@ class TagAssign extends AbstractTag
     {
         parent::__construct(null, $tokens, $compiler);
 
-        list($to, $from, $filters) = $this->tokenizeMarkup($markup);
+        if(preg_match('/(' . Constant::VariableSignaturePartial . '+)\s*=\s*(.*)\s*/ms', $markup, $m)) {
+            $this->to = $m[1];
+            $this->from = trim(array_first(explode('|', $m[2], 2)));
 
-        if ($from && $to) {
-            $this->to = $to;
-            $this->from = $from;
+            $this->filters = (new Variable($markup, $compiler))->getFilters();
         } else {
             throw new LiquidException("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]");
-        }
-
-        if ($filters) {
-            foreach ($filters as $filter) {
-                $matches = $this->arrayFlatten($filter['arguments']);
-
-                array_push($this->filters, array($filter['name'], $matches));
-            }
         }
     }
 
@@ -111,65 +105,4 @@ class TagAssign extends AbstractTag
         $context->set($this->to, $output, true);
     }
 
-    /**
-     * Tokenize markup text
-     *
-     * @param string $markup
-     * @return array
-     */
-    protected function tokenizeMarkup($markup)
-    {
-        $finish_name = false;
-        $finish_sub_name = false;
-        $tokens = token_get_all("<?php $markup ?>");
-        $last = count($tokens) - 1;
-        $filters = [];
-        $filter_num = 0;
-        $name = '';
-        $sub_name = '';
-
-        foreach ($tokens AS $index => $token) {
-            if($index != 0 && $index != $last) {
-                if (is_string($token) && $token === '=') {
-                    $finish_name = true;
-                    continue;
-                }
-                if (is_string($token) && $token === '|') {
-                    if($finish_name) {
-                        $finish_sub_name = true;
-                    } else {
-                        $filter_num++;
-                    }
-                    continue;
-                }
-                if((!$finish_name || !$finish_sub_name) && trim(is_array($token) ? $token[1] : $token)) {
-                    if($finish_name) {
-                        $sub_name .= is_array($token) ? $token[1] : $token;
-                    } else {
-                        $name .= is_array($token) ? $token[1] : $token;
-                    }
-                } elseif ($finish_name && $finish_sub_name && is_array($token) && count($token) == 3) {
-                    if (empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        $filters[$filter_num] = [
-                            'name' => $token[1], 'arguments' => []
-                        ];
-                        continue;
-                    } elseif (!empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        if ($token[0] == T_CONSTANT_ENCAPSED_STRING) {
-                            $token = substr($token[1], 1, -1);
-                        } else {
-                            $token = $token[1];
-                        }
-                        if(is_numeric($token)) {
-                            $filters[$filter_num]['arguments'][] = $token;
-                        } else {
-                            $filters[$filter_num]['arguments'][] = sprintf('"%s"', $token);
-                        }
-                    }
-                }
-            }
-        }
-
-        return [$name, $sub_name, $filters];
-    }
 }

@@ -24,7 +24,7 @@ class Variable
     /**
      * @var array The filters to execute on the variable
      */
-    private $filters;
+    private $filters = array();
 
     /**
      * @var string The name of the variable
@@ -49,14 +49,24 @@ class Variable
      */
     public function __construct($markup, LiquidCompiler $compiler)
     {
-        $this->markup = $markup;
         $this->compiler = $compiler;
+        $this->markup = $markup;
 
-        $filters = $this->tokenizeMarkup($markup);
+        if(preg_match('/(' . Constant::QuotedFragmentPartial . ')(.*)/ms', $markup, $m)) {
+            $this->name = $m[1];
+        }
 
-        $this->filters = array();
-        foreach($filters AS $filter) {
-            $this->filters[] = array($filter['name'], $filter['arguments']);
+        if(preg_match('/' . Constant::FilterSeparatorPartial . '\s*(.*)/ms', $markup, $m)) {
+            if(preg_match_all('/(?:\s+|' . Constant::QuotedFragmentPartial . '|' . Constant::ArgumentSeparator . ')+/ms', $m[1], $s)) {
+                foreach($s[0] AS $f) {
+                    $f = trim($f);
+                    if(preg_match_all('/(?:' . Constant::FilterArgumentSeparator . '|' . Constant::ArgumentSeparator . ')\s*((?:\w+\s*\:\s*)?' . Constant::QuotedFragmentPartial . ')/ms', $f, $a, PREG_PATTERN_ORDER)) {
+                        $this->filters[] = array(array_first(explode(Constant::FilterArgumentSeparator, $f)), $a[1]);
+                    } else {
+                        $this->filters[] = array($f, array());
+                    }
+                }
+            }
         }
 
         if ($this->compiler->getAutoEscape()) {
@@ -135,54 +145,5 @@ class Variable
         }
 
         return $output;
-    }
-
-    /**
-     * Tokenize markup text
-     *
-     * @param string $markup
-     * @return array
-     */
-    protected function tokenizeMarkup($markup)
-    {
-        $finish_name = false;
-        $tokens = token_get_all("<?php $markup ?>");
-        $last = count($tokens) - 1;
-        $filters = [];
-        $filter_num = 0;
-        foreach ($tokens AS $index => $token) {
-            if($index != 0 && $index != $last) {
-                if (is_string($token) && $token === '|') {
-                    if(!$finish_name) {
-                        $finish_name = true;
-                    } else {
-                        $filter_num++;
-                    }
-                    continue;
-                } elseif(!$finish_name && trim(is_array($token) ? $token[1] : $token)) {
-                    $this->name .= is_array($token) ? $token[1] : $token;
-                } elseif ($finish_name && is_array($token) && count($token) == 3) {
-                    if (empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        $filters[$filter_num] = [
-                            'name' => $token[1], 'arguments' => []
-                        ];
-                        continue;
-                    } elseif (!empty($filters[$filter_num]['name']) && $token[0] != T_WHITESPACE) {
-                        if ($token[0] == T_CONSTANT_ENCAPSED_STRING) {
-                            $token = substr($token[1], 1, -1);
-                        } else {
-                            $token = $token[1];
-                        }
-                        if(is_numeric($token)) {
-                            $filters[$filter_num]['arguments'][] = $token;
-                        } else {
-                            $filters[$filter_num]['arguments'][] = sprintf('"%s"', $token);
-                        }
-                    }
-                }
-            }
-        }
-
-        return $filters;
     }
 }

@@ -25,6 +25,7 @@ use Liquid\Traits\TokenizeTrait;
  *
  * http://cheat.markdunkley.com/
  * https://stackoverflow.com/questions/29123188/enabling-liquid-templating-syntax-highlight-in-webstorm-phpstorm/29337624#29337624
+ * https://github.com/Shopify/liquid
  *
  */
 class LiquidCompiler extends Compiler implements CompilerInterface
@@ -69,6 +70,12 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
     // Variable tags.
     const VARIABLE_TAG = ['{{', '}}'];
+
+    const ANY_STARTING_TAG = self::VARIABLE_TAG[0] . '|' . self::OPERATION_TAGS[0];
+
+    const PARTIAL_TEMPLATE_PARSER = self::VARIABLE_TAG[0] . '.*?' . self::VARIABLE_TAG[1] . '|' . self::OPERATION_TAGS[0] . '.*?' . self::OPERATION_TAGS[1];
+
+    const TEMPLATE_PARSER = self::PARTIAL_TEMPLATE_PARSER . '|' . self::ANY_STARTING_TAG;
 
     // Variable name.
     const VARIABLE_NAME = '[a-zA-Z_][a-zA-Z_0-9.-]*';
