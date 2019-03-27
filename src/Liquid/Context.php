@@ -117,13 +117,13 @@ class Context
                 }
             }
 
-            return true;
+            return;
         }
 
         // If it's a function register it simply
         if (function_exists($filter)) {
             $this->methodMap[$filter] = false;
-            return true;
+            return;
         }
 
         throw new LiquidException("Parameter passed to addFilter must a class or a function");
