@@ -297,8 +297,6 @@ class Context
 
             // first try to cast an object to an array or value
             if($object instanceof Model) {
-            } elseif (method_exists($object, 'toLiquid')) {
-                $object = $object->toLiquid();
             } elseif (method_exists($object, 'toArray')) {
                 $object = $object->toArray();
             }
@@ -401,13 +399,11 @@ class Context
             return $object;
         } elseif (method_exists($object, '__toString')) {
             $object = (string)$object;
-        } elseif (method_exists($object, 'toLiquid')) {
-            $object = $object->toLiquid();
         }
 
         // if everything else fails, throw up
         if (is_object($object) && !($object instanceof \Traversable)) {
-            throw new LiquidException(sprintf("Value of type %s has no `toLiquid` nor `__toString` methods", get_class($object)));
+            throw new LiquidException(sprintf("Value of type %s has no `__toString` methods", get_class($object)));
         }
 
         return $object;

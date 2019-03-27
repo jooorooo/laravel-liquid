@@ -90,14 +90,6 @@ abstract class Drop
     }
 
     /**
-     * @return Drop
-     */
-    public function toLiquid()
-    {
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function __toString()
