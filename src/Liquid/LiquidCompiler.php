@@ -273,7 +273,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         if($this->filters) {
             foreach ($this->filters as $filter) {
-                $context->addFilters($filter);
+                $context->addFilter($filter);
             }
         }
 

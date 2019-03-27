@@ -35,18 +35,25 @@ class Context
     public $registers;
 
     /**
-     * The filterbank holds all the filters
-     *
-     * @var Filterbank
-     */
-    protected $filterbank;
-
-    /**
      * Global scopes
      *
      * @var array
      */
     public $environments = array();
+
+    /**
+     * The registered filter objects
+     *
+     * @var array
+     */
+    private $filters = array();
+
+    /**
+     * A map of all filters and the class that contain them (in the case of methods)
+     *
+     * @var array
+     */
+    private $methodMap = array();
 
     /**
      * Constructor
@@ -60,7 +67,6 @@ class Context
     {
         $this->assigns = array($assigns);
         $this->registers = $registers;
-        $this->filterbank = new Filterbank($this);
         // first empty array serves as source for overrides, e.g. as in TagDecrement
         $this->environments = array(array(), $_SERVER);
     }
@@ -86,9 +92,41 @@ class Context
      * @throws LiquidException
      * @throws \ReflectionException
      */
-    public function addFilters($filter)
+    public function addFilter($filter)
     {
-        $this->filterbank->addFilter($filter);
+
+        // If the passed filter was an object, store the object for future reference.
+        if (is_object($filter)) {
+            $filter->context = $this;
+            $name = get_class($filter);
+            $this->filters[$name] = $filter;
+            $filter = $name;
+        }
+
+        // If it wasn't an object an isn't a string either, it's a bad parameter
+        if (!is_string($filter)) {
+            throw new LiquidException("Parameter passed to addFilter must be an object or a string");
+        }
+
+        // If the filter is a class, register all its methods
+        if (class_exists($filter)) {
+            $reflection = new \ReflectionClass($filter);
+            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) AS $method) {
+                if (($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->_disallow_magick_methods)) {
+                    $this->methodMap[$methodName] = $filter;
+                }
+            }
+
+            return true;
+        }
+
+        // If it's a function register it simply
+        if (function_exists($filter)) {
+            $this->methodMap[$filter] = false;
+            return true;
+        }
+
+        throw new LiquidException("Parameter passed to addFilter must a class or a function");
     }
 
     /**
@@ -102,7 +140,26 @@ class Context
      */
     public function invoke($name, $value, array $args = array())
     {
-        return $this->filterbank->invoke($name, $value, $args);
+        array_unshift($args, $value);
+
+        // Consult the mapping
+        if (isset($this->methodMap[$name])) {
+            $class = $this->methodMap[$name];
+
+            // If we have a registered object for the class, use that instead
+            if (isset($this->filters[$class])) {
+                $class = $this->filters[$class];
+            }
+
+            // If we're calling a function
+            if ($class === false) {
+                return call_user_func_array($name, $args);
+            } else {
+                return call_user_func_array([$class, $name], $args);
+            }
+        }
+
+        return $value;
     }
 
     /**
