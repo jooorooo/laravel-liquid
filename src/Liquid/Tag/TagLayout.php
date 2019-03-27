@@ -121,14 +121,14 @@ class TagLayout extends AbstractTag
             $name = null;
 
             $rest = array();
-            $aufzeichnen = false;
+            $block_open = false;
 
             for ($i = 0; $i < count($maintokens); $i++) {
                 if ($blockstartRegexp->match($maintokens[$i])) {
                     $name = $blockstartRegexp->matches[1];
 
                     if (isset($childtokens[$name])) {
-                        $aufzeichnen = true;
+                        $block_open = true;
                         array_push($rest, $maintokens[$i]);
                         foreach ($childtokens[$name] as $item) {
                             array_push($rest, $item);
@@ -136,12 +136,12 @@ class TagLayout extends AbstractTag
                     }
 
                 }
-                if (!$aufzeichnen) {
+                if (!$block_open) {
                     array_push($rest, $maintokens[$i]);
                 }
 
-                if ($blockendRegexp->match($maintokens[$i]) && $aufzeichnen === true) {
-                    $aufzeichnen = false;
+                if ($blockendRegexp->match($maintokens[$i]) && $block_open === true) {
+                    $block_open = false;
                     array_push($rest, $maintokens[$i]);
                 }
             }
