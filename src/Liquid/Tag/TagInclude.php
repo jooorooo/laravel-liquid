@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Support\Collection;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
@@ -123,10 +124,13 @@ class TagInclude extends AbstractTag
         }
 
         if ($this->collection) {
-            foreach ($variable as $item) {
-                $context->set($this->templateName, $item);
-                $result .= $this->document->render($context);
+            if(is_array($variable) || $variable instanceof Collection) {
+                foreach ($variable as $item) {
+                    $context->set($this->templateName, $item);
+                    $result .= $this->document->render($context);
+                }
             }
+
         } else {
             if (!is_null($this->variable)) {
                 $context->set($this->templateName, $variable);
