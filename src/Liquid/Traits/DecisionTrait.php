@@ -87,20 +87,26 @@ trait DecisionTrait
     protected function interpretCondition($left, $right, $op, Context $context)
     {
         if (is_null($op)) {
+            $reverse = false;
+            if(substr($left, 0, 1) == '!') {
+                $left = substr($left, 1);
+                $reverse = true;
+            }
+
             $value = $context->get($left);
             if($value instanceof Collection) {
                 $value = $value->isEmpty() ? null : $value->all();
             }
             $value = $this->stringValue($value);
-            return $value;
+            return $reverse ? !$value : $value;
         }
 
         // values of 'empty' have a special meaning in array comparisons
-        if ($right == 'empty' && is_array($context->get($left))) {
+        if ($right == 'empty' && ($c = $context->get($left)) && (is_array($c) || $c instanceof Collection)) {
             $left = count($context->get($left));
             $right = 0;
 
-        } elseif ($left == 'empty' && is_array($context->get($right))) {
+        } elseif ($left == 'empty' && ($c = $context->get($right)) && (is_array($c) || $c instanceof Collection)) {
             $right = count($context->get($right));
             $left = 0;
 
