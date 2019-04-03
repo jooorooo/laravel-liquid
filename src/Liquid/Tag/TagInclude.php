@@ -91,25 +91,6 @@ class TagInclude extends AbstractTag
     }
 
     /**
-     * Extracts tag attributes from a markup string.
-     *
-     * @param string $markup
-     */
-    protected function extractAttributes($markup)
-    {
-        $this->attributes = array();
-
-        $attributeRegexp = new Regexp(LiquidCompiler::TAG_ATTRIBUTES);
-
-        $matches = $attributeRegexp->scan($markup);
-
-        foreach ($matches as $match) {
-            array_set($this->attributes, $match[0], $match[1]);
-//            $this->attributes[$match[0]] = $match[1];
-        }
-    }
-
-    /**
      * Parses the tokens
      *
      * @param array $tokens
