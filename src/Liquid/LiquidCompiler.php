@@ -78,14 +78,18 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     const TEMPLATE_PARSER = self::PARTIAL_TEMPLATE_PARSER . '|' . self::ANY_STARTING_TAG;
 
     // Variable name.
-    const VARIABLE_NAME = '[a-zA-Z_][a-zA-Z_0-9.-]*';
+    const VARIABLE = '[a-zA-Z_][a-zA-Z_0-9.-]';
+
+    // Variable name.
+    const VARIABLE_NAME = self::VARIABLE . '*';
 
     const QUOTED_FRAGMENT = '"[^"]*"|\'[^\']*\'|(?:[^\s,\|\'"]|"[^"]*"|\'[^\']*\')+';
 
     const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
-    const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
-    
+//    const TAG_ATTRIBUTES = '/(\w+|\w+' . self::QUOTED_FRAGMENT_FILTER_ARGUMENT . ')\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
+    const TAG_ATTRIBUTES = '/(' . self::VARIABLE . '+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
+
     /**
      * Get the path currently being compiled.
      *

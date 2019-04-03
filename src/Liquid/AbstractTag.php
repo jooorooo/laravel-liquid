@@ -91,7 +91,8 @@ abstract class AbstractTag
         $matches = $attributeRegexp->scan($markup);
 
         foreach ($matches as $match) {
-            $this->attributes[$match[0]] = $match[1];
+            array_set($this->attributes, $match[0], $match[1]);
+//            $this->attributes[$match[0]] = $match[1];
         }
     }
 

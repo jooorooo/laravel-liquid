@@ -70,22 +70,43 @@ class TagInclude extends AbstractTag
      */
     public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . $compiler::QUOTED_FRAGMENT . '+))?/');
+        $regex = new Regexp('/(?<template>"[^"]+"|\'[^\']+\')(\s+(?<use>with|for)\s+(?<for>' . $compiler::QUOTED_FRAGMENT . '+))?(?<attributes>.*)?/');
 
         if ($regex->match($markup)) {
-            $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
+            $this->templateName = substr($regex->matches['template'], 1, strlen($regex->matches['template']) - 2);
 
-            if (isset($regex->matches[1])) {
-                $this->collection = (isset($regex->matches[3])) ? ($regex->matches[3] == "for") : null;
-                $this->variable = (isset($regex->matches[4])) ? $regex->matches[4] : null;
+            if (isset($regex->matches['template'])) {
+                $this->collection = (isset($regex->matches['use'])) ? ($regex->matches['use'] == "for") : null;
+                $this->variable = (isset($regex->matches['for'])) ? $regex->matches['for'] : null;
             }
 
-            $this->extractAttributes($markup);
+            if(isset($regex->matches['attributes'])) {
+                $this->extractAttributes($regex->matches['attributes']);
+            }
         } else {
             throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
         }
 
         parent::__construct($markup, $tokens, $compiler);
+    }
+
+    /**
+     * Extracts tag attributes from a markup string.
+     *
+     * @param string $markup
+     */
+    protected function extractAttributes($markup)
+    {
+        $this->attributes = array();
+
+        $attributeRegexp = new Regexp(LiquidCompiler::TAG_ATTRIBUTES);
+
+        $matches = $attributeRegexp->scan($markup);
+
+        foreach ($matches as $match) {
+            array_set($this->attributes, $match[0], $match[1]);
+//            $this->attributes[$match[0]] = $match[1];
+        }
     }
 
     /**
