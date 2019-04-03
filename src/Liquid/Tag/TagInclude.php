@@ -116,6 +116,7 @@ class TagInclude extends AbstractTag
      */
     public function render(Context $context)
     {
+
         $result = '';
         $variable = $context->get($this->variable);
 

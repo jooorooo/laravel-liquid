@@ -233,10 +233,18 @@ class Context
     {
         if ($global) {
             for ($i = 0; $i < count($this->assigns); $i++) {
-                $this->assigns[$i][$key] = $value;
+                if(!isset($this->assigns[$i])) {
+                    $this->assigns[$i] = [];
+                }
+                array_set($this->assigns[$i], $key, $value);
+//                $this->assigns[$i][$key] = $value;
             }
         } else {
-            $this->assigns[0][$key] = $value;
+            if(!isset($this->assigns[0])) {
+                $this->assigns[0] = [];
+            }
+            array_set($this->assigns[0], $key, $value);
+//            $this->assigns[0][$key] = $value;
         }
     }
 
