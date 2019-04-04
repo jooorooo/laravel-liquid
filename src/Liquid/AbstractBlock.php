@@ -116,14 +116,7 @@ class AbstractBlock extends AbstractTag
         $result = '';
 
         foreach ($list as $token) {
-            if((is_object($token) && method_exists($token, 'render'))) {
-                $output = $token->render($context);
-                $result .= is_array($output) ? var_export($output, true) : $output;
-            } else {
-                $result .= $token;
-            }
-
-//            $result .= (is_object($token) && method_exists($token, 'render')) ? $token->render($context) : $token;
+            $result .= (is_object($token) && method_exists($token, 'render')) ? $token->render($context) : $token;
 
             if (isset($context->registers['break'])) {
                 break;

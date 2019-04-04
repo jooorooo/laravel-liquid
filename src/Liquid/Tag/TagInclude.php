@@ -70,19 +70,17 @@ class TagInclude extends AbstractTag
      */
     public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        $regex = new Regexp('/(?<template>"[^"]+"|\'[^\']+\')(\s+(?<use>with|for)\s+(?<for>' . $compiler::QUOTED_FRAGMENT . '+))?(?<attributes>.*)?/');
+        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . $compiler::QUOTED_FRAGMENT . '+))?/');
 
         if ($regex->match($markup)) {
-            $this->templateName = substr($regex->matches['template'], 1, strlen($regex->matches['template']) - 2);
+            $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
 
-            if (isset($regex->matches['template'])) {
-                $this->collection = (isset($regex->matches['use'])) ? ($regex->matches['use'] == "for") : null;
-                $this->variable = (isset($regex->matches['for'])) ? $regex->matches['for'] : null;
+            if (isset($regex->matches[1])) {
+                $this->collection = (isset($regex->matches[3])) ? ($regex->matches[3] == "for") : null;
+                $this->variable = (isset($regex->matches[4])) ? $regex->matches[4] : null;
             }
 
-            if(isset($regex->matches['attributes'])) {
-                $this->extractAttributes($regex->matches['attributes']);
-            }
+            $this->extractAttributes($markup);
         } else {
             throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
         }
@@ -116,7 +114,6 @@ class TagInclude extends AbstractTag
      */
     public function render(Context $context)
     {
-
         $result = '';
         $variable = $context->get($this->variable);
 

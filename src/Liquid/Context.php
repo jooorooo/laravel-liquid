@@ -167,6 +167,7 @@ class Context
             if ($class === false) {
                 return call_user_func_array($name, $args);
             } else {
+                call_user_func_array([new $class($this), $name], $args);
                 return call_user_func_array([new $class($this), $name], $args);
             }
         }
@@ -233,18 +234,10 @@ class Context
     {
         if ($global) {
             for ($i = 0; $i < count($this->assigns); $i++) {
-                if(!isset($this->assigns[$i])) {
-                    $this->assigns[$i] = [];
-                }
-                array_set($this->assigns[$i], $key, $value);
-//                $this->assigns[$i][$key] = $value;
+                $this->assigns[$i][$key] = $value;
             }
         } else {
-            if(!isset($this->assigns[0])) {
-                $this->assigns[0] = [];
-            }
-            array_set($this->assigns[0], $key, $value);
-//            $this->assigns[0][$key] = $value;
+            $this->assigns[0][$key] = $value;
         }
     }
 
@@ -275,8 +268,7 @@ class Context
     {
         // This shouldn't happen
         if (is_array($key)) {
-//            throw new LiquidException("Cannot resolve arrays as key");
-            return array_map([$this, 'resolve'], $key);
+            throw new LiquidException("Cannot resolve arrays as key");
         }
 
         if (is_null($key) || $key == 'null') {
