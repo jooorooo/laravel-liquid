@@ -284,9 +284,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             }
         }
 
-        if(is_null($this->root)) {
-            $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
-        }
+        //if(is_null($this->root)) {
+        $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
+        //}
 
         return $this->root->render($context);
     }
