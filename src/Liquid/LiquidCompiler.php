@@ -14,6 +14,7 @@
 namespace Liquid;
 
 use ErrorException;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\View;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
@@ -225,6 +226,14 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
+     * @return Filesystem
+     */
+    public function getFilesistem()
+    {
+        return $this->files;
+    }
+
+    /**
      * @param $path
      * @return string
      */
@@ -284,9 +293,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             }
         }
 
-        //if(is_null($this->root)) {
         $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
-        //}
 
         return $this->root->render($context);
     }

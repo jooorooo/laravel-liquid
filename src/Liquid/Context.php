@@ -83,7 +83,6 @@ class Context
         $this->environments = array(array(), $_SERVER);
     }
 
-
     /**
      * @return array
      */
@@ -95,6 +94,14 @@ class Context
             }
         }
         return [];
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllAssigns()
+    {
+        return count($this->assigns) > 1 ? call_user_func_array('array_merge', $this->assigns) : $this->getAssigns();
     }
 
     /**
@@ -467,12 +474,12 @@ class Context
         // finally, resolve an object to a string or a plain value. if collection return it
         if($object instanceof Collection) {
             return $object;
-        } elseif (method_exists($object, '__toString')) {
+        } elseif (method_exists($object, '__toString') && !($object instanceof Drop)) {
             $object = (string)$object;
         }
 
         // if everything else fails, throw up
-        if (is_object($object) && !($object instanceof \Traversable)) {
+        if (is_object($object) && !($object instanceof \Traversable) && !($object instanceof Drop)) {
             throw new LiquidException(sprintf("Value of type %s has no `__toString` methods", get_class($object)));
         }
 
