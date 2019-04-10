@@ -101,7 +101,7 @@ class Context
      */
     public function getAllAssigns()
     {
-        return count($this->assigns) > 1 ? call_user_func_array('array_merge', $this->assigns) : $this->getAssigns();
+        return count($this->assigns) > 1 ? call_user_func_array('array_merge', array_reverse($this->assigns)) : $this->getAssigns();
     }
 
     /**

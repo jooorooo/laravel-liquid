@@ -12,6 +12,9 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
+use Liquid\Constant;
+use Liquid\Context;
+use Liquid\Document;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
@@ -31,6 +34,11 @@ class TagBlock extends AbstractBlock
      * @var string
      */
     private $block;
+
+    /**
+     * @var bool check if self included
+     */
+    private $self_include = false;
 
     /**
      * Constructor
