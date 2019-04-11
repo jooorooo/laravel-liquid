@@ -11,6 +11,8 @@
 
 namespace Liquid;
 
+use Liquid\Tag\TagBlock;
+
 /**
  * Base class for blocks.
  */

@@ -109,6 +109,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
+     * Get the path to the compiled directory.
+     *
+     * @return string
+     */
+    public function getCompiledCachePath()
+    {
+        return $this->cachePath;
+    }
+
+    /**
      * Set view extension
      *
      * @param string $value
