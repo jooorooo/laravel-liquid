@@ -194,7 +194,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function getTags()
     {
-        return $this->tags;
+        return $this->tags ? : [];
     }
 
     /**

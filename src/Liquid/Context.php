@@ -290,6 +290,10 @@ class Context
             return false;
         }
 
+//        if (in_array($key, ['empty', 'blank'])) {
+//            return $key;
+//        }
+
         if (preg_match('/^\'(.*)\'$/', $key, $matches)) {
             return $matches[1];
         }

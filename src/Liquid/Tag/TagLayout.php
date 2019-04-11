@@ -104,11 +104,12 @@ class TagLayout extends AbstractTag
         $maintokens = $this->tokenize($source);
 
         $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*layout (.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
-        foreach ($maintokens as $maintoken)
+        foreach ($maintokens as $maintoken) {
             if ($eRegexp->match($maintoken)) {
                 $m = $eRegexp->matches[1];
                 break;
             }
+        }
 
         if (isset($m)) {
             $rest = array_merge($maintokens, $tokens);

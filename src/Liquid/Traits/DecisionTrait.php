@@ -105,11 +105,21 @@ trait DecisionTrait
         if ($right == 'empty' && ($c = $context->get($left)) && (is_array($c) || $c instanceof Collection)) {
             $left = count($context->get($left));
             $right = 0;
-
         } elseif ($left == 'empty' && ($c = $context->get($right)) && (is_array($c) || $c instanceof Collection)) {
             $right = count($context->get($right));
             $left = 0;
-
+        } elseif ($right == 'blank') {
+            $c = $context->get($left);
+            if($c instanceof Collection) {
+                $c = all();
+            }
+            return $this->blankOperationCompare($c, $op, '@');
+        } elseif ($left == 'blank') {
+            $c = $context->get($right);
+            if($c instanceof Collection) {
+                $c = all();
+            }
+            return $this->blankOperationCompare('@', $op, $c);
         } else {
             $left = $context->get($left);
             $right = $context->get($right);
@@ -156,6 +166,32 @@ trait DecisionTrait
 
             case 'contains':
                 return is_array($left) ? in_array($right, $left) : (strpos($left, $right) !== false);
+
+            default:
+                throw new LiquidException("Error in tag '" . $this->name() . "' - Unknown operator $op");
+        }
+    }
+
+    /**
+     * Interpret a comparison for blank
+     *
+     * @param string $left
+     * @param string $op
+     * @param string $right
+     * @param Context $context
+     *
+     * @throws \Liquid\LiquidException
+     * @return bool
+     */
+    protected function blankOperationCompare($left, $op, $right)
+    {
+        // regular rules
+        switch ($op) {
+            case '==':
+                return $left == '@' ? empty($right) : empty($left);
+
+            case '!=':
+                return $left == '@' ? !empty($right) : !empty($left);
 
             default:
                 throw new LiquidException("Error in tag '" . $this->name() . "' - Unknown operator $op");
