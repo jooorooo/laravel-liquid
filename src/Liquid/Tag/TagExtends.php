@@ -24,9 +24,9 @@ use Liquid\Regexp;
  *
  * Example:
  *
- *     {% layout "base" %}
+ *     {% extends "base" %}
  */
-class TagLayout extends AbstractTag
+class TagExtends extends AbstractTag
 {
     /**
      * @var string The name of the template
@@ -54,7 +54,7 @@ class TagLayout extends AbstractTag
         if ($regex->match($markup)) {
             $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
         } else {
-            throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template name]'");
+            throw new LiquidException("Error in tag 'extends' - Valid syntax: extends '[template name]'");
         }
 
         parent::__construct($markup, $tokens, $compiler);
@@ -103,7 +103,7 @@ class TagLayout extends AbstractTag
         // tokens in this new document
         $maintokens = $this->tokenize($source);
 
-        $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*layout (.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+        $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*extends (.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
         foreach ($maintokens as $maintoken) {
             if ($eRegexp->match($maintoken)) {
                 $m = $eRegexp->matches[1];

@@ -14,7 +14,7 @@ use Liquid\Tag\TagIf;
 use Liquid\Tag\TagIfchanged;
 use Liquid\Tag\TagInclude;
 use Liquid\Tag\TagIncrement;
-use Liquid\Tag\TagLayout;
+use Liquid\Tag\TagExtends;
 use Liquid\Tag\TagPaginate;
 use Liquid\Tag\TagRaw;
 use Liquid\Tag\TagTablerow;
@@ -68,7 +68,7 @@ return [
         'ifchanged' => TagIfchanged::class,
         'include' => TagInclude::class,
         'increment' => TagIncrement::class,
-        'layout' => TagLayout::class,
+        'extends' => TagExtends::class,
         'paginate' => TagPaginate::class,
         'raw' => TagRaw::class,
         'tablerow' => TagTablerow::class,

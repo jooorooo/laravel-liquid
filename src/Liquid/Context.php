@@ -290,9 +290,14 @@ class Context
             return false;
         }
 
-//        if (in_array($key, ['empty', 'blank'])) {
-//            return $key;
-//        }
+        if (in_array($key, ['empty', 'blank'])) {
+            return $key;
+        }
+
+        //array key argument
+        if(substr($key, -1) === ':') {
+            return substr($key, 0, -1);
+        }
 
         if (preg_match('/^\'(.*)\'$/', $key, $matches)) {
             return $matches[1];
