@@ -16,6 +16,7 @@ namespace Liquid;
  */
 class Document extends AbstractBlock
 {
+
     /**
      * There isn't a real delimiter
      *

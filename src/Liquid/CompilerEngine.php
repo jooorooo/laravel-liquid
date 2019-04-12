@@ -54,9 +54,7 @@ class CompilerEngine extends PhpEngine
 
         $obLevel = ob_get_level();
         try {
-            if ($this->compiler->isExpired($path)) {
-                $this->compiler->compile($path);
-            }
+            $this->compiler->compile($path);
 
             $results = $this->compiler->render($path, $data);
 

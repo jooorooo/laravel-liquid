@@ -77,7 +77,6 @@ class TagInclude extends AbstractTag
     public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . $compiler::QUOTED_FRAGMENT . '+))?/');
-
         if ($regex->match($markup)) {
             $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
 
@@ -122,6 +121,7 @@ class TagInclude extends AbstractTag
      *
      * @return string
      * @throws LiquidException
+     * @throws \Throwable
      */
     public function render(Context $context)
     {
@@ -179,6 +179,7 @@ class TagInclude extends AbstractTag
      *
      * @return string
      * @throws LiquidException
+     * @throws \Throwable
      */
     protected function _renderOutline(Context $context)
     {

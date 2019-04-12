@@ -12,6 +12,7 @@
 namespace Liquid;
 
 use Liquid\Tag\TagBlock;
+use Liquid\Tag\TagLayout;
 
 /**
  * Base class for blocks.
@@ -71,9 +72,15 @@ class AbstractBlock extends AbstractTag
                     }
 
                     if ($tagName !== null) {
-                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
                         if ($tagRegexp->matches[1] == 'layout') {
-                            return;
+                            /** @var TagLayout $layout */
+                            $layout = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
+                            $this->compiler->setLayoutPath($layout->getPath());
+                        } else {
+                            $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
+                            if ($tagRegexp->matches[1] == 'extends') {
+                                return;
+                            }
                         }
                     } else {
                         $this->unknownTag($tagRegexp->matches[1], $tagRegexp->matches[2], $tokens);

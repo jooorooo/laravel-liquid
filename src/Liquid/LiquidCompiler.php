@@ -14,6 +14,7 @@
 namespace Liquid;
 
 use ErrorException;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\View;
 use Illuminate\View\Compilers\Compiler;
@@ -60,6 +61,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     protected $path;
 
     /**
+     * @var CompilerEngine
+     */
+    protected $compiler;
+
+    /**
+     * @var string
+     */
+    protected $layoutAbsolutePath;
+
+    /**
      * A stack of the last compiled templates.
      *
      * @var array
@@ -86,6 +97,31 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
+
+    /**
+     * layout path
+     *
+     * @var string
+     */
+    protected $layoutPath = null;
+
+    /**
+     * @return string
+     */
+    public function getLayoutPath(): ?string
+    {
+        return $this->layoutPath;
+    }
+
+    /**
+     * @param null|string $layoutPath
+     * @return $this
+     */
+    public function setLayoutPath(?string $layoutPath): self
+    {
+        $this->layoutPath = $layoutPath;
+        return $this;
+    }
     
     /**
      * Get the path currently being compiled.
@@ -136,7 +172,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function getViewFinder()
     {
-        return View::shared('__env')->getFinder();
+        return view()->shared('__env')->getFinder();
     }
 
     /**
@@ -228,7 +264,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     /**
      * @param $path
      * @return string
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function getFileSource($path)
     {
@@ -255,7 +291,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     /**
      * @param $path
      * @return string
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function getTemplateSource($path)
     {
@@ -267,7 +303,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      *
      * @param  string $path
      * @return void
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function compile($path = null)
     {
@@ -279,7 +315,15 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         $this->root = new Document(null, $templateTokens, $this);
 
-        $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
+        if(($layoutPath = $this->getLayoutPath()) && $layoutPath != 'none') {
+            $view = view($layoutPath . '.theme');
+            $this->compiler = $view->getEngine();
+            $this->layoutAbsolutePath = $view->getPath();
+        }
+
+        if($this->isExpired($path)) {
+            $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
+        }
     }
 
     /**
@@ -289,8 +333,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      * @param array $assigns an array of values for the template
      *
      * @return string
+     * @throws ErrorException
+     * @throws FileNotFoundException
      * @throws LiquidException
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      * @throws \ReflectionException
      */
     public function render($path, array $assigns = [])
@@ -305,7 +350,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
 
-        return $this->root->render($context);
+        $result = $this->root->render($context);
+
+        if($this->compiler && $this->getLayoutPath()) {
+            $this->setLayoutPath(null);
+            $result = $this->compiler->get($this->layoutAbsolutePath, array_merge($context->getAssigns(), [
+                'content_for_layout' => $result
+            ]));
+        }
+
+        return $result;
     }
 
     /**
