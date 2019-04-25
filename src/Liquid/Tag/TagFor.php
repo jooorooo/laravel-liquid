@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Support\Collection;
 use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
@@ -149,11 +150,17 @@ class TagFor extends AbstractBlock
 
                 $collection = $context->get($this->collectionName);
 
-                if ($collection instanceof \Traversable) {
+                if ($collection instanceof Collection) {
+                    $collection = $collection->all();
+                } elseif ($collection instanceof \Traversable) {
                     $collection = iterator_to_array($collection);
                 }
 
                 if (is_null($collection) || !is_array($collection) || count($collection) == 0) {
+                    if(!$collection) {
+                        return '';
+                    }
+
                     $context->push();
                     $nodelist = array_pop($this->nodelistHolders);
                     $result = $this->renderAll($nodelist, $context);
