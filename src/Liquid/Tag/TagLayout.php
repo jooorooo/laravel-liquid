@@ -24,15 +24,19 @@ use Liquid\Regexp;
  *
  * Example:
  *
- *     {% layout "layout2" %}
- *     {% layout "none" %}
+ *     {% layout "base" %}
  */
 class TagLayout extends AbstractTag
 {
     /**
      * @var string The name of the template
      */
-    protected $path;
+    private $layoutPath;
+
+    /**
+     * @var Document The Document that represents the included template
+     */
+    private $document;
 
     /**
      * Constructor
@@ -48,10 +52,44 @@ class TagLayout extends AbstractTag
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
 
         if ($regex->match($markup)) {
-            $this->path = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
+            $this->layoutPath = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
         } else {
-            throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[layout template dir]'");
+            throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template path]'");
         }
+
+        parent::__construct($markup, $tokens, $compiler);
+    }
+
+    /**
+     * Parses the tokens
+     *
+     * @param array $tokens
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     */
+    public function parse(array &$tokens)
+    {
+        if($this->layoutPath == 'none') {
+            $rest = $tokens;
+        } else {
+            // read the source of the template and create a new sub document
+            $source = $this->compiler->getTemplateSource($this->layoutPath . '.theme');
+
+            // tokens in this new document
+            $maintokens = $this->tokenize($source);
+
+            $rest = array();
+
+            $eRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '\s*content_for_layout\s*' . LiquidCompiler::VARIABLE_TAG[1] . '$/');
+            foreach ($maintokens AS $maintoken) {
+                if ($eRegexp->match($maintoken)) {
+                    $rest = array_merge($rest, $tokens);
+                } else {
+                    array_push($rest, $maintoken);
+                }
+            }
+        }
+
+        $this->document = new Document(null, $rest, $this->compiler);
     }
 
     /**
@@ -64,14 +102,9 @@ class TagLayout extends AbstractTag
      */
     public function render(Context $context)
     {
-        return '';
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getPath()
-    {
-        return $this->path;
+        $context->push();
+        $result = $this->document->render($context);
+        $context->pop();
+        return $result;
     }
 }

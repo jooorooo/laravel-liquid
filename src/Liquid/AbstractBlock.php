@@ -72,16 +72,11 @@ class AbstractBlock extends AbstractTag
                     }
 
                     if ($tagName !== null) {
-                        if ($tagRegexp->matches[1] == 'layout') {
-                            /** @var TagLayout $layout */
-                            $layout = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
-                            $this->compiler->setLayoutPath($layout->getPath());
-                        } else {
-                            $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
-                            if ($tagRegexp->matches[1] == 'extends') {
-                                return;
-                            }
+                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
+                        if (in_array($tagRegexp->matches[1], ['extends', 'layout'])) {
+                            return;
                         }
+
                     } else {
                         $this->unknownTag($tagRegexp->matches[1], $tagRegexp->matches[2], $tokens);
                     }

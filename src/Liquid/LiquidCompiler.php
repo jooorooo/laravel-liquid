@@ -66,11 +66,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     protected $compiler;
 
     /**
-     * @var string
-     */
-    protected $layoutAbsolutePath;
-
-    /**
      * A stack of the last compiled templates.
      *
      * @var array
@@ -97,31 +92,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
-
-    /**
-     * layout path
-     *
-     * @var string
-     */
-    protected $layoutPath = null;
-
-    /**
-     * @return string
-     */
-    public function getLayoutPath(): ?string
-    {
-        return $this->layoutPath;
-    }
-
-    /**
-     * @param null|string $layoutPath
-     * @return $this
-     */
-    public function setLayoutPath(?string $layoutPath): self
-    {
-        $this->layoutPath = $layoutPath;
-        return $this;
-    }
     
     /**
      * Get the path currently being compiled.
@@ -315,12 +285,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         $this->root = new Document(null, $templateTokens, $this);
 
-        if(($layoutPath = $this->getLayoutPath()) && $layoutPath != 'none') {
-            $view = view($layoutPath . '.theme');
-            $this->compiler = $view->getEngine();
-            $this->layoutAbsolutePath = $view->getPath();
-        }
-
         if($this->isExpired($path)) {
             $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
         }
@@ -351,13 +315,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
 
         $result = $this->root->render($context);
-
-        if($this->compiler && $this->getLayoutPath()) {
-            $this->setLayoutPath(null);
-            $result = $this->compiler->get($this->layoutAbsolutePath, array_merge($context->getAssigns(), [
-                'content_for_layout' => $result
-            ]));
-        }
 
         return $result;
     }
