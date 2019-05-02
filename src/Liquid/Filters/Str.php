@@ -102,7 +102,7 @@ class Str
     {
         if (is_string($input) || is_numeric($input)) {
             if (strlen($input) > $characters) {
-                return substr($input, 0, $characters) . $ending;
+                return IlluminateStr::substr($input, 0, $characters) . $ending;
             }
         }
 
