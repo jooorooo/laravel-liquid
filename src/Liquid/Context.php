@@ -26,6 +26,12 @@ class Context
      * @var array
      */
     protected $assigns;
+    /**
+     * Local scopes
+     *
+     * @var array
+     */
+    protected $assigns_globals = array();
 
     /**
      * Registers for non-variable state data
@@ -239,10 +245,8 @@ class Context
      */
     public function set($key, $value, $global = false)
     {
-        if ($global) {
-            for ($i = 0; $i < count($this->assigns); $i++) {
-                $this->assigns[$i][$key] = $value;
-            }
+        if($global) {
+            $this->assigns_globals[$key] = $value;
         } else {
             $this->assigns[0][$key] = $value;
         }
@@ -332,6 +336,10 @@ class Context
             if (array_key_exists($key, $environment)) {
                 return $environment[$key];
             }
+        }
+
+        if(array_key_exists($key, $this->assigns_globals)) {
+            return $this->assigns_globals[$key];
         }
 
         foreach ($this->assigns as $scope) {
