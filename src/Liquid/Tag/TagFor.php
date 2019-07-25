@@ -158,6 +158,11 @@ class TagFor extends AbstractBlock
 
                 if (is_null($collection) || !is_array($collection) || count($collection) == 0) {
                     if(!$collection) {
+                        foreach ($this->blocks as $block) {
+                            if ($block[0] == 'else') {
+                                return $this->renderAll($block[2], $context);
+                            }
+                        }
                         return '';
                     }
 
