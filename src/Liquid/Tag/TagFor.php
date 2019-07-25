@@ -201,9 +201,11 @@ class TagFor extends AbstractBlock
                 $nodelist = $this->nodelistHolders[0];
 
                 foreach ($segment as $key => $item) {
-                    $value = is_numeric($key) ? $item : array($key, $item);
+                    //$value = is_numeric($key) ? $item : array($key, $item);
+                    $value = $item;
                     $context->set($this->variableName, $value);
                     $context->set('forloop', array(
+                        'key' => $key,
                         'name' => $this->name,
                         'length' => $length,
                         'index' => $index + 1,
