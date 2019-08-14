@@ -106,8 +106,12 @@ class TagIf extends AbstractBlock
     {
         $context->push();
 
-        $logicalRegex = new Regexp('/\s+(and|or)\s+/');
+        $logicalRegex = new Regexp('/\s+(and|or)\s+/i');
         $conditionalRegex = new Regexp('/(' . LiquidCompiler::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')?/');
+
+        $a = collect($this->blocks)->filter(function($a) {
+            return strpos($a[1], 'total_variants') !== false;
+        });
 
         $result = '';
         foreach ($this->blocks as $block) {
@@ -148,7 +152,7 @@ class TagIf extends AbstractBlock
                 $results = array();
                 foreach ($logicalOperators as $k => $logicalOperator) {
                     $r = $this->interpretCondition($conditions[$k]['left'], $conditions[$k]['right'], $conditions[$k]['operator'], $context);
-                    if ($logicalOperator == 'and') {
+                    if (strtolower($logicalOperator) == 'and') {
                         $boolean = $boolean && $this->isTruthy($r);
                     } else {
                         $results[] = $boolean;
