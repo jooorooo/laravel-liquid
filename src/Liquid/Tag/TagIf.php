@@ -56,6 +56,13 @@ class TagIf extends AbstractBlock
     protected $blocks = array();
 
     /**
+     * @var array
+     */
+    protected $conditional_operators = [
+        '==', '!=', '>=', '<=',  '>', '<', 'contains'
+    ];
+
+    /**
      * Constructor
      *
      * @param string $markup
@@ -107,11 +114,14 @@ class TagIf extends AbstractBlock
         $context->push();
 
         $logicalRegex = new Regexp('/\s+(and|or)\s+/i');
-        $conditionalRegex = new Regexp('/(' . LiquidCompiler::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')?/');
+        $co = str_replace([
+            '>', '<', '!'
+        ], [
+            '\>', '\<', '\!'
+        ], implode('|', $this->conditional_operators));
 
-        $a = collect($this->blocks)->filter(function($a) {
-            return strpos($a[1], 'total_variants') !== false;
-        });
+        //$conditionalRegex = new Regexp('/(' . LiquidCompiler::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')?/');
+        $conditionalRegex = new Regexp('/^\s*(((?!(' . $co . ')).)*)\s*(' . $co . ')?\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')?\s*$/');
 
         $result = '';
         foreach ($this->blocks as $block) {
@@ -122,6 +132,7 @@ class TagIf extends AbstractBlock
             }
 
             if ($block[0] == 'if' || $block[0] == 'elsif') {
+
                 // Extract logical operators
                 $logicalRegex->matchAll($block[1]);
 
@@ -135,8 +146,8 @@ class TagIf extends AbstractBlock
                 foreach ($temp as $condition) {
                     if ($conditionalRegex->match($condition)) {
                         $left = (isset($conditionalRegex->matches[1])) ? $conditionalRegex->matches[1] : null;
-                        $operator = (isset($conditionalRegex->matches[2])) ? $conditionalRegex->matches[2] : null;
-                        $right = (isset($conditionalRegex->matches[3])) ? $conditionalRegex->matches[3] : null;
+                        $operator = (isset($conditionalRegex->matches[4])) ? $conditionalRegex->matches[4] : null;
+                        $right = (isset($conditionalRegex->matches[5])) ? $conditionalRegex->matches[5] : null;
 
                         array_push($conditions, array(
                             'left' => $left,

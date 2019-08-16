@@ -282,6 +282,10 @@ class Context
             throw new LiquidException("Cannot resolve arrays as key");
         }
 
+        if(is_string($key)) {
+            $key = trim($key);
+        }
+
         if (is_null($key) || $key == 'null') {
             return null;
         }
