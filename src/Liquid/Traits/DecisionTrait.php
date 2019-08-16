@@ -11,6 +11,7 @@ namespace Liquid\Traits;
 use Illuminate\Support\Collection;
 use Liquid\Context;
 use Liquid\LiquidException;
+use Liquid\Variable;
 
 trait DecisionTrait
 {
@@ -93,7 +94,7 @@ trait DecisionTrait
                 $reverse = true;
             }
 
-            $value = $context->get($left);
+            $value = $this->getValue($left, $context);
             if($value instanceof Collection) {
                 $value = $value->isEmpty() ? null : $value->all();
             }
@@ -102,27 +103,28 @@ trait DecisionTrait
         }
 
         // values of 'empty' have a special meaning in array comparisons
-        if ($right == 'empty' && ($c = $context->get($left)) && (is_array($c) || $c instanceof Collection)) {
-            $left = count($context->get($left));
+        if ($right == 'empty' && ($c = $this->getValue($left, $context)) && (is_array($c) || $c instanceof Collection)) {
+            $left = count($this->getValue($left, $context));
             $right = 0;
-        } elseif ($left == 'empty' && ($c = $context->get($right)) && (is_array($c) || $c instanceof Collection)) {
-            $right = count($context->get($right));
+        } elseif ($left == 'empty' && ($c = $this->getValue($right, $context)) && (is_array($c) || $c instanceof Collection)) {
+            $right = count($this->getValue($right, $context));
             $left = 0;
         } elseif ($right == 'blank') {
-            $c = $context->get($left);
+            $c = $this->getValue($left, $context);
             if($c instanceof Collection) {
                 $c = all();
             }
             return $this->blankOperationCompare($c, $op, '@');
         } elseif ($left == 'blank') {
-            $c = $context->get($right);
+            $c = $this->getValue($right, $context);
             if($c instanceof Collection) {
                 $c = all();
             }
             return $this->blankOperationCompare('@', $op, $c);
         } else {
-            $left = $context->get($left);
-            $right = $context->get($right);
+
+            $left = $this->getValue($left, $context);
+            $right = $this->getValue($right, $context);
 
             $left = $this->stringValue($left);
             $right = $this->stringValue($right);
@@ -170,6 +172,12 @@ trait DecisionTrait
             default:
                 throw new LiquidException("Error in tag '" . $this->name() . "' - Unknown operator $op");
         }
+    }
+
+    protected function getValue($text, Context $context)
+    {
+        $var = new Variable($text, $this->compiler);
+        return $var->render($context);
     }
 
     /**

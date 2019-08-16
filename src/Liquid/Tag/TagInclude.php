@@ -66,6 +66,11 @@ class TagInclude extends AbstractTag
     private $self_include = false;
 
     /**
+     * @var bool check if is dinamic
+     */
+    private $dinamic = false;
+
+    /**
      * Constructor
      *
      * @param string $markup

@@ -383,8 +383,9 @@ class Context
                 array_push($parts, $match);
             }
         }
-
+        
         $object = $this->fetch(array_shift($parts));
+
         while (count($parts) > 0) {
             // since we still have a part to consider
             // and since we can't dig deeper into plain values
