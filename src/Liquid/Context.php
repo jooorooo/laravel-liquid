@@ -13,7 +13,6 @@ namespace Liquid;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Collection;
 
 /**
  * Context keeps the variable stack and resolves variables, as well as keywords.
@@ -394,12 +393,6 @@ class Context
                 return null;
             }
 
-            // first try to cast an object to an array or value
-            if($object instanceof Model) {
-            } elseif (method_exists($object, 'toArray')) {
-                $object = $object->toArray();
-            }
-
             if (is_null($object)) {
                 return null;
             }
@@ -494,9 +487,7 @@ class Context
         }
 
         // finally, resolve an object to a string or a plain value. if collection return it
-        if($object instanceof Collection) {
-            return $object;
-        } elseif (method_exists($object, '__toString') && !($object instanceof Drop)) {
+        if (method_exists($object, '__toString') && !($object instanceof Drop)) {
             $object = (string)$object;
         }
 

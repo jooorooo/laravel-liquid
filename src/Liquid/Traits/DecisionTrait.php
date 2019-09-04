@@ -8,7 +8,6 @@
 
 namespace Liquid\Traits;
 
-use Illuminate\Support\Collection;
 use Liquid\Context;
 use Liquid\LiquidException;
 use Liquid\Variable;
@@ -95,31 +94,23 @@ trait DecisionTrait
             }
 
             $value = $this->getValue($left, $context);
-            if($value instanceof Collection) {
-                $value = $value->isEmpty() ? null : $value->all();
-            }
+            
             $value = $this->stringValue($value);
             return $reverse ? !$value : $value;
         }
 
         // values of 'empty' have a special meaning in array comparisons
-        if ($right == 'empty' && ($c = $this->getValue($left, $context)) && (is_array($c) || $c instanceof Collection)) {
+        if ($right == 'empty' && ($c = $this->getValue($left, $context)) && is_array($c)) {
             $left = count($this->getValue($left, $context));
             $right = 0;
-        } elseif ($left == 'empty' && ($c = $this->getValue($right, $context)) && (is_array($c) || $c instanceof Collection)) {
+        } elseif ($left == 'empty' && ($c = $this->getValue($right, $context)) && is_array($c)) {
             $right = count($this->getValue($right, $context));
             $left = 0;
         } elseif ($right == 'blank') {
             $c = $this->getValue($left, $context);
-            if($c instanceof Collection) {
-                $c = all();
-            }
             return $this->blankOperationCompare($c, $op, '@');
         } elseif ($left == 'blank') {
             $c = $this->getValue($right, $context);
-            if($c instanceof Collection) {
-                $c = all();
-            }
             return $this->blankOperationCompare('@', $op, $c);
         } else {
 

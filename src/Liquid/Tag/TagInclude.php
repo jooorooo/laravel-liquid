@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use Illuminate\Support\Collection;
 use Liquid\AbstractTag;
 use Liquid\Constant;
 use Liquid\Document;
@@ -157,7 +156,7 @@ class TagInclude extends AbstractTag
         }
 
         if ($this->collection) {
-            if(is_array($variable) || $variable instanceof Collection) {
+            if(is_array($variable)) {
                 foreach ($variable as $item) {
                     $context->set($this->templateName, $item);
                     $result .= $this->document->render($context);
@@ -203,7 +202,7 @@ class TagInclude extends AbstractTag
         }
 
         if ($this->collection) {
-            if(is_array($variable) || $variable instanceof Collection) {
+            if(is_array($variable)) {
                 foreach ($variable as $item) {
                     $assigns[$this->templateName] = $item;
                     $result .= view($this->templateName, $assigns)->render();

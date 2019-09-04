@@ -10,7 +10,6 @@ namespace Liquid\Filters;
 
 use Iterator;
 use Traversable;
-use Illuminate\Support\Collection;
 
 class Arr
 {
@@ -25,9 +24,7 @@ class Arr
      */
     public static function join($input, $glue = ' ')
     {
-        if($input instanceof Collection) {
-            return $input->implode($glue);
-        } elseif ($input instanceof Traversable) {
+        if ($input instanceof Traversable) {
             $str = '';
             foreach ($input as $elem) {
                 if ($str) {
@@ -49,9 +46,7 @@ class Arr
      */
     public static function first($input)
     {
-        if($input instanceof Collection) {
-            return $input->first();
-        } elseif ($input instanceof Iterator) {
+        if ($input instanceof Iterator) {
             $input->rewind();
             return $input->current();
         }
@@ -67,9 +62,7 @@ class Arr
      */
     public static function last($input)
     {
-        if($input instanceof Collection) {
-            return $input->last();
-        } elseif ($input instanceof Traversable) {
+        if ($input instanceof Traversable) {
             $last = null;
             foreach ($input as $elem) {
                 $last = $elem;
@@ -89,9 +82,7 @@ class Arr
      */
     public static function map($input, $property)
     {
-        if($input instanceof Collection) {
-            $input = $input->all();
-        } elseif ($input instanceof Traversable) {
+        if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
         if (!is_array($input)) {
@@ -116,9 +107,7 @@ class Arr
      */
     public static function reverse($input)
     {
-        if($input instanceof Collection) {
-            $input = $input->all();
-        } elseif ($input instanceof Traversable) {
+        if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
         return array_reverse($input);
@@ -128,16 +117,14 @@ class Arr
     /**
      * Sort the elements of an array
      *
-     * @param array|Traversable|Collection $input
+     * @param array|Traversable $input
      * @param string $property use this property of an array element
      *
      * @return array
      */
     public static function sort($input, $property = null)
     {
-        if($input instanceof Collection) {
-            $input = $input->all();
-        } elseif ($input instanceof \Traversable) {
+        if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);
         }
         if ($property === null) {
@@ -167,9 +154,7 @@ class Arr
      */
     public static function uniq($input)
     {
-        if($input instanceof Collection) {
-            $input = $input->all();
-        } elseif ($input instanceof \Traversable) {
+        if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);
         }
         return array_unique($input);

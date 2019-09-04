@@ -9,7 +9,6 @@
 namespace Liquid\Filters;
 
 use Iterator;
-use Illuminate\Support\Collection;
 
 class Multy
 {
@@ -23,9 +22,7 @@ class Multy
      */
     public static function size($input)
     {
-        if ($input instanceof Collection) {
-            return $input->count();
-        } elseif ($input instanceof Iterator) {
+        if ($input instanceof Iterator) {
             return iterator_count($input);
         }
         if (is_string($input) || is_numeric($input)) {
@@ -42,7 +39,7 @@ class Multy
     }
 
     /**
-     * @param array|Iterator|string|Collection $input
+     * @param array|Iterator|string $input
      * @param int $offset
      * @param int $length
      *
@@ -50,9 +47,7 @@ class Multy
      */
     public static function slice($input, $offset, $length = null)
     {
-        if($input instanceof Collection) {
-            $input = $input->all();
-        } elseif ($input instanceof Iterator) {
+        if ($input instanceof Iterator) {
             $input = iterator_to_array($input);
         }
         if (is_array($input)) {
