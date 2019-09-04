@@ -11,9 +11,6 @@
 
 namespace Liquid;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
-
 /**
  * Context keeps the variable stack and resolves variables, as well as keywords.
  */
@@ -432,33 +429,6 @@ class Context
 
                 $object = $object->invokeDrop($nextPartName);
                 continue;
-            }
-
-            //
-            if($object instanceof Model) {
-                if(is_callable([$object, $nextPartName]) && method_exists($object, $nextPartName)) {
-                    if($object->relationLoaded($nextPartName)) {
-                        $object = $object->$nextPartName;
-                    } else {
-                        $value = call_user_func([$object, $nextPartName]);
-                        if ($value instanceof Drop) {
-                            $value->setContext($this);
-                        }
-                        $object = $value;
-                    }
-                    if($object instanceof Relation) {
-                        $object = $object->get();
-                    }
-                    continue;
-                } else {
-                    $value =  $object->$nextPartName;
-                    if ($value instanceof Drop) {
-                        $value->setContext($this);
-                        $object = $value;
-                        continue;
-                    }
-                    return $value;
-                }
             }
 
             // if it has `get` or `field_exists` methods
