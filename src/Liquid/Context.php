@@ -11,6 +11,8 @@
 
 namespace Liquid;
 
+use IteratorAggregate;
+
 /**
  * Context keeps the variable stack and resolves variables, as well as keywords.
  */
@@ -358,6 +360,23 @@ class Context
     }
 
     /**
+     * Transform IteratorAggregate to array
+     *
+     * @param mixed $object
+     *
+     * @return mixed
+     */
+    private function transformIteratorAggregate($object)
+    {
+        if($object instanceof IteratorAggregate) {
+            /** @var \ArrayIterator $object */
+            $object = $object->getIterator()->getArrayCopy();
+        }
+
+        return $object;
+    }
+
+    /**
      * Resolved the namespaced queries gracefully.
      *
      * @param string $key
@@ -379,8 +398,8 @@ class Context
                 array_push($parts, $match);
             }
         }
-        
-        $object = $this->fetch(array_shift($parts));
+
+        $object = $this->transformIteratorAggregate($this->fetch(array_shift($parts)));
 
         while (count($parts) > 0) {
             // since we still have a part to consider
@@ -397,6 +416,8 @@ class Context
             if ($object instanceof Drop) {
                 $object->setContext($this);
             }
+
+            $object = $this->transformIteratorAggregate($object);
 
             $nextPartName = array_shift($parts);
 
