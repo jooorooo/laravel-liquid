@@ -417,8 +417,6 @@ class Context
                 $object->setContext($this);
             }
 
-            $object = $this->transformIteratorAggregate($object);
-
             $nextPartName = array_shift($parts);
 
             if (is_array($object)) {
@@ -432,7 +430,7 @@ class Context
                     return null;
                 }
 
-                $object = $object[$nextPartName];
+                $object = $this->transformIteratorAggregate($object[$nextPartName]);
                 continue;
             }
 
@@ -448,7 +446,7 @@ class Context
                     return null;
                 }
 
-                $object = $object->invokeDrop($nextPartName);
+                $object = $this->transformIteratorAggregate($object->invokeDrop($nextPartName));
                 continue;
             }
 
@@ -458,7 +456,7 @@ class Context
                     return null;
                 }
 
-                $object = $object->get($nextPartName);
+                $object = $this->transformIteratorAggregate($object->get($nextPartName));
                 continue;
             }
 
@@ -470,7 +468,7 @@ class Context
 
             // then try a property (independent of accessibility)
             if (property_exists($object, $nextPartName)) {
-                $object = $object->$nextPartName;
+                $object = $this->transformIteratorAggregate($object->$nextPartName);
                 continue;
             }
 
