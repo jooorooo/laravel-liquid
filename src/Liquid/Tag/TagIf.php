@@ -101,6 +101,12 @@ class TagIf extends AbstractBlock
         }
     }
 
+    /**
+     * @param $string
+     * @param Context $context
+     * @return string
+     * @throws LiquidException
+     */
     protected function recursiveReplaceBracket($string, Context $context)
     {
         return $this->parseLogicalExpresion(preg_replace_callback("/\((([^()]*|(?R))*)\)/", function($match) use($string, $context) {
@@ -118,6 +124,12 @@ class TagIf extends AbstractBlock
         }, $string), $context);
     }
 
+    /**
+     * @param $string
+     * @param Context $context
+     * @return string
+     * @throws LiquidException
+     */
     protected function parseLogicalExpresion($string, Context $context)
     {
         $logicalRegex = new Regexp('/\s+(and|or|\|\||\&\&)\s+/i');
