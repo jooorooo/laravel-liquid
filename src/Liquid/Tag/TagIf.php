@@ -193,10 +193,7 @@ class TagIf extends AbstractBlock
             }
 
             if ($block[0] == 'if' || $block[0] == 'elsif') {
-
-                $result = $this->recursiveReplaceBracket($block[1], $context);
-
-                if ($result === 'true') {
+                if ($this->recursiveReplaceBracket($block[1], $context) === 'true') {
                     $result = $this->renderAll($block[2], $context);
                     break;
                 }
