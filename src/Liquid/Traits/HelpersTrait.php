@@ -54,7 +54,7 @@ trait HelpersTrait
      */
     public function isFalsy($value)
     {
-        return $value === false || $value === null || $value === '' || $value === 0;
+        return $value === false || $value === null || $value === '' || $value === 0 || $value === [];
     }
 
 }
