@@ -191,7 +191,7 @@ class TagFor extends AbstractBlock
                 }
 
                 $result = '';
-                $segment = array_slice($collection, $range[0], $range[1]);
+                $segment = array_slice($collection, $range[0], $range[1], true);
 
                 if (!count($segment)) {
                     return null;

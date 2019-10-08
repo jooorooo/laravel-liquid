@@ -160,4 +160,19 @@ class Arr
         return array_unique($input);
     }
 
+    /**
+     * Split an array into chunks
+     *
+     * @param array|\Traversable $input
+     *
+     * @return array
+     */
+    public static function chunk($input, $size)
+    {
+        if ($input instanceof \Traversable) {
+            $input = iterator_to_array($input);
+        }
+        return array_chunk($input, $size);
+    }
+
 }
