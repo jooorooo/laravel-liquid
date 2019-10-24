@@ -390,14 +390,26 @@ class Context
             return null;
         }
 
-        $parts = array();
-        foreach ($matches[1] as $match) {
-            if (preg_match("/\[([a-zA-Z0-9\s_-]+)\]/i", $match, $m)) {
-                array_push($parts, is_numeric($m[1]) ? $m[1] : $this->fetch($m[1]));
-            } else {
-                array_push($parts, $match);
+        $key = preg_replace_callback("/\[(([^\[\]]*|(?R))*)\]/", function($match) {
+            return sprintf('["%s"]', $this->variable($match[1]) ? : $match[1]);
+        }, $key);
+
+        $parts = preg_split('/(\.|\[|\])/', $key, null, PREG_SPLIT_NO_EMPTY);
+        $parts = array_map(function($part) {
+            if(preg_match('~^"(.*)"$~', $part, $m)) {
+                return $m[1];
             }
-        }
+            return $part;
+        }, $parts);
+
+//        $parts = array();
+//        foreach ($matches[1] as $match) {
+//            if (preg_match("/\[([a-zA-Z0-9\s_-]+)\]/i", $match, $m)) {
+//                array_push($parts, is_numeric($m[1]) ? $m[1] : $this->fetch($m[1]));
+//            } else {
+//                array_push($parts, $match);
+//            }
+//      }
 
         $object = $this->transformIteratorAggregate($this->fetch(array_shift($parts)));
 
