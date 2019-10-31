@@ -390,11 +390,6 @@ class Context
             return null;
         }
 
-        $a = false;
-        if(strpos($key, 'category.image[\'150x150\']') !== false) {
-            $a = true;
-        }
-
         $key = preg_replace_callback("/\[(([^\[\]]*|(?R))*)\]/", function($match) {
             if(preg_match('~^(["|\'])(.*)\\1$~', $match[1], $m)) {
                 return sprintf('["%s"]', $m[2]);
