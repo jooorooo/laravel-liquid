@@ -12,19 +12,13 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
+use Liquid\AbstractTag;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 
-/**
- * Captures the output inside a block and assigns it to a variable
- *
- * Example:
- *
- *     {% capture foo %} bar {% endcapture %}
- */
-class TagCapture extends AbstractBlock
+class TagCaptureLayout extends AbstractTag
 {
     /**
      * The variable to assign to
@@ -32,12 +26,6 @@ class TagCapture extends AbstractBlock
      * @var string
      */
     protected $to;
-    /**
-     * The variable to assign to
-     *
-     * @var string
-     */
-    protected $append = false;
 
     /**
      * Constructor
@@ -52,15 +40,8 @@ class TagCapture extends AbstractBlock
     {
         $syntaxRegexp = new Regexp('/[\'\"](\w+)[\'\"]\s*(append)?/');
 
-        if ($syntaxRegexp->match($markup)) {
-            $this->to = $syntaxRegexp->matches[1];
-            if(!empty($syntaxRegexp->matches[2])) {
-                $this->append = $syntaxRegexp->matches[2] == 'append';
-            }
-            parent::__construct($markup, $tokens, $compiler);
-        } else {
-            throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var] [value]");
-        }
+        $this->to = $markup;
+        parent::__construct($markup, $tokens, $compiler);
     }
 
     /**
@@ -74,18 +55,7 @@ class TagCapture extends AbstractBlock
     {
         $output = parent::render($context);
 
-        if($this->append) {
-            $old = $context->get($this->to);
-            if(!is_array($old)) {
-                $old = [];
-            }
-
-            $old[] = $output;
-
-            $context->set($this->to, $old, true);
-        } else {
-            $context->set($this->to, $output, true);
-        }
+        $context->set($this->to, $output, true);
 
         return '';
     }

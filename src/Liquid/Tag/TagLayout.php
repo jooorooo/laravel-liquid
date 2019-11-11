@@ -77,16 +77,11 @@ class TagLayout extends AbstractTag
             // tokens in this new document
             $maintokens = $this->tokenize($source);
 
-            $rest = array();
-
-            $eRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '\s*content_for_layout\s*' . LiquidCompiler::VARIABLE_TAG[1] . '$/');
-            foreach ($maintokens AS $maintoken) {
-                if ($eRegexp->match($maintoken)) {
-                    $rest = array_merge($rest, $tokens);
-                } else {
-                    array_push($rest, $maintoken);
-                }
-            }
+            $rest = array_merge([
+                '{% capture "content_for_layout" %}'
+            ], $tokens, [
+                '{% endcapture %}'
+            ], $maintokens);
         }
 
         $this->document = new Document(null, $rest, $this->compiler);

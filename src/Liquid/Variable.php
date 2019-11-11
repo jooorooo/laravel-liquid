@@ -150,7 +150,16 @@ class Variable
     {
         $output = $context->get($this->name);
 
-        foreach ($this->filters as $filter) {
+        $filters = $this->filters;
+        if(trim($this->name) === 'content_for_layout') {
+            $filters[0] = [];
+        }
+
+        foreach ($filters as $filter) {
+            if(empty($filter)) {
+                continue;
+            }
+
             list($filtername, $filterArgKeys) = $filter;
 
             $filterArgValues = array();
