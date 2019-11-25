@@ -414,7 +414,7 @@ class Context
 //            }
 //      }
 
-        $object = $this->transformIteratorAggregate($this->fetch(array_shift($parts)));
+        $object = $this->value($this->transformIteratorAggregate($this->fetch(array_shift($parts))));
 
         while (count($parts) > 0) {
             // since we still have a part to consider
@@ -445,7 +445,7 @@ class Context
                     return null;
                 }
 
-                $object = $this->transformIteratorAggregate($object[$nextPartName]);
+                $object = $this->value($this->transformIteratorAggregate($object[$nextPartName]));
                 continue;
             }
 
@@ -461,7 +461,7 @@ class Context
                     return null;
                 }
 
-                $object = $this->transformIteratorAggregate($object->invokeDrop($nextPartName));
+                $object = $this->value($this->transformIteratorAggregate($object->invokeDrop($nextPartName)));
                 continue;
             }
 
@@ -471,19 +471,19 @@ class Context
                     return null;
                 }
 
-                $object = $this->transformIteratorAggregate($object->get($nextPartName));
+                $object = $this->value($this->transformIteratorAggregate($object->get($nextPartName)));
                 continue;
             }
 
             // if it's just a regular object, attempt to access a public method
             if (is_callable(array($object, $nextPartName))) {
-                $object = call_user_func(array($object, $nextPartName));
+                $object = $this->value(call_user_func(array($object, $nextPartName)));
                 continue;
             }
 
             // then try a property (independent of accessibility)
             if (property_exists($object, $nextPartName)) {
-                $object = $this->transformIteratorAggregate($object->$nextPartName);
+                $object = $this->value($this->transformIteratorAggregate($object->$nextPartName));
                 continue;
             }
 
@@ -501,5 +501,14 @@ class Context
         }
 
         return $object;
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    protected function value($value)
+    {
+        return $value instanceof \Closure ? $value($this) : $value;
     }
 }
