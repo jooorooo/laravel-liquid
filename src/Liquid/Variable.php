@@ -151,7 +151,7 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(trim($this->name) === 'content_for_layout') {
+        if(in_array(trim($this->name), $this->getLayoutVariableNames())) {
             $filters[0] = [];
         }
 
@@ -178,5 +178,18 @@ class Variable
         }
 
         return $output;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getLayoutVariableNames()
+    {
+        $names = ['content_for_layout'];
+        if($dinamic = $this->compiler->getLayoutVariableName()) {
+            $names[] = $dinamic;
+        }
+
+        return array_unique($names);
     }
 }

@@ -61,6 +61,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     protected $path;
 
     /**
+     * @var array
+     */
+    protected $filemtime = [];
+
+    /**
+     * @var string
+     */
+    protected static $layout_variable_name;
+
+    /**
      * @var CompilerEngine
      */
     protected $compiler;
@@ -93,6 +103,23 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
     
+    /**
+     * @return null|string
+     */
+    public function getLayoutVariableName()
+    {
+        return static::$layout_variable_name;
+    }
+
+    /**
+     * @param  string  $name
+     * @return void
+     */
+    public function setLayoutVariableName($name)
+    {
+        static::$layout_variable_name = $name;
+    }
+
     /**
      * Get the path currently being compiled.
      *
@@ -250,12 +277,18 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * @param $path
+     * @param $template
      * @return string
      */
-    public function findTemplate($path)
+    public function findTemplate($template)
     {
-        return $this->getViewFinder()->find($path);
+        if($path = $this->getViewFinder()->find($template)) {
+            if(!array_key_exists($template, $this->filemtime)) {
+                $this->filemtime[$template] = $this->files->lastModified($path);
+            }
+        }
+
+        return $path;
     }
 
     /**
@@ -317,6 +350,29 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         $result = $this->root->render($context);
 
         return $result;
+    }
+
+    /**
+     * Determine if the view at the given path is expired.
+     *
+     * @param  string  $path
+     * @return bool
+     */
+    public function isExpired($path)
+    {
+        $compiled = $this->getCompiledPath($path);
+
+        // If the compiled file doesn't exist we will indicate that the view is expired
+        // so that it can be re-compiled. Else, we will verify the last modification
+        // of the views is less than the modification times of the compiled views.
+        if (! $this->files->exists($compiled)) {
+            return true;
+        }
+
+        $pathLastModify = count($this->filemtime) > 0 ? max($this->filemtime) : $this->files->lastModified($path);
+
+        return $pathLastModify >=
+            $this->files->lastModified($compiled);
     }
 
     /**
