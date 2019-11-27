@@ -111,7 +111,7 @@ class TagInclude extends AbstractTag
 
         $regex = new Regexp(sprintf('/%s\s*include\s*%s(%s)%s/imUs', Constant::TagStartPartial, '[\'\"]', $this->templateName, '[\'\"]'));
         $this->self_include = (bool)$regex->match($source);
-
+        
         if(!$this->self_include) {
             $templateTokens = $this->tokenize($source);
             $this->document = new Document(null, $templateTokens, $this->compiler);

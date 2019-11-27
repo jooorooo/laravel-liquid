@@ -54,6 +54,8 @@ class CompilerEngine extends PhpEngine
 
         $obLevel = ob_get_level();
         try {
+            $this->compiler->setFileMtime($path);
+
             $this->compiler->compile($path);
 
             $results = $this->compiler->render($path, $data);
