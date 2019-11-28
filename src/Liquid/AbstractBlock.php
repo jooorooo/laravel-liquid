@@ -120,7 +120,13 @@ class AbstractBlock extends AbstractTag
         $result = '';
 
         foreach ($list as $token) {
-            $result .= (is_object($token) && method_exists($token, 'render')) ? $token->render($context) : $token;
+            if(is_object($token) && method_exists($token, 'render')) {
+                $renderResult = $token->render($context);
+            } else {
+                $renderResult = $token;
+            }
+
+            $result .= is_scalar($renderResult) ? $renderResult : '';
 
             if (isset($context->registers['break'])) {
                 break;
