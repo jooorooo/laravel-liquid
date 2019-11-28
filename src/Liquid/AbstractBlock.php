@@ -126,7 +126,11 @@ class AbstractBlock extends AbstractTag
                 $renderResult = $token;
             }
 
-            $result .= is_scalar($renderResult) ? $renderResult : '';
+            if(is_scalar($renderResult)) {
+                $result .= $renderResult;
+            } elseif(is_object($renderResult) && method_exists($renderResult, '__toString')) {
+                $result .= $renderResult->__toString();
+            }
 
             if (isset($context->registers['break'])) {
                 break;
