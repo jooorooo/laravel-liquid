@@ -172,7 +172,8 @@ class Arr
         if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);
         }
-        return array_chunk($input, $size);
+
+        return is_array($input) ? array_chunk($input, $size) : [];
     }
 
 }

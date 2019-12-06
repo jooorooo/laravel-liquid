@@ -84,7 +84,7 @@ class TagCapture extends AbstractBlock
 
             $context->set($this->to, $old, true);
         } else {
-            $context->set($this->to, $output, true);
+            $context->set($this->to, trim($output), true);
         }
 
         return '';
