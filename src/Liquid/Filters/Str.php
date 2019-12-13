@@ -23,6 +23,10 @@ class Str
      */
     public static function append($input, $string)
     {
+        if(!is_scalar($input) || !is_scalar($string)) {
+            return $input;
+        }
+
         return $input . $string;
     }
 
@@ -36,6 +40,10 @@ class Str
      */
     public static function prepend($input, $string)
     {
+        if(!is_scalar($input) || !is_scalar($string)) {
+            return $input;
+        }
+
         return $string . $input;
     }
 
@@ -100,7 +108,7 @@ class Str
      */
     public static function truncate($input, $characters = 100, $ending = '...')
     {
-        if (is_string($input) || is_numeric($input)) {
+        if (is_scalar($input)) {
             if (strlen($input) > $characters) {
                 return IlluminateStr::substr($input, 0, $characters) . $ending;
             }
@@ -121,7 +129,7 @@ class Str
      */
     public static function truncatewords($input, $words = 15, $ending = '...')
     {
-        return is_string($input) ? IlluminateStr::words($input, $words, $ending) : $input;
+        return is_scalar($input) ? IlluminateStr::words($input, $words, $ending) : $input;
     }
 
     /**
@@ -149,6 +157,10 @@ class Str
      */
     public static function replace($input, $string, $replacement = '')
     {
+        if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
+            return $input;
+        }
+
         return str_replace($string, $replacement, $input);
     }
 
@@ -164,6 +176,10 @@ class Str
      */
     public static function replace_first($input, $string, $replacement = '')
     {
+        if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
+            return $input;
+        }
+
         return IlluminateStr::replaceFirst($string, $replacement, $input);
     }
 
@@ -177,6 +193,10 @@ class Str
      */
     public static function remove($input, $string)
     {
+        if(!is_scalar($input) || !is_scalar($string)) {
+            return $input;
+        }
+
         return str_replace($string, '', $input);
     }
 
@@ -191,6 +211,10 @@ class Str
      */
     public static function remove_first($input, $string)
     {
+        if(!is_scalar($input) || !is_scalar($string)) {
+            return $input;
+        }
+
         return static::replace_first($string, $input);
     }
 
@@ -204,6 +228,10 @@ class Str
      */
     public static function split($input, $pattern)
     {
+        if(!is_scalar($input) || !is_scalar($pattern)) {
+            return $input;
+        }
+
         // Unlike PHP explode function, empty string after split filtering is empty array in Liquid.
         if (!is_string($input) || $input === '') {
             return array();
@@ -242,6 +270,10 @@ class Str
      */
     public static function lstrip($input)
     {
+        if(!is_scalar($input)) {
+            return $input;
+        }
+
         return ltrim($input);
     }
 
@@ -252,6 +284,10 @@ class Str
      */
     public static function rstrip($input)
     {
+        if(!is_scalar($input)) {
+            return $input;
+        }
+
         return rtrim($input);
     }
 
@@ -262,6 +298,10 @@ class Str
      */
     public static function strip($input)
     {
+        if(!is_scalar($input)) {
+            return $input;
+        }
+
         return trim($input);
     }
 
@@ -274,6 +314,10 @@ class Str
      */
     public static function url_encode($input)
     {
+        if(!is_scalar($input)) {
+            return $input;
+        }
+
         return urlencode($input);
     }
 

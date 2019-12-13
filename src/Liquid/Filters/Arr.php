@@ -8,11 +8,23 @@
 
 namespace Liquid\Filters;
 
+use ArrayAccess;
 use Iterator;
+use Liquid\Context;
+use Liquid\Drop;
 use Traversable;
 
 class Arr
 {
+    /**
+     * @var Context
+     */
+    protected $context;
+
+    public function __construct(Context $context = null)
+    {
+        $this->context = $context;
+    }
 
     /**
      * Joins elements of an array with a given character between them
@@ -22,7 +34,7 @@ class Arr
      *
      * @return string
      */
-    public static function join($input, $glue = ' ')
+    public function join($input, $glue = ' ')
     {
         if ($input instanceof Traversable) {
             $str = '';
@@ -44,7 +56,7 @@ class Arr
      *
      * @return mixed
      */
-    public static function first($input)
+    public function first($input)
     {
         if ($input instanceof Iterator) {
             $input->rewind();
@@ -60,7 +72,7 @@ class Arr
      *
      * @return mixed
      */
-    public static function last($input)
+    public function last($input)
     {
         if ($input instanceof Traversable) {
             $last = null;
@@ -80,21 +92,18 @@ class Arr
      *
      * @return string
      */
-    public static function map($input, $property)
+    public function map($input, $property)
     {
         if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
+
         if (!is_array($input)) {
             return $input;
         }
+
         return array_map(function ($elem) use ($property) {
-            if (is_callable($elem)) {
-                return $elem();
-            } elseif (is_array($elem) && array_key_exists($property, $elem)) {
-                return $elem[$property];
-            }
-            return null;
+            return $this->context->getValue($elem, $property);
         }, $input);
     }
 
@@ -105,8 +114,12 @@ class Arr
      *
      * @return array
      */
-    public static function reverse($input)
+    public function reverse($input)
     {
+        if(is_scalar($input)) {
+            return $input;
+        }
+
         if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
@@ -122,22 +135,30 @@ class Arr
      *
      * @return array
      */
-    public static function sort($input, $property = null)
+    public function sort($input, $property = null)
     {
+        if(is_scalar($input)) {
+            return $input;
+        }
+
         if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);
         }
+
         if ($property === null) {
             asort($input);
         } else {
             $first = reset($input);
-            if ($first !== false && is_array($first) && array_key_exists($property, $first)) {
+
+            if ($first !== false && $this->context->hasGetValue($first, $property)) {
                 uasort($input, function ($a, $b) use ($property) {
-                    if ($a[$property] == $b[$property]) {
+                    $valueA = $this->context->getValue($a, $property);
+                    $valueB = $this->context->getValue($b, $property);
+                    if ($valueA == $valueB) {
                         return 0;
                     }
 
-                    return $a[$property] < $b[$property] ? -1 : 1;
+                    return $valueA < $valueB ? -1 : 1;
                 });
             }
         }
@@ -152,11 +173,16 @@ class Arr
      *
      * @return array
      */
-    public static function uniq($input)
+    public function uniq($input)
     {
+        if(is_scalar($input)) {
+            return $input;
+        }
+
         if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);
         }
+
         return array_unique($input);
     }
 
@@ -167,7 +193,7 @@ class Arr
      *
      * @return array
      */
-    public static function chunk($input, $size)
+    public function chunk($input, $size)
     {
         if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);

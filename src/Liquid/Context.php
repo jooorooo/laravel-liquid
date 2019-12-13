@@ -11,6 +11,8 @@
 
 namespace Liquid;
 
+use ArrayAccess;
+use Iterator;
 use IteratorAggregate;
 
 /**
@@ -417,75 +419,88 @@ class Context
         $object = $this->value($this->transformIteratorAggregate($this->fetch(array_shift($parts))));
 
         while (count($parts) > 0) {
-            // since we still have a part to consider
-            // and since we can't dig deeper into plain values
-            // it can be thought as if it has a property with a null value
-            if (!is_object($object) && !is_array($object)) {
-                return null;
-            }
-
-            if (is_null($object)) {
-                return null;
-            }
-
             if ($object instanceof Drop) {
                 $object->setContext($this);
             }
 
             $nextPartName = array_shift($parts);
 
-            if (is_array($object)) {
-                // if the last part of the context variable is .size we just return the count
-                if ($nextPartName == 'size' && count($parts) == 0 && !array_key_exists('size', $object)) {
-                    return count($object);
-                }
-
-                // no key - no value
-                if (!array_key_exists($nextPartName, $object)) {
-                    return null;
-                }
-
-                $object = $this->value($this->transformIteratorAggregate($object[$nextPartName]));
-                continue;
+            if($nextPartName == 'size' && count($parts) == 0) {
+                return $this->getSize($object);
             }
 
-            if (!is_object($object)) {
-                // we got plain value, yet asked to resolve a part
-                // think plain values have a null part with any name
-                return null;
-            }
-
-            if ($object instanceof Drop) {
-                // if the object is a drop, make sure it supports the given method
-                if (!$object->hasKey($nextPartName)) {
-                    return null;
-                }
-
-                $object = $this->value($this->transformIteratorAggregate($object->invokeDrop($nextPartName)));
-                continue;
-            }
-
-            // if it has `get` or `field_exists` methods
-            if (method_exists($object, 'field_exists')) {
-                if (!$object->field_exists($nextPartName)) {
-                    return null;
-                }
-
-                $object = $this->value($this->transformIteratorAggregate($object->get($nextPartName)));
-                continue;
-            }
-
-            // if it's just a regular object, attempt to access a public method
-            if (is_callable(array($object, $nextPartName))) {
-                $object = $this->value(call_user_func(array($object, $nextPartName)));
-                continue;
-            }
-
-            // then try a property (independent of accessibility)
-            if (property_exists($object, $nextPartName)) {
-                $object = $this->value($this->transformIteratorAggregate($object->$nextPartName));
-                continue;
-            }
+            $object = $this->getValue($object, $nextPartName);
+//            continue;
+//
+//            // since we still have a part to consider
+//            // and since we can't dig deeper into plain values
+//            // it can be thought as if it has a property with a null value
+//            if (!is_object($object) && !is_array($object)) {
+//                return null;
+//            }
+//
+//            if (is_null($object)) {
+//                return null;
+//            }
+//
+//            if ($object instanceof Drop) {
+//                $object->setContext($this);
+//            }
+//
+//            $nextPartName = array_shift($parts);
+//
+//            if (is_array($object)) {
+//                // if the last part of the context variable is .size we just return the count
+//                if ($nextPartName == 'size' && count($parts) == 0 && !array_key_exists('size', $object)) {
+//                    return count($object);
+//                }
+//
+//                // no key - no value
+//                if (!array_key_exists($nextPartName, $object)) {
+//                    return null;
+//                }
+//
+//                $object = $this->value($this->transformIteratorAggregate($object[$nextPartName]));
+//                continue;
+//            }
+//
+//            if (!is_object($object)) {
+//                // we got plain value, yet asked to resolve a part
+//                // think plain values have a null part with any name
+//                return null;
+//            }
+//
+//            if ($object instanceof Drop) {
+//                // if the object is a drop, make sure it supports the given method
+//                if (!$object->hasKey($nextPartName)) {
+//                    return null;
+//                }
+//
+//                $object = $this->value($this->transformIteratorAggregate($object->invokeDrop($nextPartName)));
+//                continue;
+//            }
+//
+//            // if it has `get` or `field_exists` methods
+//            if (method_exists($object, 'field_exists')) {
+//                if (!$object->field_exists($nextPartName)) {
+//                    return null;
+//                }
+//
+//                $object = $this->value($this->transformIteratorAggregate($object->get($nextPartName)));
+//                continue;
+//            }
+//
+//            // if it's just a regular object, attempt to access a public method
+//            if (is_callable(array($object, $nextPartName))) {
+//                $object = $this->value(call_user_func(array($object, $nextPartName)));
+//                continue;
+//            }
+//
+//            // then try a property (independent of accessibility)
+//            if (property_exists($object, $nextPartName)) {
+//                $object = $this->value($this->transformIteratorAggregate($object->$nextPartName));
+//                continue;
+//            }
 
             // we'll try casting this object in the next iteration
         }
@@ -510,5 +525,86 @@ class Context
     protected function value($value)
     {
         return $value instanceof \Closure ? $value($this) : $value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasGetValue($element, $property)
+    {
+        if(
+            is_callable($element) ||
+            (is_array($element) && array_key_exists($property, $element)) ||
+            ($element instanceof ArrayAccess && $element->offsetExists($property)) ||
+            (is_object($element) && is_callable($element, $property)) ||
+            (is_object($element) && property_exists($element, $property) && isset($element->$property)) ||
+            ($element instanceof Drop)
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param mixed $element
+     * @param string $property
+     * @return mixed
+     */
+    public function getValue($element, $property)
+    {
+        if (is_callable($element)) {
+            return $element($this);
+        } elseif (is_array($element) && array_key_exists($property, $element)) {
+            return $element[$property];
+        } elseif($element instanceof ArrayAccess && $element->offsetExists($property)) {
+            return $element->offsetGet($property);
+        } elseif(is_object($element) && is_callable($element, $property)) {
+            return $element->$property();
+        } elseif(is_object($element) && property_exists($element, $property) && isset($element->$property)) {
+            return $element->$property;
+        } elseif($element instanceof Drop) {
+            if(!$element->hasKey($property)) {
+                return null;
+            }
+
+            return $element->invokeDrop($property);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param mixed $element
+     * @param string $property
+     * @return mixed
+     */
+    public function getSize($element)
+    {
+        if(is_array($element)) {
+            return count($element);
+        } elseif($element instanceof \Countable) {
+            return $element->count();
+        } elseif($element instanceof ArrayAccess) {
+            $total = 0;
+            foreach($element AS $e) {
+                $total++;
+            }
+            return $total;
+        } elseif ($element instanceof Iterator) {
+            return iterator_count($element);
+        } elseif (is_scalar($element)) {
+            return strlen($element);
+        } elseif (is_object($element)) {
+            if (method_exists($element, 'size') && is_callable([$element, 'size'])) {
+                return $element->size();
+            } elseif (method_exists($element, 'count') && is_callable([$element, 'count'])) {
+                return $element->count();
+            } elseif (method_exists($element, 'length') && is_callable([$element, 'length'])) {
+                return $element->length();
+            }
+        }
+
+        return 0;
     }
 }

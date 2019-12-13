@@ -9,9 +9,19 @@
 namespace Liquid\Filters;
 
 use Iterator;
+use Liquid\Context;
 
 class Multy
 {
+    /**
+     * @var Context
+     */
+    protected $context;
+
+    public function __construct(Context $context = null)
+    {
+        $this->context = $context;
+    }
 
     /**
      * Return the size of an array or of an string
@@ -20,22 +30,9 @@ class Multy
      *
      * @return int
      */
-    public static function size($input)
+    public function size($input)
     {
-        if ($input instanceof Iterator) {
-            return iterator_count($input);
-        }
-        if (is_string($input) || is_numeric($input)) {
-            return strlen($input);
-        } elseif (is_array($input)) {
-            return count($input);
-        } elseif (is_object($input)) {
-            if (method_exists($input, 'size')) {
-                return $input->size();
-            }
-        }
-
-        return $input;
+        return $this->context->getSize($input);
     }
 
     /**
@@ -45,7 +42,7 @@ class Multy
      *
      * @return array|Iterator|string
      */
-    public static function slice($input, $offset, $length = null)
+    public function slice($input, $offset, $length = null)
     {
         if ($input instanceof Iterator) {
             $input = iterator_to_array($input);
