@@ -64,7 +64,7 @@ class TagTablerow extends AbstractBlock
 
             $this->extractAttributes($markup);
         } else {
-            throw new LiquidException("Syntax Error in 'table_row loop' - Valid syntax: table_row [item] in [collection] cols=3");
+            throw new LiquidException("Syntax Error in 'table_row loop' - Valid syntax: tablerow [item] in [collection] cols:3");
         }
     }
 
@@ -85,7 +85,8 @@ class TagTablerow extends AbstractBlock
         }
 
         if (!is_array($collection)) {
-            die('not array, ' . var_export($collection, true));
+            return '';
+//            die('not array, ' . var_export($collection, true));
         }
 
         // discard keys
@@ -101,46 +102,116 @@ class TagTablerow extends AbstractBlock
 
         $cols = isset($this->attributes['cols']) ? $context->get($this->attributes['cols']) : PHP_INT_MAX;
 
-        $row = 1;
-        $col = 0;
-
-        $result = "<tr class=\"row1\">\n";
-
         $context->push();
 
-        foreach ($collection as $index => $item) {
-            $context->set($this->variableName, $item);
-            $context->set('tablerowloop', array(
-                'length' => $length,
-                'index' => $index + 1,
-                'index0' => $index,
-                'rindex' => $length - $index,
-                'rindex0' => $length - $index - 1,
-                'first' => (int)($index == 0),
-                'last' => (int)($index == $length - 1)
-            ));
+        $result = '';
 
-            $text = $this->renderAll($this->nodelist, $context);
-            $break = isset($context->registers['break']);
-            $continue = isset($context->registers['continue']);
+        $rows = array_chunk($collection, $cols);
+        $rows = array_map(function($columns) use($cols) {
+            $columns = array_replace(array_fill(0, $cols, null), $columns);
+            return $columns;
+        }, $rows);
 
-            if ((!$break && !$continue) || strlen(trim($text)) > 0) {
-                $result .= "<td class=\"col" . (++$col) . "\">$text</td>";
+        $index = 0;
+        foreach($rows AS $rowIndex => $columns) {
+            $result .= "<tr class=\"row" . ($rowIndex + 1) . "\">\n";
+            $break = $continue = false;
+            foreach($columns AS $colIndex => $col) {
+                $context->set($this->variableName, null);
+                $context->set('tablerowloop', null);
+
+                $result .= "<td class=\"col" . ($colIndex + 1) . "\">\n";
+
+                if($index < $length) {
+                    $context->set($this->variableName, $col);
+                    $context->set('tablerowloop', array(
+                        'key' => $index,
+                        'name' => $this->collectionName,
+                        'length' => $length,
+                        'index' => $index + 1,
+                        'index0' => $index,
+                        'rindex' => $length - $index,
+                        'rindex0' => $length - $index - 1,
+                        'first' => (int)($index == 0),
+                        'last' => (int)($index == $length - 1)
+                    ));
+
+                    $break = $break ? $break : isset($context->registers['break']);
+                    $continue = isset($context->registers['continue']);
+
+                    if(!$continue || !$break) {
+                        $result .= trim($this->renderAll($this->nodelist, $context));
+                    }
+
+                    if(isset($context->registers['continue'])) {
+                        unset($context->registers['continue']);
+                    }
+
+                    if(isset($context->registers['break'])) {
+                        unset($context->registers['break']);
+                    }
+                }
+
+                $result .= "</td>\n";
+
+                $index++;
             }
+            $result .= "</tr>\n";
 
-            if ($col == $cols && !($index == $length - 1)) {
-                $col = 0;
-                $result .= "</tr>\n<tr class=\"row" . (++$row) . "\">\n";
-            }
-
-            if ($break) {
+            if($break) {
                 unset($context->registers['break']);
                 break;
             }
-            if ($continue) {
-                unset($context->registers['continue']);
-            }
         }
+
+        if(isset($context->registers['break'])) {
+            unset($context->registers['break']);
+        }
+
+        if(isset($context->registers['continue'])) {
+            unset($context->registers['continue']);
+        }
+
+//        dd($rows, $result);
+//
+//        $row = 1;
+//        $col = 0;
+//
+//        $result = "<tr class=\"row1\">\n";
+//
+//        foreach ($collection as $index => $item) {
+//            $context->set($this->variableName, $item);
+//            $context->set('tablerowloop', array(
+//                'length' => $length,
+//                'index' => $index + 1,
+//                'index0' => $index,
+//                'rindex' => $length - $index,
+//                'rindex0' => $length - $index - 1,
+//                'first' => (int)($index == 0),
+//                'last' => (int)($index == $length - 1)
+//            ));
+//
+//            $text = $this->renderAll($this->nodelist, $context);
+//            $break = isset($context->registers['break']);
+//            $continue = isset($context->registers['continue']);
+//
+//            if ((!$break && !$continue) || strlen(trim($text)) > 0) {
+//                $result .= "<td class=\"col" . (++$col) . "\">$text</td>";
+//            }
+//
+//            if ($col == $cols && !($index == $length - 1)) {
+//                $col = 0;
+//                $result .= "</tr>\n<tr class=\"row" . (++$row) . "\">\n";
+//            }
+//
+//            if ($break) {
+//                unset($context->registers['break']);
+//                break;
+//            }
+//            if ($continue) {
+//                unset($context->registers['continue']);
+//            }
+//        }
 
         $context->pop();
 

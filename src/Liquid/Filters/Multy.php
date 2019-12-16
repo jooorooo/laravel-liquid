@@ -10,6 +10,7 @@ namespace Liquid\Filters;
 
 use Iterator;
 use Liquid\Context;
+use Illuminate\Support\Str AS IlluminateStr;
 
 class Multy
 {
@@ -49,10 +50,12 @@ class Multy
         }
         if (is_array($input)) {
             $input = array_slice($input, $offset, $length);
-        } elseif (is_string($input)) {
-            $input = $length === null
-                ? substr($input, $offset)
-                : substr($input, $offset, $length);
+        } elseif (is_string($input) || is_numeric($input)) {
+            if($length === null) {
+                $input = IlluminateStr::substr($input, $offset);
+            } else {
+                $input = IlluminateStr::substr($input, $offset, $length);
+            }
         }
 
         return $input;

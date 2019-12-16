@@ -264,6 +264,7 @@ class TagFor extends AbstractBlock
 
                         $context->set($this->variableName, $i);
                         $context->set('forloop', array(
+                            'key' => $i,
                             'name' => $this->name,
                             'length' => $length,
                             'index' => $index + 1,
@@ -301,6 +302,7 @@ class TagFor extends AbstractBlock
 
                         $context->set($this->variableName, $i);
                         $context->set('forloop', array(
+                            'key' => $i,
                             'name' => $this->name,
                             'length' => $length,
                             'index' => $index + 1,
