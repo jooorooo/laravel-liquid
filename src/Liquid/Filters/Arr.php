@@ -92,7 +92,7 @@ class Arr
      *
      * @return string
      */
-    public function map($input, $property)
+    public function map($input, $property = null)
     {
         if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
@@ -193,10 +193,14 @@ class Arr
      *
      * @return array
      */
-    public function chunk($input, $size)
+    public function chunk($input, $size = null)
     {
         if ($input instanceof \Traversable) {
             $input = iterator_to_array($input);
+        }
+
+        if(!is_numeric($size)) {
+            return [];
         }
 
         return is_array($input) ? array_chunk($input, $size) : [];

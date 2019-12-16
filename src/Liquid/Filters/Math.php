@@ -48,7 +48,11 @@ class Math
      */
     public static function ceil($input)
     {
-        return (int)ceil((float)$input);
+        if(is_numeric($input)) {
+            return (int)ceil($input);
+        }
+
+        return 0;
     }
 
     /**
@@ -59,9 +63,13 @@ class Math
      *
      * @return int
      */
-    public static function divided_by($input, $operand)
+    public static function divided_by($input, $operand = null)
     {
-        return (int)$input / (int)$operand;
+        if(is_numeric($input) && is_numeric($operand) && (float)$operand !== (float)0) {
+            return $input / $operand;
+        }
+
+        return 0;
     }
 
     /**
@@ -71,20 +79,28 @@ class Math
      */
     public static function floor($input)
     {
-        return (int)floor((float)$input);
+        if(is_numeric($input)) {
+            return (int)floor($input);
+        }
+
+        return 0;
     }
 
     /**
      * modulo
      *
-     * @param int $input
-     * @param int $operand
+     * @param int|float $input
+     * @param int|float $operand
      *
-     * @return int
+     * @return int|float
      */
-    public static function modulo($input, $operand)
+    public static function modulo($input, $operand = null)
     {
-        return (int)$input % (int)$operand;
+        if(is_numeric($input) && is_numeric($operand)) {
+            return fmod($input, $operand);
+        }
+
+        return 0;
     }
 
     /**
@@ -97,20 +113,31 @@ class Math
      */
     public static function round($input, $n = 0)
     {
-        return round((float)$input, (int)$n);
+        if(is_numeric($input) && is_numeric($n)) {
+            $input = round($input, (int)$n);
+            if($n == 0) {
+                return (int)$input;
+            }
+        }
+
+        return is_numeric($input) ? (int)round($input) : 0;
     }
 
     /**
      * multiplication
      *
-     * @param int $input
-     * @param int $operand
+     * @param int|float $input
+     * @param int|float $operand
      *
-     * @return int
+     * @return int|float
      */
-    public static function times($input, $operand)
+    public static function times($input, $operand = null)
     {
-        return (int)$input * (int)$operand;
+        if(is_numeric($input) && is_numeric($operand)) {
+            return $input * $operand;
+        }
+
+        return 0;
     }
 
 }
