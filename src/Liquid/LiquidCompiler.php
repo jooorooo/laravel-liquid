@@ -169,7 +169,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function getViewFinder()
     {
-        return view()->shared('__env')->getFinder();
+        return \view()->getFinder();
     }
 
     /**
