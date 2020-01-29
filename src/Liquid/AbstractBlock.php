@@ -11,6 +11,7 @@
 
 namespace Liquid;
 
+use Liquid\Exceptions\SyntaxError;
 use Liquid\Tag\TagBlock;
 use Liquid\Tag\TagLayout;
 
@@ -169,7 +170,12 @@ class AbstractBlock extends AbstractTag
             case 'end':
                 throw new LiquidException("'end' is not a valid delimiter for " . $this->blockName() . " tags. Use " . $this->blockDelimiter());
             default:
-                throw new LiquidException("Unknown tag $tag");
+                //@todo must be make better
+                $count = count(preg_split("/\r\n|\n|\r/", explode($tag, $this->compiler->getFileSource($this->compiler->getPath()))[0]));
+                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $tag), $count, $this->compiler);
+                $e->addSuggestions($tag, array_keys($this->compiler->getTags()));
+                throw $e;
+                //throw new LiquidException("Unknown tag $tag");
         }
     }
 
