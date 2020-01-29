@@ -70,10 +70,11 @@ class TagUnless extends AbstractBlock
      * @param string $tag
      * @param array $params
      * @param array $tokens
+     * @param int $line
      * @throws LiquidException
      * @throws \ReflectionException
      */
-    public function unknownTag($tag, $params, array $tokens)
+    public function unknownTag($tag, $params, array $tokens, $line = 0)
     {
         if ($tag == 'else') {
             // Update reference to nodelistHolder for this block
@@ -83,7 +84,7 @@ class TagUnless extends AbstractBlock
             array_push($this->blocks, array($tag, $params, &$this->nodelist));
 
         } else {
-            parent::unknownTag($tag, $params, $tokens);
+            parent::unknownTag($tag, $params, $tokens, $line);
         }
     }
 

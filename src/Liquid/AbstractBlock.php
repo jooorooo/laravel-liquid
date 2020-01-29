@@ -79,7 +79,7 @@ class AbstractBlock extends AbstractTag
                         }
 
                     } else {
-                        $this->unknownTag($tagRegexp->matches[1], $tagRegexp->matches[2], $tokens);
+                        $this->unknownTag($tagRegexp->matches[1], $tagRegexp->matches[2], $tokens, $this->compiler->getTextLine($tagRegexp->matches[0]));
                     }
                 } else {
                     throw new LiquidException("Tag $token was not properly terminated"); // harry
@@ -162,7 +162,7 @@ class AbstractBlock extends AbstractTag
      * @throws LiquidException
      * @throws \ReflectionException
      */
-    protected function unknownTag($tag, $params, array $tokens)
+    protected function unknownTag($tag, $params, array $tokens, $line = 0)
     {
         switch ($tag) {
             case 'else':
@@ -171,8 +171,7 @@ class AbstractBlock extends AbstractTag
                 throw new LiquidException("'end' is not a valid delimiter for " . $this->blockName() . " tags. Use " . $this->blockDelimiter());
             default:
                 //@todo must be make better
-                $count = count(preg_split("/\r\n|\n|\r/", explode($tag, $this->compiler->getFileSource($this->compiler->getPath()))[0]));
-                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $tag), $count, $this->compiler);
+                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $tag), $line, $this->compiler);
                 $e->addSuggestions($tag, array_keys($this->compiler->getTags()));
                 throw $e;
                 //throw new LiquidException("Unknown tag $tag");

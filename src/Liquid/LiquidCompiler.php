@@ -386,6 +386,20 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             $this->files->lastModified($compiled);
     }
 
+
+    public function getTextLine($text)
+    {
+        $pattern = '/' . preg_quote($text, '/') . '/i';
+        $lineNumber = 0;
+        if (preg_match($pattern, $content = $this->getFileSource($this->getPath()), $matches, PREG_OFFSET_CAPTURE)) {
+            //PREG_OFFSET_CAPTURE will add offset of the found string to the array of matches
+            //now get a substring of the offset length and explode it by \n
+            $lineNumber = count(explode(PHP_EOL, substr($content, 0, $matches[0][1])));
+        }
+        
+        return $lineNumber;
+    }
+
     /**
      * Handle a view exception.
      *

@@ -96,10 +96,11 @@ class TagCase extends AbstractBlock
      * @param string $tag
      * @param string $params
      * @param array $tokens
+     * @param int $line
      *
      * @throws \Liquid\LiquidException
      */
-    public function unknownTag($tag, $params, array $tokens)
+    public function unknownTag($tag, $params, array $tokens, $line = 0)
     {
         $whenSyntaxRegexp = new Regexp('/' . LiquidCompiler::QUOTED_FRAGMENT . '/');
 
@@ -125,7 +126,7 @@ class TagCase extends AbstractBlock
                 break;
 
             default:
-                parent::unknownTag($tag, $params, $tokens);
+                parent::unknownTag($tag, $params, $tokens, $line);
         }
     }
 
