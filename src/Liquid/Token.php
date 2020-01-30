@@ -4,22 +4,38 @@ namespace Liquid;
 
 class Token
 {
-    protected $token;
-    protected $offset;
+    protected $type;
+    protected $value;
+    protected $lineno;
 
-    public function __construct($token, $offset)
+    public function __construct($type, $value, $lineno)
     {
-        $this->token = $token;
-        $this->offset = $offset;
+        $this->type = $type;
+        $this->value = $value;
+        $this->lineno = $lineno;
     }
 
-    public function getToken()
+    /**
+     * @return int
+     */
+    public function getLine()
     {
-        return $this->token;
+        return $this->lineno;
     }
 
-    public function getOffset()
+    /**
+     * @return int
+     */
+    public function getType()
     {
-        return $this->offset;
+        return $this->type;
+    }
+
+    /**
+     * @return string
+     */
+    public function getValue()
+    {
+        return $this->value;
     }
 }

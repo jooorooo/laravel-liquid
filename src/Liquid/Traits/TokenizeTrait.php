@@ -8,6 +8,7 @@
 
 namespace Liquid\Traits;
 
+use Liquid\Lexer;
 use Liquid\LiquidCompiler;
 use Liquid\Token;
 
@@ -23,6 +24,9 @@ trait TokenizeTrait
      */
     public function tokenize($source)
     {
+//        $l = new Lexer();
+//        dd($l->tokenize($source));
+
         return empty($source)
             ? array()
             //: preg_split('/(' . LiquidCompiler::OPERATION_TAGS[0] . '.*' . LiquidCompiler::OPERATION_TAGS[1] . '|' . LiquidCompiler::VARIABLE_TAG[0] . '.*' . LiquidCompiler::VARIABLE_TAG[1] . ')/ms', $source, null, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
