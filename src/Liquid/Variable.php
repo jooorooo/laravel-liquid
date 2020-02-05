@@ -42,6 +42,16 @@ class Variable
     protected $compiler;
 
     /**
+     * @var bool $lstrip
+     */
+    protected $lstrip = false;
+
+    /**
+     * @var bool $rstrip
+     */
+    protected $rstrip = false;
+
+    /**
      * Constructor
      *
      * @param string $markup
@@ -52,9 +62,18 @@ class Variable
         $this->compiler = $compiler;
         $this->markup = $markup;
 
-        $quotedFragmentRegexp = new Regexp('/\s*?(' . Constant::QuotedFragmentPartial . ')\s*' . Constant::FilterSeparatorPartial . '?\s*(.*)/ms');
+        $quotedFragmentRegexp = new Regexp('/(-)?\s*?(' . Constant::QuotedFragmentPartial . ')\s*' . Constant::FilterSeparatorPartial . '?\s*(.*)/ms');
         if($quotedFragmentRegexp->match($markup)) {
+            if($quotedFragmentRegexp->matches[1] == '-') {
+                unset($quotedFragmentRegexp->matches[1]);
+                $quotedFragmentRegexp->matches = array_values($quotedFragmentRegexp->matches);
+                $this->lstrip = true;
+            }
             $this->name = $quotedFragmentRegexp->matches[1];
+            if(substr($end = end($quotedFragmentRegexp->matches), -1) == '-') {
+                $this->rstrip = true;
+                $quotedFragmentRegexp->matches[count($quotedFragmentRegexp->matches)-1] = trim(substr($end, 0, -1));
+            }
         }
 
         if(!empty($quotedFragmentRegexp->matches[2])) {
@@ -153,6 +172,13 @@ class Variable
         $filters = $this->filters;
         if(in_array(trim($this->name), $this->getLayoutVariableNames())) {
             $filters[0] = [];
+        }
+
+        if($this->lstrip) {
+            array_unshift($filters, ['lstrip', []]);
+        }
+        if($this->rstrip) {
+            array_unshift($filters, ['rstrip', []]);
         }
 
         foreach ($filters as $filter) {
