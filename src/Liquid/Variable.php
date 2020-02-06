@@ -62,15 +62,16 @@ class Variable
             if($filterParserRegexp->matchAll($quotedFragmentRegexp->matches[2])) {
                 foreach($filterParserRegexp->matches[0] AS $filter) {
                     $filterNameRegexp = new Regexp('/\s*?(\w+)/');
-                    $filterNameRegexp->match($filter);
-                    $filtername = $filterNameRegexp->matches[1];
+                    if($filterNameRegexp->match($filter)) {
+                        $filtername = $filterNameRegexp->matches[1];
 
-                    $filterArgumentRegexp = new Regexp('/(?:' . Constant::FilterArgumentSeparator . '|' . Constant::ArgumentSeparator . ')\s*((?:\w+\s*\:\s*)?' . Constant::QuotedFragmentPartial . ')/mu');
-                    $filterArgumentRegexp->matchAll($filter);
+                        $filterArgumentRegexp = new Regexp('/(?:' . Constant::FilterArgumentSeparator . '|' . Constant::ArgumentSeparator . ')\s*((?:\w+\s*\:\s*)?' . Constant::QuotedFragmentPartial . ')/mu');
+                        $filterArgumentRegexp->matchAll($filter);
 
-                    //$matches = $this->arrayFlatten(!empty($filterArgumentRegexp->matches[1]) ? $filterArgumentRegexp->matches[1] : array());
-                    $matches = $this->arrayFlatten(!empty($filterArgumentRegexp->matches[1]) ? $filterArgumentRegexp->matches[1] : array());
-                    $this->filters[] = array($filtername, $matches);
+                        //$matches = $this->arrayFlatten(!empty($filterArgumentRegexp->matches[1]) ? $filterArgumentRegexp->matches[1] : array());
+                        $matches = $this->arrayFlatten(!empty($filterArgumentRegexp->matches[1]) ? $filterArgumentRegexp->matches[1] : array());
+                        $this->filters[] = array($filtername, $matches);
+                    }
                 }
             }
         }
