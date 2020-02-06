@@ -164,7 +164,6 @@ class Str
         return str_replace($string, $replacement, $input);
     }
 
-
     /**
      * Replace the first occurrences of a string with another
      *
@@ -215,7 +214,42 @@ class Str
             return $input;
         }
 
-        return static::replace_first($string, $input);
+        return static::replace_first($input, $string);
+    }
+
+    /**
+     * Replace the first occurrences of a string with another
+     *
+     * @param string $input
+     * @param string $string
+     * @param string $replacement
+     *
+     * @return string
+     */
+    public static function replace_last($input, $string, $replacement = '')
+    {
+        if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
+            return $input;
+        }
+
+        return IlluminateStr::replaceLast($string, $replacement, $input);
+    }
+
+    /**
+     * Remove the first occurrences of a substring
+     *
+     * @param string $input
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function remove_last($input, $string)
+    {
+        if(!is_scalar($input) || !is_scalar($string)) {
+            return $input;
+        }
+
+        return static::replace_last($input, $string);
     }
 
     /**
@@ -268,13 +302,13 @@ class Str
      *
      * @return string
      */
-    public static function lstrip($input, $charlist = null)
+    public static function lstrip($input)
     {
         if(!is_scalar($input)) {
             return $input;
         }
 
-        return $charlist ? ltrim($input, $charlist) : ltrim($input);
+        return ltrim($input);
     }
 
     /**
@@ -282,13 +316,13 @@ class Str
      *
      * @return string
      */
-    public static function rstrip($input, $charlist = null)
+    public static function rstrip($input)
     {
         if(!is_scalar($input)) {
             return $input;
         }
 
-        return $charlist ? rtrim($input, $charlist) : rtrim($input);
+        return rtrim($input);
     }
 
     /**
@@ -296,13 +330,13 @@ class Str
      *
      * @return string
      */
-    public static function strip($input, $charlist = null)
+    public static function strip($input)
     {
         if(!is_scalar($input)) {
             return $input;
         }
 
-        return $charlist ? trim($input, $charlist) : trim($input);
+        return trim($input);
     }
 
     /**
