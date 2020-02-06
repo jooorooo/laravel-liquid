@@ -268,13 +268,13 @@ class Str
      *
      * @return string
      */
-    public static function lstrip($input)
+    public static function lstrip($input, $charlist = null)
     {
         if(!is_scalar($input)) {
             return $input;
         }
 
-        return ltrim($input);
+        return $charlist ? ltrim($input, $charlist) : ltrim($input);
     }
 
     /**
@@ -282,13 +282,13 @@ class Str
      *
      * @return string
      */
-    public static function rstrip($input)
+    public static function rstrip($input, $charlist = null)
     {
         if(!is_scalar($input)) {
             return $input;
         }
 
-        return rtrim($input);
+        return $charlist ? rtrim($input, $charlist) : rtrim($input);
     }
 
     /**
@@ -296,13 +296,13 @@ class Str
      *
      * @return string
      */
-    public static function strip($input)
+    public static function strip($input, $charlist = null)
     {
         if(!is_scalar($input)) {
             return $input;
         }
 
-        return trim($input);
+        return $charlist ? trim($input, $charlist) : trim($input);
     }
 
     /**

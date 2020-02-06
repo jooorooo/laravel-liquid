@@ -32,12 +32,6 @@ class TagCapture extends AbstractBlock
      * @var string
      */
     protected $to;
-    /**
-     * The variable to assign to
-     *
-     * @var string
-     */
-    protected $append = false;
 
     /**
      * Constructor
@@ -50,16 +44,13 @@ class TagCapture extends AbstractBlock
      */
     public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        $syntaxRegexp = new Regexp('/[\'\"](\w+)[\'\"]\s*(append)?/');
+        $syntaxRegexp = new Regexp('/[\'\"](\w+)[\'\"]\s*/');
 
         if ($syntaxRegexp->match($markup)) {
             $this->to = $syntaxRegexp->matches[1];
-            if(!empty($syntaxRegexp->matches[2])) {
-                $this->append = $syntaxRegexp->matches[2] == 'append';
-            }
             parent::__construct($markup, $tokens, $compiler);
         } else {
-            throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var] [value]");
+            throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var]");
         }
     }
 
@@ -74,18 +65,7 @@ class TagCapture extends AbstractBlock
     {
         $output = parent::render($context);
 
-        if($this->append) {
-            $old = $context->get($this->to);
-            if(!is_array($old)) {
-                $old = [];
-            }
-
-            $old[] = $output;
-
-            $context->set($this->to, $old, true);
-        } else {
-            $context->set($this->to, trim($output), true);
-        }
+        $context->set($this->to, trim($output), true);
 
         return '';
     }
