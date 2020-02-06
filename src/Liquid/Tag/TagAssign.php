@@ -84,7 +84,7 @@ class TagAssign extends AbstractTag
     {
         $output = $context->get($this->from);
 
-        foreach ($this->filters as $filter) {
+        foreach (array_merge($this->globalFilters, $this->filters) as $filter) {
             list($filtername, $filterArgKeys) = $filter;
 
             $filterArgValues = array();

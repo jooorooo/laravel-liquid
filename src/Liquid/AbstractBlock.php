@@ -44,8 +44,8 @@ class AbstractBlock extends AbstractTag
      */
     public function parse(array &$tokens)
     {
-        $startRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '/');
-        $tagRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/s');
+        $startRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '(-)?/');
+        $tagRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '(-)?\s*(\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/s');
         $variableStartRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '/');
 
         $this->nodelist = array();
@@ -62,24 +62,38 @@ class AbstractBlock extends AbstractTag
             if ($startRegexp->match($token)) {
                 if ($tagRegexp->match($token)) {
                     // If we found the proper block delimiter just end parsing here and let the outer block proceed
-                    if ($tagRegexp->matches[1] == $this->blockDelimiter()) {
+                    if ($tagRegexp->matches[2] == $this->blockDelimiter()) {
                         $this->endTag();
                         return;
                     }
 
                     $tagName = null;
-                    if (array_key_exists($tagRegexp->matches[1], $tags)) {
-                        $tagName = $tags[$tagRegexp->matches[1]];
+                    if (array_key_exists($tagRegexp->matches[2], $tags)) {
+                        $tagName = $tags[$tagRegexp->matches[2]];
+                    }
+
+                    $filters = [];
+                    if($tagRegexp->matches[1] == '-') {
+                        $filters[] = 'lstrip';
+                    }
+                    if(substr($tagRegexp->matches[3], -1) == '-') {
+                        $filters[] = 'rstrip';
+                        $tagRegexp->matches[3] = substr($tagRegexp->matches[3], 0, -1);
                     }
 
                     if ($tagName !== null) {
-                        $this->nodelist[] = new $tagName($tagRegexp->matches[2], $tokens, $this->compiler);
-                        if (in_array($tagRegexp->matches[1], ['extends', 'layout'])) {
+                        /** @var AbstractTag $node */
+                        $node = new $tagName($tagRegexp->matches[3], $tokens, $this->compiler);
+                        if($filters) {
+                            $node->setFilters($filters);
+                        }
+                        $this->nodelist[] = $node;
+                        if (in_array($tagRegexp->matches[2], ['extends', 'layout'])) {
                             return;
                         }
 
                     } else {
-                        $this->unknownTag($tagRegexp->matches[1], $tagRegexp->matches[2], $tokens, $this->compiler->getTextLine($tagRegexp->matches[0]));
+                        $this->unknownTag($tagRegexp->matches[2], $tagRegexp->matches[3], $tokens, $this->compiler->getTextLine($tagRegexp->matches[0]));
                     }
                 } else {
                     throw new LiquidException("Tag $token was not properly terminated"); // harry
@@ -226,9 +240,34 @@ class AbstractBlock extends AbstractTag
     {
         $variableRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '(.*)' . LiquidCompiler::VARIABLE_TAG[1] . '$/');
         if ($variableRegexp->match($token)) {
-            return new Variable($variableRegexp->matches[1], $this->compiler);
+            return $this->compileVariable($variableRegexp->matches[1]);
         }
 
         throw new LiquidException("Variable $token was not properly terminated");
+    }
+
+    /**
+     * Create a variable for the given token
+     *
+     * @param string $token
+     *
+     * @throws \Liquid\LiquidException
+     * @return Variable
+     */
+    private function compileVariable($variable)
+    {
+        $filters = [];
+        if(substr($variable, 0, 1) == '-') {
+            $filters[] = 'lstrip';
+            $variable = substr($variable, 1);
+        }
+        if(substr($variable, -1) == '-') {
+            $filters[] = 'rstrip';
+            $variable = substr($variable, 0, -1);
+        }
+
+        $variableObject = new Variable(trim($variable), $this->compiler);
+        $variableObject->preSetFilters($filters);
+        return $variableObject;
     }
 }

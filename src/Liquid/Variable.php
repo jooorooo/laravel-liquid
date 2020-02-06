@@ -140,6 +140,58 @@ class Variable
     }
 
     /**
+     * Set Filter
+     *
+     * @param string $filter
+     * @param array $parameters
+     */
+    public function setFilter($filter, array $parameters = [])
+    {
+        $this->filters[] = [$filter, $parameters];
+    }
+
+    /**
+     * Set Filter
+     *
+     * @param string $filter
+     * @param array $parameters
+     */
+    public function preSetFilter($filter, array $parameters = [])
+    {
+        array_unshift($this->filters, [$filter, $parameters]);
+    }
+
+    /**
+     * Set Filters
+     *
+     * @param array $filters
+     */
+    public function setFilters(array $filters)
+    {
+        foreach($filters AS $filter) {
+            if(!is_array($filter)) {
+                $filter = [$filter, []];
+            }
+            $this->setFilter($filter[0], isset($filter[1]) && is_array($filter[1]) ? $filter[1] : []);
+        }
+    }
+
+    /**
+     * Set Filters
+     *
+     * @param array $filters
+     */
+    public function preSetFilters(array $filters)
+    {
+        foreach($filters AS $filter) {
+            if(!is_array($filter)) {
+                $filter = [$filter, []];
+            }
+            $this->preSetFilter($filter[0], isset($filter[1]) && is_array($filter[1]) ? $filter[1] : []);
+        }
+    }
+
+    /**
      * Renders the variable with the data in the context
      *
      * @param Context $context
@@ -161,7 +213,7 @@ class Variable
         }
 
         foreach ($filters as $filter) {
-            if(empty($filter)) {
+            if(empty($filter) || !isset($filter[1])) {
                 continue;
             }
 

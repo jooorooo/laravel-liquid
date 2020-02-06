@@ -42,6 +42,13 @@ abstract class AbstractTag
     protected $attributes = array();
 
     /**
+     * Global filters
+     *
+     * @var array
+     */
+    protected $globalFilters = array();
+
+    /**
      * Constructor.
      *
      * @param string $markup
@@ -75,6 +82,22 @@ abstract class AbstractTag
     public function render(Context $context)
     {
         return '';
+    }
+
+    /**
+     * Set Filters
+     *
+     * @param array $filters
+     */
+    public function setFilters(array $filters)
+    {
+        foreach($filters AS $filter) {
+            if(!is_array($filter)) {
+                $filter = [$filter, []];
+            }
+
+            $this->globalFilters[] = [$filter[0], isset($filter[1]) && is_array($filter[1]) ? $filter[1] : []];
+        }
     }
 
     /**
