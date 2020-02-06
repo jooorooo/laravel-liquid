@@ -39,11 +39,6 @@ class TagLayout extends AbstractTag
     private $document;
 
     /**
-     * @var variable name to assign content for layout
-     */
-    private $assign_to = 'content_for_layout';
-
-    /**
      * Constructor
      *
      * @param string $markup
@@ -54,15 +49,9 @@ class TagLayout extends AbstractTag
      */
     public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        //$regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
-        $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(' . $compiler::QUOTED_FRAGMENT . '+))?/');
+        $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
         if ($regex->match($markup)) {
             $this->layoutPath = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
-            if(!empty($regex->matches[3])) {
-                $this->assign_to = substr($regex->matches[3], 1, strlen($regex->matches[3]) - 2);
-            }
-
-            $compiler->setLayoutVariableName($this->assign_to);
         } else {
             throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template path]'");
         }
@@ -88,7 +77,7 @@ class TagLayout extends AbstractTag
             $maintokens = $this->tokenize($source);
 
             $rest = array_merge([
-                '{% capture "' . $this->assign_to . '" %}'
+                '{% capture "content_for_layout" %}'
             ], $tokens, [
                 '{% endcapture %}'
             ], $maintokens);

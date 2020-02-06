@@ -66,11 +66,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     protected $filemtime = [];
 
     /**
-     * @var string
-     */
-    protected static $layout_variable_name;
-
-    /**
      * @var CompilerEngine
      */
     protected $compiler;
@@ -102,23 +97,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
-    
-    /**
-     * @return null|string
-     */
-    public function getLayoutVariableName()
-    {
-        return static::$layout_variable_name;
-    }
-
-    /**
-     * @param  string  $name
-     * @return void
-     */
-    public function setLayoutVariableName($name)
-    {
-        static::$layout_variable_name = $name;
-    }
 
     /**
      * Get the path currently being compiled.

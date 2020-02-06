@@ -152,8 +152,12 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(in_array(trim($this->name), $this->getLayoutVariableNames())) {
-            $filters[0] = [];
+        if(in_array(trim($this->name), ['content_for_header', 'content_for_layout', 'content_for_index'])) {
+            foreach($filters AS $index => $filter) {
+                if(in_array($filter[0], ['escape', 'escape_once'])) {
+                    unset($filters[$index]);
+                }
+            }
         }
 
         foreach ($filters as $filter) {
@@ -181,16 +185,4 @@ class Variable
         return $output;
     }
 
-    /**
-     * @return array
-     */
-    protected function getLayoutVariableNames()
-    {
-        $names = ['content_for_layout'];
-        if($dinamic = $this->compiler->getLayoutVariableName()) {
-            $names[] = $dinamic;
-        }
-
-        return array_unique($names);
-    }
 }
