@@ -8,6 +8,7 @@
 
 namespace Liquid\Filters;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Iterator;
 use Liquid\Context;
 use Illuminate\Support\Str AS IlluminateStr;
@@ -61,5 +62,31 @@ class Multy
         return $input;
     }
 
+    /**
+     * @param mixed $input
+     *
+     * @return string
+     */
+    public function json($input)
+    {
+        return json_encode($this->dataToArray($input)); //JSON_UNESCAPED_UNICODE
+    }
+
+    /**
+     * @param $data
+     * @return array
+     */
+    protected function dataToArray($data)
+    {
+        if($data instanceof Arrayable) {
+            $data = $data->toArray();
+        }
+
+        if(is_array($data)) {
+            return array_map([$this, 'dataToArray'], $data);
+        }
+
+        return $data;
+    }
 
 }
