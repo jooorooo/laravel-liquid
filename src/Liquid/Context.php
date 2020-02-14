@@ -399,7 +399,12 @@ class Context
             return sprintf('["%s"]', $this->variable($match[1]) ? : $match[1]);
         }, $key);
 
-        $parts = preg_split('/(\.|\[|\])/', $key, null, PREG_SPLIT_NO_EMPTY);
+        if(preg_match_all("~['\"][^'\"]++['\"]|[^.\"\'\[\]]++~", $key,$result)) {
+            $parts = $result[0];
+        } else {
+            $parts = preg_split('/(\.|\[|\])/', $key, null, PREG_SPLIT_NO_EMPTY);
+        }
+
         $parts = array_map(function($part) {
             if(preg_match('~^"(.*)"$~', $part, $m)) {
                 return $m[1];
