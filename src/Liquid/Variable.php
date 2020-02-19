@@ -204,7 +204,7 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(in_array(trim($this->name), ['content_for_header', 'content_for_layout', 'content_for_index'])) {
+        if(in_array(trim($this->name), ['content_for_header', 'content_for_layout', 'content_for_index', 'content_for_footer'])) {
             foreach($filters AS $index => $filter) {
                 if(in_array($filter[0], ['escape', 'escape_once'])) {
                     unset($filters[$index]);
