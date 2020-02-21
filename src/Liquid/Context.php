@@ -180,7 +180,6 @@ class Context
             if ($class === false) {
                 return call_user_func_array($name, $args);
             } else {
-                call_user_func_array([new $class($this), $name], $args);
                 return call_user_func_array([new $class($this), $name], $args);
             }
         }
