@@ -230,7 +230,8 @@ class Variable
 
         if (is_float($output)) {
             if ($output == (int)$output) {
-                return number_format($output, 1);
+                return (int)$output;
+//                return number_format($output, 1);
             }
         }
 
