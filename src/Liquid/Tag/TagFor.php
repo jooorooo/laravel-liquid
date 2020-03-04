@@ -11,7 +11,6 @@
 
 namespace Liquid\Tag;
 
-use App\Models\Product\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
