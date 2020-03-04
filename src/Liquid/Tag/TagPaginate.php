@@ -11,6 +11,7 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -91,7 +92,7 @@ class TagPaginate extends AbstractBlock
     {
         $collection = $context->get($this->collectionName);
 
-        if($collection instanceof Model || $collection instanceof Relation) {
+        if($collection instanceof Model || $collection instanceof Builder || $collection instanceof Relation) {
             /** @var \Illuminate\Pagination\LengthAwarePaginator $collection */
             $collection = $collection->paginate($this->numberItems);
         } else {

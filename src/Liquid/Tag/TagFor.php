@@ -11,6 +11,8 @@
 
 namespace Liquid\Tag;
 
+use App\Models\Product\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Liquid\AbstractBlock;
@@ -156,7 +158,7 @@ class TagFor extends AbstractBlock
             case 'collection':
 
                 $collection = $context->get($this->collectionName);
-                if($collection instanceof Model || $collection instanceof Relation) {
+                if($collection instanceof Model || $collection instanceof Builder || $collection instanceof Relation) {
                     $collection = $collection->offset($this->validateOffset($this->attributes['offset'] ?? 0))
                         ->limit($this->validateNumberItems($this->attributes['limit'] ?? 50))->get()->all();
 

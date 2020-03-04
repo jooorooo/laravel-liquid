@@ -12,6 +12,7 @@
 namespace Liquid;
 
 use ArrayAccess;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Iterator;
@@ -488,6 +489,7 @@ class Context
             !($object instanceof \Traversable) &&
             !($object instanceof Drop) &&
             !($object instanceof Model) &&
+            !($object instanceof Builder) &&
             !($object instanceof Relation)
         ) {
             throw new LiquidException(sprintf("Value of type %s has no `__toString` methods", get_class($object)));
