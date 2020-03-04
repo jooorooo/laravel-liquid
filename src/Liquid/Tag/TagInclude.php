@@ -107,7 +107,7 @@ class TagInclude extends AbstractTag
     public function parse(array &$tokens)
     {
         // read the source of the template and create a new sub document
-        $source = $this->compiler->getTemplateSource($this->templateName);
+        $source = $this->compiler->getTemplateSource('snippets.' . $this->templateName);
 
         $regex = new Regexp(sprintf('/%s\s*include\s*%s(%s)%s/imUs', Constant::TagStartPartial, '[\'\"]', $this->templateName, '[\'\"]'));
         $this->self_include = (bool)$regex->match($source);

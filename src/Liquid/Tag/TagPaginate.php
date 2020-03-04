@@ -11,11 +11,19 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Pagination\UrlWindow;
+use Illuminate\Support\Arr;
 use Liquid\AbstractBlock;
+use Liquid\Constant;
 use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Traits\TransformLaravelModel;
 
 /**
  * The paginate tag works in conjunction with the for tag to split content into numerous pages.
@@ -31,41 +39,18 @@ use Liquid\Regexp;
  */
 class TagPaginate extends AbstractBlock
 {
+
+    use TransformLaravelModel;
+
     /**
      * @var string The collection to paginate
      */
     private $collectionName;
 
     /**
-     * @var array The collection object
-     */
-    private $collection;
-
-    /**
-     *
-     * @var int The size of the collection
-     */
-    private $collectionSize;
-
-    /**
      * @var int The number of items to paginate by
      */
     private $numberItems;
-
-    /**
-     * @var int The current page
-     */
-    private $currentPage;
-
-    /**
-     * @var int The current offset (no of pages times no of items)
-     */
-    private $currentOffset;
-
-    /**
-     * @var int Total pages
-     */
-    private $totalPages;
 
 
     /**
@@ -82,11 +67,11 @@ class TagPaginate extends AbstractBlock
 
         parent::__construct($markup, $tokens, $compiler);
 
-        $syntax = new Regexp('/(' . LiquidCompiler::VARIABLE_NAME . ')\s+by\s+(\w+)/');
+        $syntax = new Regexp('/(' . Constant::VariableSignaturePartial . ')\s+by\s+(\d+)/');
 
         if ($syntax->match($markup)) {
             $this->collectionName = $syntax->matches[1];
-            $this->numberItems = $syntax->matches[2];
+            $this->numberItems = $this->validateNumberItems($syntax->matches[2]);
             $this->extractAttributes($markup);
         } else {
             throw new LiquidException("Syntax Error - Valid syntax: paginate [collection] by [items]");
@@ -104,69 +89,114 @@ class TagPaginate extends AbstractBlock
      */
     public function render(Context $context)
     {
+        $collection = $context->get($this->collectionName);
 
-        $this->currentPage = (is_numeric($context->get('page'))) ? $context->get('page') : 1;
-        $this->currentOffset = ($this->currentPage - 1) * $this->numberItems;
-        $this->collection = $context->get($this->collectionName);
-        if ($this->collection instanceof \Traversable) {
-            $this->collection = iterator_to_array($this->collection);
-        }
-        $this->collectionSize = count($this->collection);
-        $this->totalPages = (int)ceil($this->collectionSize / $this->numberItems);
-        $paginatedCollection = array_slice($this->collection, $this->currentOffset, $this->numberItems);
-
-        // Sets the collection if it's a key of another collection (ie search.results, collection.products, blog.articles)
-        $segments = explode('.', $this->collectionName);
-        if (count($segments) == 2) {
-            $context->set($segments[0], array($segments[1] => $paginatedCollection));
+        if($collection instanceof Model || $collection instanceof Relation) {
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $collection */
+            $collection = $collection->paginate($this->numberItems);
         } else {
-            $context->set($this->collectionName, $paginatedCollection);
+            if ($collection instanceof \Traversable) {
+                $collection = iterator_to_array($this->collection);
+            }
+            if(!is_array($collection)) {
+                $collection = [];
+            }
+
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $collection */
+            $currentPage = LengthAwarePaginator::resolveCurrentPage($pageName = 'page');
+            $collection = new LengthAwarePaginator(
+                array_splice($collection, ($currentPage - 1) * $this->numberItems, $this->numberItems),
+                count($collection),
+                $this->numberItems,
+                $currentPage,
+                [
+                    'path' => Paginator::resolveCurrentPath(),
+                    'pageName' => $pageName,
+                ]
+            );
+        }
+
+        $collectionSize = $collection->total();
+        $totalPages = $collection->lastPage();
+        $currentPage = $collection->currentPage();
+        $currentOffset = ($currentPage - 1) * $this->numberItems;
+
+        $paginatedCollection = $this->transformModel($collection->items());
+
+        $context->push();
+        // Sets the collection if it's a key of another collection (ie search.results, collection.products, blog.articles)
+//        $segments = explode('.', $this->collectionName);
+        $parts = preg_split('/(\.|\[|\])/', $this->collectionName, null, PREG_SPLIT_NO_EMPTY);
+        $result = [];
+        Arr::set($result, implode('.', $parts), $paginatedCollection);
+        if($result) {
+            $key = key($result);
+            $context->set($key, $result[$key]);
         }
 
         $paginate = array(
+            'current_offset' => $currentOffset,
+            'current_page' => $currentPage,
+            'items' => $collectionSize,
             'page_size' => $this->numberItems,
-            'current_page' => $this->currentPage,
-            'current_offset' => $this->currentOffset,
-            'pages' => $this->totalPages,
-            'items' => $this->collectionSize
+            'pages' => $totalPages,
+            'parts' => $this->parts(UrlWindow::make($collection))
         );
 
-        if ($this->currentPage != 1) {
+        if ($previous = $collection->previousPageUrl()) {
             $paginate['previous']['title'] = 'Previous';
-            $paginate['previous']['url'] = $this->currentUrl($context) . '?page=' . ($this->currentPage - 1);
-
+            $paginate['previous']['is_link'] = true;
+            $paginate['previous']['url'] = $previous;
         }
 
-        if ($this->currentPage != $this->totalPages) {
+        if ($next = $collection->nextPageUrl()) {
             $paginate['next']['title'] = 'Next';
-            $paginate['next']['url'] = $this->currentUrl($context) . '?page=' . ($this->currentPage + 1);
+            $paginate['next']['is_link'] = true;
+            $paginate['next']['url'] = $next;
         }
 
         $context->set('paginate', $paginate);
 
-        return parent::render($context);
+        $result = parent::render($context);
 
+        $context->pop();
+
+        return $result;
     }
 
     /**
-     * Returns the current page URL
-     *
-     * @param Context $context
-     *
-     * @return string
-     *
+     * @return array
      */
-    public function currentUrl($context)
+    public function parts($elements) : array
     {
+        $result = [];
+        $elements = array_filter([
+            $elements['first'],
+            is_array($elements['slider']) ? '...' : null,
+            $elements['slider'],
+            is_array($elements['last']) ? '...' : null,
+            $elements['last'],
+        ]);
 
-        $uri = explode('?', $context->get('REQUEST_URI'));
+        foreach($elements AS $element) {
+            if(is_array($element)) {
+                foreach($element AS $page => $link) {
+                    $result[] = [
+                        'title' => $page,
+                        'url' => $link,
+                        'is_link' => true,
+                    ];
+                }
+            } else {
+                $result[] = [
+                    'title' => $element,
+                    'url' => null,
+                    'is_link' => false,
+                ];
+            }
+        }
 
-        $url = 'http';
-        if ($context->get('HTTPS') == 'on') $url .= 's';
-        $url .= '://' . $context->get('HTTP_HOST') . reset($uri);
-
-        return $url;
-
+        return $result;
     }
 
 }

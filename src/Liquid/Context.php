@@ -12,6 +12,8 @@
 namespace Liquid;
 
 use ArrayAccess;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Iterator;
 use IteratorAggregate;
 
@@ -60,6 +62,12 @@ class Context
      * @var array
      */
     private $methodMap = array();
+    /**
+     * mark if push new level for assigns
+     *
+     * @var bool|integer
+     */
+    private $push = false;
 
     /**
      * List with magick methods to ignore for filters
@@ -205,6 +213,7 @@ class Context
     public function push()
     {
         array_unshift($this->assigns, array());
+        $this->push = 0;
         return true;
     }
 
@@ -220,6 +229,7 @@ class Context
         }
 
         array_shift($this->assigns);
+        $this->push = false;
     }
 
     /**
@@ -246,9 +256,22 @@ class Context
     {
         if($global) {
             $this->assigns_globals[$key] = $value;
+        } elseif($this->push !== false) {
+            $this->assigns[$this->push][$key] = $value;
         } else {
             $this->assigns[0][$key] = $value;
         }
+    }
+
+    /**
+     * Replaces []=
+     *
+     * @param string $key
+     * @param mixed $value
+     */
+    public function put($key, $value)
+    {
+        $this->assigns[count($this->assigns) - 1][$key] = $value;
     }
 
     /**
@@ -334,6 +357,20 @@ class Context
      */
     private function fetch($key)
     {
+        if($this->push !== false && array_key_exists($this->push, $this->assigns)) {
+            foreach ([$this->assigns[$this->push]] as $scope) {
+                if (array_key_exists($key, $scope)) {
+                    $obj = $scope[$key];
+
+                    if ($obj instanceof Drop) {
+                        $obj->setContext($this);
+                    }
+
+                    return $obj;
+                }
+            }
+        }
+
         // TagDecrement depends on environments being checked before assigns
         foreach ($this->environments as $environment) {
             if (array_key_exists($key, $environment)) {
@@ -446,7 +483,13 @@ class Context
         }
 
         // if everything else fails, throw up
-        if (is_object($object) && !($object instanceof \Traversable) && !($object instanceof Drop)) {
+        if (
+            is_object($object) &&
+            !($object instanceof \Traversable) &&
+            !($object instanceof Drop) &&
+            !($object instanceof Model) &&
+            !($object instanceof Relation)
+        ) {
             throw new LiquidException(sprintf("Value of type %s has no `__toString` methods", get_class($object)));
         }
 
