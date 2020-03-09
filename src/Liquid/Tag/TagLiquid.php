@@ -52,7 +52,7 @@ class TagLiquid extends AbstractTag
         $markup = str_replace(["\r\n", "\r"], "\n", $this->markup);
         $templateTokens = array_map(function($line) {
             return sprintf('%s %s %s', LiquidCompiler::OPERATION_TAGS[0], trim($line), LiquidCompiler::OPERATION_TAGS[1]);
-        }, explode("\n", $markup));
+        }, array_filter(explode("\n", $markup)));
 
         $this->document = new Document(null, $templateTokens, $this->compiler);
     }

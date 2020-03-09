@@ -20,6 +20,7 @@ use Liquid\Tag\TagPaginate;
 use Liquid\Tag\TagRaw;
 use Liquid\Tag\TagTablerow;
 use Liquid\Tag\TagUnless;
+use Liquid\Tag\TagEcho;
 
 use Liquid\Filters\Str;
 use Liquid\Filters\Escape;
@@ -75,6 +76,7 @@ return [
         'tablerow' => TagTablerow::class,
         'unless' => TagUnless::class,
         'layout' => TagLayout::class,
+        'echo' => TagEcho::class,
     ],
 
     /*
