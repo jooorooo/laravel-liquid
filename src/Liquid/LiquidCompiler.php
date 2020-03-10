@@ -237,6 +237,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
+     * Get the filters
+     *
+     * @return LiquidCompiler
+     */
+    public function getFilters()
+    {
+        return $this->filters;
+    }
+
+    /**
      * @param $path
      * @return string
      * @throws FileNotFoundException
@@ -369,7 +379,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     {
         $pattern = '/' . preg_quote($text, '/') . '/i';
         $lineNumber = 0;
-        if (preg_match($pattern, $content = $this->getFileSource($this->getPath()), $matches, PREG_OFFSET_CAPTURE)) {
+        if ($this->getPath() && preg_match($pattern, $content = $this->getFileSource($this->getPath()), $matches, PREG_OFFSET_CAPTURE)) {
             //PREG_OFFSET_CAPTURE will add offset of the found string to the array of matches
             //now get a substring of the offset length and explode it by \n
             $lineNumber = count(explode(PHP_EOL, substr($content, 0, $matches[0][1])));
