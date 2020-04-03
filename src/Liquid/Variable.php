@@ -204,7 +204,7 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(in_array(trim($this->name), ['content_for_header', 'content_for_layout', 'content_for_index', 'content_for_footer'])) {
+        if(in_array(trim($this->name), $this->getProtectedVariables())) {
             foreach($filters AS $index => $filter) {
                 if(in_array($filter[0], ['escape', 'escape_once'])) {
                     unset($filters[$index]);
@@ -236,6 +236,18 @@ class Variable
         }
 
         return $output;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getProtectedVariables()
+    {
+        if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables)) {
+            return $protected_variables;
+        }
+
+        return ['content_for_header', 'content_for_layout', 'content_for_index', 'content_for_footer'];
     }
 
 }
