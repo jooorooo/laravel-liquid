@@ -81,6 +81,7 @@ class TagLayout extends AbstractTag
             ], $tokens, [
                 '{% endcapture %}'
             ], $maintokens);
+
         }
 
         $this->document = new Document(null, $rest, $this->compiler);

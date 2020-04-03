@@ -63,10 +63,26 @@ class TagCapture extends AbstractBlock
      */
     public function render(Context $context)
     {
-        $output = parent::render($context);
+        if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables)) {
+            if(in_array($this->to, $protected_variables) && !$this->callFormTagLayout()) {
+                throw new LiquidException(sprintf('Variable "%s" is protected!', $this->to));
+            }
+        }
 
-        $context->set($this->to, trim($output), true);
+        $context->set($this->to, function() use($context) {
+            return trim(parent::render($context));
+        }, true);
 
         return '';
+    }
+
+    /**
+     * @return bool
+     */
+    protected function callFormTagLayout()
+    {
+        return !empty(array_filter(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 0, 7), function($r) {
+            return ($r['class'] ?? null) == TagLayout::class;
+        }));
     }
 }

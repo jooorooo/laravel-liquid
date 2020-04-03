@@ -82,6 +82,12 @@ class TagAssign extends AbstractTag
      */
     public function render(Context $context)
     {
+        if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables)) {
+            if(in_array($this->to, $protected_variables)) {
+                throw new LiquidException(sprintf('Variable "%s" is protected!', $this->to));
+            }
+        }
+
         $output = $context->get($this->from);
 
         foreach (array_merge($this->globalFilters, $this->filters) as $filter) {
