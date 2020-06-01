@@ -109,9 +109,13 @@ class TagInclude extends AbstractTag
         // read the source of the template and create a new sub document
         $source = $this->compiler->getTemplateSource('snippets.' . $this->templateName);
 
-        $regex = new Regexp(sprintf('/%s\s*include\s*%s(%s)%s/imUs', Constant::TagStartPartial, '[\'\"]', $this->templateName, '[\'\"]'));
+        if(($tagName = array_search(get_class($this), $this->compiler->getTags())) === false) {
+            $tagName = 'render';
+        }
+
+        $regex = new Regexp(sprintf('/%s\s*%s\s*%s(%s)%s/imUs', Constant::TagStartPartial, $tagName, '[\'\"]', $this->templateName, '[\'\"]'));
         $this->self_include = (bool)$regex->match($source);
-        
+
         if(!$this->self_include) {
             $templateTokens = $this->tokenize($source);
             $this->document = new Document(null, $templateTokens, $this->compiler);
@@ -187,11 +191,6 @@ class TagInclude extends AbstractTag
      */
     protected function _renderOutline(Context $context)
     {
-        $assigns = $context->getAllAssigns();
-        foreach ($this->attributes as $key => $value) {
-            $assigns[$key] = $context->get($value);
-        }
-
         $result = '';
         $variable = $context->get($this->variable);
 
@@ -203,9 +202,12 @@ class TagInclude extends AbstractTag
 
         if ($this->collection) {
             if(is_array($variable)) {
+                $templateTokens = $this->tokenize($this->compiler->getTemplateSource('snippets.' . $this->templateName));
+                $document = new Document(null, $templateTokens, $this->compiler);
+
                 foreach ($variable as $item) {
-                    $assigns[$this->templateName] = $item;
-                    $result .= view($this->templateName, $assigns)->render();
+                    $context->set($this->templateName, $item);
+                    $result .= $document->render($context);
                 }
             }
 
@@ -214,7 +216,9 @@ class TagInclude extends AbstractTag
                 $context->set($this->templateName, $variable);
             }
 
-            $result .= view($this->templateName, $assigns)->render();
+            $templateTokens = $this->tokenize($this->compiler->getTemplateSource('snippets.' . $this->templateName));
+            $document = new Document(null, $templateTokens, $this->compiler);
+            $result .= $document->render($context);
         }
 
         $context->pop();
