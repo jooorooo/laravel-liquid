@@ -52,6 +52,42 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Liquid template loader
+     |--------------------------------------------------------------------------
+     |
+     | By default loader is file
+     | Supported types is file, database
+     */
+    'loader' => 'file',
+
+    'loader_stores' => [
+        'database' => [
+            'driver' => 'database',
+            'table' => 'templates',
+            'connection' => null,
+        ],
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Liquid template loader
+     |--------------------------------------------------------------------------
+     |
+     | By default compiled is file
+     | Supported types is file, database
+     */
+    'compiled' => 'file',
+
+    'compiled_stores' => [
+        'database' => [
+            'driver' => 'database',
+            'table' => 'compiled',
+            'connection' => null,
+        ],
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
      | Liquid allowed tags
      |--------------------------------------------------------------------------
      */
