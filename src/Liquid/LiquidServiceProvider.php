@@ -75,12 +75,14 @@ class LiquidServiceProvider extends ServiceProvider
         if ($this->app->resolved('view.finder')) {
             $oldFinder['paths'] = $this->app['view']->getFinder()->getPaths();
             $oldFinder['hints'] = $this->app['view']->getFinder()->getHints();
+            $oldFinder['extensions'] = $this->app['view']->getFinder()->getExtensions();
         }
 
         $this->app->bind('view.finder', function ($app) use ($oldFinder) {
 
             $paths = (isset($oldFinder['paths']))?array_unique(array_merge($app['config']['view.paths'], $oldFinder['paths']), SORT_REGULAR):$app['config']['view.paths'];
-            $viewFinder = new FileViewFinder($app['files'], $paths);
+
+            $viewFinder = new FileViewFinder($app['files'], $paths, $oldFinder['extensions'] ?? null);
             if (!empty($oldFinder['hints'])) {
                 array_walk($oldFinder['hints'], function($value, $key) use ($viewFinder) {
                     $viewFinder->addNamespace($key, $value);
