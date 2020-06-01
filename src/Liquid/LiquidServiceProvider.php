@@ -42,7 +42,6 @@ class LiquidServiceProvider extends ServiceProvider
      */
     public function registerLiquidViewFinder()
     {
-        dd((new LiquidViewFinder($this->app)));
         // The Compiler engine requires an instance of the CompilerInterface, which in
         // this case will be the Blade compiler, so we'll first create the compiler
         // instance to pass into the engine so it can compile the views properly.
