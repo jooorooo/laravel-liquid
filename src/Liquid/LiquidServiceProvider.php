@@ -20,6 +20,7 @@ class LiquidServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->registerViewFinder();
         $this->registerLiquidEngine();
         $this->registerLiquidEngineResover();
         $this->registerLiquidExtension();
@@ -60,6 +61,33 @@ class LiquidServiceProvider extends ServiceProvider
     {
         $this->app['view.engine.resolver']->register('liquid', function () {
             return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
+        });
+    }
+
+    /**
+     * Register the view finder implementation.
+     *
+     * @return void
+     */
+    public function registerViewFinder()
+    {
+        $oldFinder = [];
+        if ($this->app->resolved('view.finder')) {
+            $oldFinder['paths'] = $this->app['view']->getFinder()->getPaths();
+            $oldFinder['hints'] = $this->app['view']->getFinder()->getHints();
+        }
+
+        $this->app->bind('view.finder', function ($app) use ($oldFinder) {
+
+            $paths = (isset($oldFinder['paths']))?array_unique(array_merge($app['config']['view.paths'], $oldFinder['paths']), SORT_REGULAR):$app['config']['view.paths'];
+            $viewFinder = new FileViewFinder($app['files'], $paths);
+            if (!empty($oldFinder['hints'])) {
+                array_walk($oldFinder['hints'], function($value, $key) use ($viewFinder) {
+                    $viewFinder->addNamespace($key, $value);
+                });
+            }
+
+            return $viewFinder;
         });
     }
 
