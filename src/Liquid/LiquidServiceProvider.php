@@ -21,7 +21,7 @@ class LiquidServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerLiquidEngine();
-
+        $this->registerLiquidEngineResover();
         $this->registerLiquidExtension();
     }
 
@@ -49,7 +49,15 @@ class LiquidServiceProvider extends ServiceProvider
                 $this->app['files'], $this->app['config']['view.compiled']
             );
         });
+    }
 
+    /**
+     * Register the Liquid engine implementation.
+     *
+     * @return void
+     */
+    public function registerLiquidEngineResover()
+    {
         $this->app['view.engine.resolver']->register('liquid', function () {
             return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });

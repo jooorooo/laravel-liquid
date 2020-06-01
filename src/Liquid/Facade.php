@@ -42,6 +42,6 @@ class Facade extends IlluminateFacade
      */
     protected static function getFacadeAccessor()
     {
-        return static::$app['view']->getEngineResolver()->resolve('liquid')->getCompiler();
+        return 'liquid.compiler';
     }
 }

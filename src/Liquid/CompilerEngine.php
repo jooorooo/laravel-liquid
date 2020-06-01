@@ -101,14 +101,4 @@ class CompilerEngine extends PhpEngine
     {
         return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)) . ')';
     }
-
-    /**
-     * Get the compiler implementation.
-     *
-     * @return \Illuminate\View\Compilers\CompilerInterface
-     */
-    public function getCompiler()
-    {
-        return $this->compiler;
-    }
 }
