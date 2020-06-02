@@ -16,6 +16,7 @@ use Liquid\Tag\TagInclude;
 use Liquid\Tag\TagIncrement;
 use Liquid\Tag\TagExtends;
 use Liquid\Tag\TagLayout;
+use Liquid\Tag\TagLiquid;
 use Liquid\Tag\TagPaginate;
 use Liquid\Tag\TagRaw;
 use Liquid\Tag\TagTablerow;
@@ -64,11 +65,14 @@ return [
      | Liquid compiled store
      |--------------------------------------------------------------------------
      |
-     | By default store is file (load from view.paths). Allowed types is in database.php -> connections + file
+     | By default store is file (load from view.paths). Allowed types is file, mysql
      */
     'view_store' => [
         'connection' => 'mysql',
         'table' => 'templates',
+        'where' => [
+            'version_id' => 2
+        ]
     ],
 
     /*
@@ -98,6 +102,7 @@ return [
         'unless' => TagUnless::class,
         'layout' => TagLayout::class,
         'echo' => TagEcho::class,
+        'liquid' => TagLiquid::class,
     ],
 
     /*

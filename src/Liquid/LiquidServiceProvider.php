@@ -20,6 +20,7 @@ class LiquidServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->registerLiquidViewManager();
         $this->registerViewFinder();
         $this->registerView();
         $this->registerLiquidEngine();
@@ -46,7 +47,22 @@ class LiquidServiceProvider extends ServiceProvider
         // this case will be the Blade compiler, so we'll first create the compiler
         // instance to pass into the engine so it can compile the views properly.
         $this->app->singleton('liquid.compiler', function ($app) {
-            return new LiquidCompiler($app['files']);
+            return new LiquidCompiler($app['liquid.view.manager']);
+        });
+    }
+
+    /**
+     * Register the Liquid engine implementation.
+     *
+     * @return void
+     */
+    public function registerLiquidViewManager()
+    {
+        // The Compiler engine requires an instance of the CompilerInterface, which in
+        // this case will be the Blade compiler, so we'll first create the compiler
+        // instance to pass into the engine so it can compile the views properly.
+        $this->app->singleton('liquid.view.manager', function ($app) {
+            return new LiquidViewManager($app);
         });
     }
 
@@ -81,6 +97,8 @@ class LiquidServiceProvider extends ServiceProvider
             $paths = (isset($oldFinder['paths']))?array_unique(array_merge($app['config']['view.paths'] ?? [], $oldFinder['paths']), SORT_REGULAR):$app['config']['view.paths'];
 
             $viewFinder = new FileViewFinder($app['files'], $paths, $oldFinder['extensions'] ?? null);
+            $viewFinder->addExtension($app['config']['liquid.extension']);
+
             if (!empty($oldFinder['hints'])) {
                 array_walk($oldFinder['hints'], function($value, $key) use ($viewFinder) {
                     $viewFinder->addNamespace($key, $value);

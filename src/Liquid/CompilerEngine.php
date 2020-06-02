@@ -46,7 +46,7 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the evaluated contents of the view.
      *
-     * @param string $path
+     * @param FileContent $path
      * @param array $data
      * @return string|null
      * @throws ErrorException

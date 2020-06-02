@@ -13,7 +13,6 @@ use Illuminate\View\ViewFinderInterface;
 
 /**
  * @method static void compile($path = null)
- * @method static string findTemplate($path)
  * @method static bool getAutoEscape()
  * @method static string getCompiledPath()
  * @method static string getFileSource()
