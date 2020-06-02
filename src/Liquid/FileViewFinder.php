@@ -21,6 +21,11 @@ class FileViewFinder extends IlluminateFileViewFinder
     {
         foreach ((array) $paths as $path) {
             foreach ($this->getPossibleViewFiles($name) as $file) {
+//                if(pathinfo($file, PATHINFO_EXTENSION) == config('liquid.extension')) {
+//                    if ($load = $this->loadFile($path.'/'.$file)) {
+//                        return $load;
+//                    }
+//                }
                 if ($this->files->exists($viewPath = $path.'/'.$file)) {
                     return $viewPath;
                 }
@@ -28,5 +33,12 @@ class FileViewFinder extends IlluminateFileViewFinder
         }
 
         throw new InvalidArgumentException("View [{$name}] not found.");
+    }
+
+    protected function loadFile($file)
+    {
+        if($this->files->exists($file)) {
+            return $this->files->get($file);
+        }
     }
 }

@@ -9,6 +9,7 @@
 namespace Liquid;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\Factory;
 
 class LiquidServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,7 @@ class LiquidServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerViewFinder();
+        $this->registerView();
         $this->registerLiquidEngine();
         $this->registerLiquidEngineResover();
         $this->registerLiquidExtension();
@@ -80,7 +82,7 @@ class LiquidServiceProvider extends ServiceProvider
 
         $this->app->bind('view.finder', function ($app) use ($oldFinder) {
 
-            $paths = (isset($oldFinder['paths']))?array_unique(array_merge($app['config']['view.paths'], $oldFinder['paths']), SORT_REGULAR):$app['config']['view.paths'];
+            $paths = (isset($oldFinder['paths']))?array_unique(array_merge($app['config']['view.paths'] ?? [], $oldFinder['paths']), SORT_REGULAR):$app['config']['view.paths'];
 
             $viewFinder = new FileViewFinder($app['files'], $paths, $oldFinder['extensions'] ?? null);
             if (!empty($oldFinder['hints'])) {
@@ -91,6 +93,18 @@ class LiquidServiceProvider extends ServiceProvider
 
             return $viewFinder;
         });
+    }
+
+    /**
+     * Register the view finder implementation.
+     *
+     * @return void
+     */
+    public function registerView()
+    {
+        if ($this->app->resolved('view')) {
+            $this->app['view']->setFinder($this->app['view.finder']);
+        }
     }
 
     public function registerLiquidExtension()
