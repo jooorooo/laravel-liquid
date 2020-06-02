@@ -13,6 +13,7 @@
 
 namespace Liquid;
 
+use Carbon\Carbon;
 use Closure;
 use ErrorException;
 use Illuminate\Cache\Repository;
@@ -22,6 +23,7 @@ use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\ViewFinderInterface;
 use InvalidArgumentException;
+use Liquid\Loader\FileContent;
 use Liquid\Traits\TokenizeTrait;
 
 /**
@@ -244,6 +246,10 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function getFileSource($path)
     {
+        if($path instanceof FileContent) {
+            return $path->getContent();
+        }
+
         return $this->files->get($path);
     }
 
@@ -254,7 +260,11 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function findTemplate($template)
     {
         if($path = $this->getViewFinder()->find($template)) {
-            if(!array_key_exists($path, $this->filemtime)) {
+            if($path instanceof FileContent) {
+                if(!array_key_exists($path->getPath(), $this->filemtime)) {
+                    $this->filemtime[$path->getPath()] = $path->getFileMTime();
+                }
+            } elseif(!array_key_exists($path, $this->filemtime)) {
                 $this->filemtime[$path] = $this->files->lastModified($path);
             }
         }
@@ -268,7 +278,11 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function setFileMtime($path)
     {
-        if(!array_key_exists($path, $this->filemtime) && $this->files->exists($path)) {
+        if($path instanceof FileContent) {
+            if(!array_key_exists($path->getPath(), $this->filemtime) && $path->getFileMTime()) {
+                $this->filemtime[$path->getPath()] = $path->getFileMTime();
+            }
+        } elseif(!array_key_exists($path, $this->filemtime) && $this->files->exists($path)) {
             $this->filemtime[$path] = $this->files->lastModified($path);
         }
     }
@@ -296,11 +310,12 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             $this->setPath($path);
         }
 
-        $templateTokens = $this->tokenize($this->getFileSource($this->getPath()));
+        $templateTokens = $this->tokenize($this->getPath() instanceof FileContent ? $this->getPath()->getContent() : $this->getFileSource($this->getPath()));
 
         $this->root = new Document(null, $templateTokens, $this);
 
         if($this->isExpired($path)) {
+            $this->getCacheStore()->delete($this->getCompiledKey($this->getPath()));
             $this->getCacheStore()->forever($this->getCompiledKey($this->getPath()), (object)[
                 'filemtime' => time(),
                 'content' => $this->root
@@ -316,6 +331,10 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function getCompiledKey($path)
     {
+        if($path instanceof FileContent) {
+            $path = $path->getPath();
+        }
+
         return sha1($path);
     }
 
@@ -356,7 +375,11 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function isExpired($path)
     {
-        $compiled = $this->getCompiledKey($path);
+        if($path instanceof FileContent) {
+            $compiled = $this->getCompiledKey($path->getPath());
+        } else {
+            $compiled = $this->getCompiledKey($path);
+        }
 
         // If the compiled file doesn't exist we will indicate that the view is expired
         // so that it can be re-compiled. Else, we will verify the last modification
@@ -370,7 +393,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             return true;
         }
 
-        $pathLastModify = count($this->filemtime) > 0 ? max($this->filemtime) : $this->files->lastModified($path);
+        $pathLastModify = count($this->filemtime) > 0 ? max($this->filemtime) : ($path instanceof FileContent ? $path->getFileMTime() : $this->files->lastModified($path));
 
         return $pathLastModify >= $compiledData->filemtime;
     }

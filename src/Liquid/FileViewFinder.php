@@ -2,8 +2,10 @@
 
 namespace Liquid;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\FileViewFinder as IlluminateFileViewFinder;
 use InvalidArgumentException;
+use Liquid\Loader\FileContent;
 
 class FileViewFinder extends IlluminateFileViewFinder
 {
@@ -21,11 +23,11 @@ class FileViewFinder extends IlluminateFileViewFinder
     {
         foreach ((array) $paths as $path) {
             foreach ($this->getPossibleViewFiles($name) as $file) {
-//                if(pathinfo($file, PATHINFO_EXTENSION) == config('liquid.extension')) {
-//                    if ($load = $this->loadFile($path.'/'.$file)) {
-//                        return $load;
-//                    }
-//                }
+                if(pathinfo($file, PATHINFO_EXTENSION) == config('liquid.extension')) {
+                    if ($load = $this->loadFile($file)) {
+                        return $load;
+                    }
+                }
                 if ($this->files->exists($viewPath = $path.'/'.$file)) {
                     return $viewPath;
                 }
@@ -37,8 +39,10 @@ class FileViewFinder extends IlluminateFileViewFinder
 
     protected function loadFile($file)
     {
-        if($this->files->exists($file)) {
-            return $this->files->get($file);
+        if($fileDb = DB::table('templates')->where('path', $file)->first()) {
+            return new FileContent($fileDb->content, strtotime($fileDb->updated_at), $file);
         }
+
+        return false;
     }
 }

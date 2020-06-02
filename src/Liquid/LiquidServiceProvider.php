@@ -9,7 +9,6 @@
 namespace Liquid;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\View\Factory;
 
 class LiquidServiceProvider extends ServiceProvider
 {
@@ -25,7 +24,6 @@ class LiquidServiceProvider extends ServiceProvider
         $this->registerView();
         $this->registerLiquidEngine();
         $this->registerLiquidEngineResover();
-        $this->registerLiquidExtension();
     }
 
     public function setupConfig()
@@ -100,17 +98,41 @@ class LiquidServiceProvider extends ServiceProvider
      */
     public function registerView()
     {
+        $oldView = [];
         if ($this->app->resolved('view')) {
-            $this->app['view']->setFinder($this->app['view.finder']);
+            $oldView['dispatcher'] = $this->app['view']->getDispatcher();
+            $oldView['container'] = $this->app['view']->getContainer();
+            $oldView['shared'] = $this->app['view']->getShared();
         }
-    }
 
-    public function registerLiquidExtension()
-    {
-        $this->app['view']->addExtension(
-            $this->app['config']->get('liquid.extension'),
-            'liquid'
-        );
+        $this->app->singleton('view', function ($app) use($oldView) {
+            // Next we need to grab the engine resolver instance that will be used by the
+            // environment. The resolver will be used by an environment to get each of
+            // the various engine implementations such as plain PHP or Blade engine.
+            $resolver = $app['view.engine.resolver'];
+
+            $finder = $app['view.finder'];
+
+            $factory = new Factory($resolver, $finder, $oldView['dispatcher'] ?? $app['events']);
+
+            $factory->addExtension($this->app['config']->get('liquid.extension'),
+                'liquid');
+
+            // We will also set the container instance on this view environment since the
+            // view composers may be classes registered in the container, which allows
+            // for great testable, flexible composers for the application developer.
+            $factory->setContainer($oldView['container'] ?? $app);
+
+            if(!empty($oldView['shared'])) {
+                array_walk($oldView['shared'], function($value, $key) use ($factory) {
+                    $factory->share($key, $value);
+                });
+            } else {
+                $factory->share('app', $app);
+            }
+
+            return $factory;
+        });
     }
 
 }

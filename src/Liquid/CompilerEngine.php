@@ -2,10 +2,13 @@
 
 namespace Liquid;
 
+use Exception;
+use Liquid\Loader\FileContent;
 use Symfony\Component\Debug\Exception\FatalThrowableError;
 use ErrorException;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Engines\PhpEngine;
+use Throwable;
 
 class CompilerEngine extends PhpEngine
 {
@@ -63,9 +66,9 @@ class CompilerEngine extends PhpEngine
             array_pop($this->lastCompiled);
 
             return $results;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->handleViewException($e, $obLevel);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->handleViewException(new FatalThrowableError($e), $obLevel);
         }
         return null;
@@ -74,13 +77,13 @@ class CompilerEngine extends PhpEngine
     /**
      * Handle a view exception.
      *
-     * @param  \Exception $e
+     * @param  Exception $e
      * @param  int $obLevel
      * @return void
      *
      * @throws $e
      */
-    protected function handleViewException(\Exception $e, $obLevel)
+    protected function handleViewException(Exception $e, $obLevel)
     {
         $e = new ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
 
@@ -94,11 +97,16 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the exception message for an exception.
      *
-     * @param  \Exception $e
+     * @param  Exception $e
      * @return string
      */
-    protected function getMessage(\Exception $e)
+    protected function getMessage(Exception $e)
     {
-        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)) . ')';
+        if(($last = last($this->lastCompiled)) instanceof FileContent) {
+            $path = $last->getPath();
+        } else {
+            $path = realpath(last($this->lastCompiled));
+        }
+        return $e->getMessage() . ' (View: ' . $path . ')';
     }
 }
