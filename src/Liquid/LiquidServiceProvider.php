@@ -47,10 +47,8 @@ class LiquidServiceProvider extends ServiceProvider
         // The Compiler engine requires an instance of the CompilerInterface, which in
         // this case will be the Blade compiler, so we'll first create the compiler
         // instance to pass into the engine so it can compile the views properly.
-        $this->app->singleton('liquid.compiler', function () {
-            return new LiquidCompiler(
-                $this->app['files'], $this->app['config']['view.compiled']
-            );
+        $this->app->singleton('liquid.compiler', function ($app) {
+            return new LiquidCompiler($app['files']);
         });
     }
 

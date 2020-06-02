@@ -13,13 +13,15 @@
 
 namespace Liquid;
 
+use Closure;
 use ErrorException;
+use Illuminate\Cache\Repository;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\View;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\ViewFinderInterface;
+use InvalidArgumentException;
 use Liquid\Traits\TokenizeTrait;
 
 /**
@@ -87,16 +89,25 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
     const PARTIAL_TEMPLATE_PARSER = self::VARIABLE_TAG[0] . '.*?' . self::VARIABLE_TAG[1] . '|' . self::OPERATION_TAGS[0] . '.*?' . self::OPERATION_TAGS[1];
 
-    const TEMPLATE_PARSER = self::PARTIAL_TEMPLATE_PARSER . '|' . self::ANY_STARTING_TAG;
-
     // Variable name.
     const VARIABLE_NAME = '[a-zA-Z_][a-zA-Z_0-9.-]*';
 
     const QUOTED_FRAGMENT = '"[^"]*"|\'[^\']*\'|(?:[^\s,\|\'"]|"[^"]*"|\'[^\']*\')+';
 
-    const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
-
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
+
+    /**
+     * Create a new compiler instance.
+     *
+     * @param  \Illuminate\Filesystem\Filesystem  $files
+     * @return void
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function __construct(Filesystem $files)
+    {
+        $this->files = $files;
+    }
 
     /**
      * Get the path currently being compiled.
@@ -117,16 +128,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function setPath($path)
     {
         $this->path = $path;
-    }
-
-    /**
-     * Get the path to the compiled directory.
-     *
-     * @return string
-     */
-    public function getCompiledCachePath()
-    {
-        return $this->cachePath;
     }
 
     /**
@@ -193,8 +194,8 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function registerTag($name, $class)
     {
-        if($class instanceof \Closure) {
-            throw new \InvalidArgumentException('Type "Closure" is not allowed for tag!');
+        if($class instanceof Closure) {
+            throw new InvalidArgumentException('Type "Closure" is not allowed for tag!');
         }
         $this->tags[$name] = $class;
         return $this;
@@ -216,8 +217,8 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function registerFilter($filter)
     {
-        if($filter instanceof \Closure) {
-            throw new \InvalidArgumentException('Type "Closure" is not allowed for filter!');
+        if($filter instanceof Closure) {
+            throw new InvalidArgumentException('Type "Closure" is not allowed for filter!');
         }
 
         $this->filters[] = $filter;
@@ -237,16 +238,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Get the filters
-     *
-     * @return LiquidCompiler
-     */
-    public function getFilters()
-    {
-        return $this->filters;
-    }
-
-    /**
      * @param $path
      * @return string
      * @throws FileNotFoundException
@@ -254,14 +245,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function getFileSource($path)
     {
         return $this->files->get($path);
-    }
-
-    /**
-     * @return Filesystem
-     */
-    public function getFilesistem()
-    {
-        return $this->files;
     }
 
     /**
@@ -318,8 +301,22 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         $this->root = new Document(null, $templateTokens, $this);
 
         if($this->isExpired($path)) {
-            $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
+            $this->getCacheStore()->forever($this->getCompiledKey($this->getPath()), (object)[
+                'filemtime' => time(),
+                'content' => $this->root
+            ]);
         }
+    }
+
+    /**
+     * Get the path to the compiled version of a view.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public function getCompiledKey($path)
+    {
+        return sha1($path);
     }
 
     /**
@@ -344,7 +341,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             }
         }
 
-        $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
+        $this->root = $this->getCacheStore()->get($this->getCompiledKey($path))->content;
 
         $result = $this->root->render($context);
 
@@ -359,19 +356,23 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     public function isExpired($path)
     {
-        $compiled = $this->getCompiledPath($path);
+        $compiled = $this->getCompiledKey($path);
 
         // If the compiled file doesn't exist we will indicate that the view is expired
         // so that it can be re-compiled. Else, we will verify the last modification
         // of the views is less than the modification times of the compiled views.
-        if (! $this->files->exists($compiled)) {
+        if (! $this->getCacheStore()->has($compiled)) {
+            return true;
+        }
+
+        $compiledData = $this->getCacheStore()->get($compiled);
+        if(empty($compiledData->filemtime) || !isset($compiledData->content)) {
             return true;
         }
 
         $pathLastModify = count($this->filemtime) > 0 ? max($this->filemtime) : $this->files->lastModified($path);
 
-        return $pathLastModify >=
-            $this->files->lastModified($compiled);
+        return $pathLastModify >= $compiledData->filemtime;
     }
 
 
@@ -384,8 +385,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             //now get a substring of the offset length and explode it by \n
             $lineNumber = count(explode(PHP_EOL, substr($content, 0, $matches[0][1])));
         }
-        
+
         return $lineNumber;
+    }
+
+    /**
+     * @return Repository|\Illuminate\Contracts\Cache\Repository
+     */
+    public function getCacheStore()
+    {
+        return cache()->store(config('liquid.compiled_store', 'file'));
     }
 
     /**
