@@ -34,6 +34,8 @@ class LiquidServiceProvider extends ServiceProvider
         $this->publishes([
             $file => config_path('liquid.php')
         ], 'config');
+
+        $this->publishes([__DIR__ . '/../../migrations/' => database_path('migrations')], 'migrations');
     }
 
     /**

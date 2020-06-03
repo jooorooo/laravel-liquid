@@ -70,9 +70,9 @@ return [
     'view_store' => [
         'connection' => 'mysql',
         'table' => 'templates',
-        'where' => [
-            'version_id' => 2
-        ]
+//        'where' => [
+//            'version_id' => 2
+//        ]
     ],
 
     /*
