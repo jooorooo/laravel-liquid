@@ -21,6 +21,7 @@ use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Traits\TokenizeTrait;
+use Liquid\ViewFinders\DatabaseViewFinder;
 
 /**
  * The Template class.
@@ -87,14 +88,10 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
     const PARTIAL_TEMPLATE_PARSER = self::VARIABLE_TAG[0] . '.*?' . self::VARIABLE_TAG[1] . '|' . self::OPERATION_TAGS[0] . '.*?' . self::OPERATION_TAGS[1];
 
-    const TEMPLATE_PARSER = self::PARTIAL_TEMPLATE_PARSER . '|' . self::ANY_STARTING_TAG;
-
     // Variable name.
     const VARIABLE_NAME = '[a-zA-Z_][a-zA-Z_0-9.-]*';
 
     const QUOTED_FRAGMENT = '"[^"]*"|\'[^\']*\'|(?:[^\s,\|\'"]|"[^"]*"|\'[^\']*\')+';
-
-    const QUOTED_FRAGMENT_FILTER_ARGUMENT = '"[^":]*"|\'[^\':]*\'|(?:[^\s:,\|\'"]|"[^":]*"|\'[^\':]*\')+';
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
 
@@ -140,6 +137,14 @@ class LiquidCompiler extends Compiler implements CompilerInterface
         app('view')->getFinder()->addExtension($value);
         $this->getViewFinder()->addExtension($value);
         return $this;
+    }
+
+    /**
+     * @return DatabaseViewFinder
+     */
+    public function getFinder()
+    {
+        return app('liquid.view.finder')->driver();
     }
 
     /**
@@ -384,38 +389,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             //now get a substring of the offset length and explode it by \n
             $lineNumber = count(explode(PHP_EOL, substr($content, 0, $matches[0][1])));
         }
-        
+
         return $lineNumber;
-    }
-
-    /**
-     * Handle a view exception.
-     *
-     * @param  \Exception $e
-     * @param  int $obLevel
-     * @return void
-     *
-     * @throws $e
-     */
-    protected function handleViewException(\Exception $e, $obLevel)
-    {
-        $e = new ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
-
-        while (ob_get_level() > $obLevel) {
-            ob_end_clean();
-        }
-
-        throw $e;
-    }
-
-    /**
-     * Get the exception message for an exception.
-     *
-     * @param  \Exception $e
-     * @return string
-     */
-    protected function getMessage(\Exception $e)
-    {
-        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)) . ')';
     }
 }

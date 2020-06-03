@@ -16,6 +16,7 @@ use Liquid\Tag\TagInclude;
 use Liquid\Tag\TagIncrement;
 use Liquid\Tag\TagExtends;
 use Liquid\Tag\TagLayout;
+use Liquid\Tag\TagLiquid;
 use Liquid\Tag\TagPaginate;
 use Liquid\Tag\TagRaw;
 use Liquid\Tag\TagTablerow;
@@ -52,6 +53,30 @@ return [
 
     /*
      |--------------------------------------------------------------------------
+     | Liquid templates finder
+     |--------------------------------------------------------------------------
+     |
+     | By default finder is file
+     */
+    'finder' => [
+        'default' => env('LIQUID_VIEW_FINDER', 'file'),
+
+        'drivers' => [
+            'file' => [
+                'driver' => 'file',
+                'path' => resource_path('views'),
+            ],
+
+            'database' => [
+                'driver' => 'database',
+                'table' => 'templates',
+                'connection' => null,
+            ],
+        ]
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
      | Liquid allowed tags
      |--------------------------------------------------------------------------
      */
@@ -77,6 +102,7 @@ return [
         'unless' => TagUnless::class,
         'layout' => TagLayout::class,
         'echo' => TagEcho::class,
+        'liquid' => TagLiquid::class,
     ],
 
     /*

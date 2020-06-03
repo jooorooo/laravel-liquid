@@ -22,7 +22,10 @@
 	"autoload": {
 		"psr-4": {
 			"Liquid\\": "src/Liquid"
-		}
+		},
+        "files": [
+            "src/Liquid/helpers.php"
+        ]
 	},
 	"extra": {
 		"laravel": {
