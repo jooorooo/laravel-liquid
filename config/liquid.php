@@ -68,7 +68,7 @@ return [
      | By default store is file (load from view.paths). Allowed types is file, mysql
      */
     'view_store' => [
-        'connection' => 'mysql',
+        'connection' => 'file',
         'table' => 'templates',
 //        'where' => [
 //            'version_id' => 2
