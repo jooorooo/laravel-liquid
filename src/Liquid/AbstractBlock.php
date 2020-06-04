@@ -11,9 +11,13 @@
 
 namespace Liquid;
 
+use Illuminate\Support\Str;
 use Liquid\Exceptions\SyntaxError;
 use Liquid\Tag\TagBlock;
 use Liquid\Tag\TagLayout;
+use Liquid\Tokens\TagToken;
+use Liquid\Tokens\TextToken;
+use Liquid\Tokens\VariableToken;
 
 /**
  * Base class for blocks.
@@ -59,51 +63,39 @@ class AbstractBlock extends AbstractTag
         while (count($tokens)) {
             $token = array_shift($tokens);
 
-            if ($startRegexp->match($token)) {
-                if ($tagRegexp->match($token)) {
-                    // If we found the proper block delimiter just end parsing here and let the outer block proceed
-                    if ($tagRegexp->matches[2] == $this->blockDelimiter()) {
-                        $this->endTag();
-                        return;
-                    }
-
-                    $tagName = null;
-                    if (array_key_exists($tagRegexp->matches[2], $tags)) {
-                        $tagName = $tags[$tagRegexp->matches[2]];
-                    }
-
-                    $filters = [];
-                    if($tagRegexp->matches[1] == '-') {
-                        $filters[] = 'lstrip';
-                    }
-                    if(substr($tagRegexp->matches[3], -1) == '-') {
-                        $filters[] = 'rstrip';
-                        $tagRegexp->matches[3] = substr($tagRegexp->matches[3], 0, -1);
-                    }
-
-                    if ($tagName !== null) {
-                        /** @var AbstractTag $node */
-                        $node = new $tagName($tagRegexp->matches[3], $tokens, $this->compiler);
-                        if($filters) {
-                            $node->setFilters($filters);
-                        }
-                        $this->nodelist[] = $node;
-                        if (in_array($tagRegexp->matches[2], ['extends', 'layout'])) {
-                            return;
-                        }
-
-                    } else {
-                        $this->unknownTag($tagRegexp->matches[2], $tagRegexp->matches[3], $tokens, $this->compiler->getTextLine($tagRegexp->matches[0]));
-                    }
-                } else {
-                    throw new LiquidException("Tag $token was not properly terminated"); // harry
+            if($token instanceof TextToken) {
+                if($token->getCode() != '') {
+                    $this->nodelist[] = $token->getCode();
+                }
+            } elseif($token instanceof VariableToken) {
+                $variableObject = new Variable($token->getVariable(), $this->compiler);
+                if($filters = $token->getFilters()) {
+                    $variableObject->preSetFilters($filters);
                 }
 
-            } elseif ($variableStartRegexp->match($token)) {
-                $this->nodelist[] = $this->createVariable($token);
+                $this->nodelist[] = $variableObject;
+            } elseif($token instanceof TagToken) {
+                if($token->getTag() == $this->blockDelimiter()) {
+                    $this->endTag();
+                    return;
+                }
 
-            } elseif ($token != '') {
-                $this->nodelist[] = $token;
+                if (!array_key_exists($token->getTag(), $tags)) {
+                    $this->unknownTag($token->getTag(), '', $tokens, $token->getLine());
+                }
+
+                $tagName = $tags[$token->getTag()];
+
+                /** @var AbstractTag $node */
+                $node = new $tagName(trim(Str::substr($token->getToken(), Str::length($token->getTag()))), $tokens, $this->compiler);
+                if($filters = $token->getFilters()) {
+                    $node->setFilters($filters);
+                }
+
+                $this->nodelist[] = $node;
+                if (in_array($token->getTag(), ['extends', 'layout'])) {
+                    return;
+                }
             }
         }
 
@@ -173,7 +165,9 @@ class AbstractBlock extends AbstractTag
      * @param string $params
      * @param array $tokens
      *
+     * @param int $line
      * @throws LiquidException
+     * @throws SyntaxError
      * @throws \ReflectionException
      */
     protected function unknownTag($tag, $params, array $tokens, $line = 0)

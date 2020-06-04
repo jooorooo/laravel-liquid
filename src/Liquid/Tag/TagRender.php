@@ -114,7 +114,7 @@ class TagRender extends AbstractTag
         }
 
         $regex = new Regexp(sprintf('/%s\s*%s\s*%s(%s)%s/imUs', Constant::TagStartPartial, $tagName, '[\'\"]', $this->templateName, '[\'\"]'));
-        $this->self_include = (bool)$regex->match($source);
+        $this->self_include = (bool)$regex->match($source->getContent());
 
         if(!$this->self_include) {
             $templateTokens = $this->tokenize($source);

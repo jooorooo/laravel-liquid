@@ -72,13 +72,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     protected $compiler;
 
-    /**
-     * A stack of the last compiled templates.
-     *
-     * @var array
-     */
-    protected $lastCompiled = [];
-
     // Operations tags.
     const OPERATION_TAGS = ['{%', '%}'];
 
@@ -120,19 +113,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function setPath($path)
     {
         $this->path = $path;
-    }
-
-    /**
-     * Set view extension
-     *
-     * @param string $value
-     * @return LiquidCompiler
-     */
-    public function setExtension($value)
-    {
-        app('view')->getFinder()->addExtension($value);
-
-        return $this;
     }
 
     /**
@@ -253,11 +233,12 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     /**
      * @param $path
      * @return TemplateContent
-     * @throws FileNotFoundException
      */
     public function getTemplateSource($path)
     {
-        return $this->getFinder()->find($path)->getContent();
+        $path = $this->getFinder()->find($path);
+        $this->setFileMtime($path);
+        return $path;
     }
 
     /**
@@ -271,7 +252,9 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     {
         $this->setPath($path);
 
-        $templateTokens = $this->tokenize($path->getContent());
+        $this->setFileMtime($path);
+
+        $templateTokens = $this->tokenize($path);
 
         $this->root = new Document(null, $templateTokens, $this);
 

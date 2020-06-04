@@ -17,6 +17,7 @@ use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\GuessToken;
 
 /**
  * https://github.com/harrydeluxe/php-liquid/wiki/Template-Inheritance
@@ -76,11 +77,11 @@ class TagLayout extends AbstractTag
             // tokens in this new document
             $maintokens = $this->tokenize($source);
 
-            $rest = array_merge([
-                '{% capture "content_for_layout" %}'
-            ], $tokens, [
-                '{% endcapture %}'
-            ], $maintokens);
+            $rest = array_merge(
+                (new GuessToken(0, '{% capture "content_for_layout" %}'))->parseType(''),
+                $tokens,
+                (new GuessToken(0, '{% endcapture %}'))->parseType('')
+                , $maintokens);
 
         }
 
