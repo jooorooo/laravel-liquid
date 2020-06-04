@@ -27,7 +27,7 @@ class Error extends Exception
      *
      * @param string             $message  The error message
      * @param int                $lineno   The template line where the error occurred
-     * @param Source|string|null $source   The source context where the error occurred
+     * @param LiquidCompiler|string|null $source   The source context where the error occurred
      * @param \Exception         $previous The previous exception
      */
     public function __construct(string $message, int $lineno = -1, $source = null, \Exception $previous = null, bool $autoGuess = true)
@@ -37,13 +37,13 @@ class Error extends Exception
         if (null === $source) {
             $name = null;
         } elseif($source instanceof LiquidCompiler) {
-            $name = basename($source->getPath());
-            $this->sourcePath = $source->getPath();
-            $this->sourceCode = $source->getFileSource($source->getPath());
+            $name = $source->getPath()->getName();
+            $this->sourcePath = $source->getPath()->getPath();
+            $this->sourceCode = $source->getPath()->getContent();
         } else {
-            $name = $source->getName();
-            $this->sourceCode = $source->getCode();
-            $this->sourcePath = $source->getPath();
+            $name = null;
+//            $this->sourceCode = $source->getCode();
+//            $this->sourcePath = $source->getPath();
         }
 
         $this->lineno = $lineno;

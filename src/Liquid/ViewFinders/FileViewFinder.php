@@ -131,7 +131,7 @@ class FileViewFinder implements ViewFinderInterface
         foreach ((array) $paths as $path) {
             foreach ($this->getPossibleViewFiles($name) as $file) {
                 if ($this->files->exists($viewPath = $path.'/'.$file)) {
-                    return new TemplateContent($this->files->get($viewPath), $this->files->lastModified($viewPath), $viewPath);
+                    return new TemplateContent($this->files->get($viewPath), $this->files->lastModified($viewPath), $viewPath, $name);
                 }
             }
         }

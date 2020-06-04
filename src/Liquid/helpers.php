@@ -1,5 +1,7 @@
 <?php
 
+use Liquid\Factory;
+
 if (!function_exists('liquid')) {
     /**
      * Get the evaluated view contents for the given view.
@@ -7,11 +9,11 @@ if (!function_exists('liquid')) {
      * @param  string  $view
      * @param  array   $data
      * @param  array   $mergeData
-     * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+     * @return Factory
      */
     function liquid($view = null, $data = [], $mergeData = [])
     {
-        $factory = app(ViewFactory::class);
+        $factory = app('liquid.factory');
 
         if (func_num_args() === 0) {
             return $factory;

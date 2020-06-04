@@ -21,9 +21,9 @@ class LiquidServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerLiquidViewFinder();
+        $this->registerLiquidCompiler();
+        $this->registerLiquidFactory();
         $this->registerLiquidEngine();
-        $this->registerLiquidEngineResover();
-        $this->registerLiquidExtension();
     }
 
     public function setupConfig()
@@ -55,14 +55,32 @@ class LiquidServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function registerLiquidEngine()
+    public function registerLiquidCompiler()
     {
         // The Compiler engine requires an instance of the CompilerInterface, which in
         // this case will be the Blade compiler, so we'll first create the compiler
         // instance to pass into the engine so it can compile the views properly.
         $this->app->singleton('liquid.compiler', function () {
-            return new LiquidCompiler(
-                $this->app['files'], $this->app['config']['view.compiled']
+            return new LiquidCompiler();
+        });
+    }
+
+    /**
+     * Register the Liquid engine implementation.
+     *
+     * @return void
+     */
+    public function registerLiquidFactory()
+    {
+        // The Compiler engine requires an instance of the CompilerInterface, which in
+        // this case will be the Blade compiler, so we'll first create the compiler
+        // instance to pass into the engine so it can compile the views properly.
+        $this->app->singleton('liquid.factory', function () {
+            return new Factory(
+                $this->app['liquid.compiler'],
+                $this->app['liquid.view.finder'],
+                $this->app['liquid.engine'],
+                $this->app['events']
             );
         });
     }
@@ -72,19 +90,11 @@ class LiquidServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function registerLiquidEngineResover()
+    public function registerLiquidEngine()
     {
-        $this->app['view.engine.resolver']->register('liquid', function () {
+        $this->app->singleton('liquid.engine', function () {
             return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });
-    }
-
-    public function registerLiquidExtension()
-    {
-        $this->app['view']->addExtension(
-            $this->app['config']->get('liquid.extension'),
-            'liquid'
-        );
     }
 
 }

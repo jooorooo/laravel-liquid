@@ -131,7 +131,7 @@ class DatabaseViewFinder implements ViewFinderInterface
         foreach ((array) $tables as $table) {
             foreach ($this->getPossibleViewFiles($name) as $file) {
                 if ($template = $this->table($table)->where('path', $file)->first()) {
-                    return new TemplateContent($template->content, strtotime($template->updated_at), $table . '::' . $file);
+                    return new TemplateContent($template->content, strtotime($template->updated_at), $table . '::' . $file, $name);
                 }
             }
         }

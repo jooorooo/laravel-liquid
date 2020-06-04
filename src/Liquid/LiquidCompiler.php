@@ -14,6 +14,7 @@
 namespace Liquid;
 
 use ErrorException;
+use Illuminate\Cache\Repository;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\View;
@@ -57,7 +58,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     protected $auto_escape = true;
 
     /**
-     * @var string
+     * @var TemplateContent
      */
     protected $path;
 
@@ -95,10 +96,15 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
 
+    public function __construct()
+    {
+        //
+    }
+
     /**
      * Get the path currently being compiled.
      *
-     * @return string
+     * @return TemplateContent
      */
     public function getPath()
     {
@@ -117,16 +123,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * Get the path to the compiled directory.
-     *
-     * @return string
-     */
-    public function getCompiledCachePath()
-    {
-        return $this->cachePath;
-    }
-
-    /**
      * Set view extension
      *
      * @param string $value
@@ -135,24 +131,16 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function setExtension($value)
     {
         app('view')->getFinder()->addExtension($value);
-        $this->getViewFinder()->addExtension($value);
+
         return $this;
     }
 
     /**
-     * @return DatabaseViewFinder
+     * @return ViewFinderManager
      */
     public function getFinder()
     {
         return app('liquid.view.finder')->driver();
-    }
-
-    /**
-     * @return ViewFinderInterface
-     */
-    public function getViewFinder()
-    {
-        return \view()->getFinder();
     }
 
     /**
@@ -244,7 +232,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     /**
      * Get the filters
      *
-     * @return LiquidCompiler
+     * @return array
      */
     public function getFilters()
     {
@@ -252,85 +240,64 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     }
 
     /**
-     * @param $path
-     * @return string
-     * @throws FileNotFoundException
-     */
-    public function getFileSource($path)
-    {
-        return $this->files->get($path);
-    }
-
-    /**
-     * @return Filesystem
-     */
-    public function getFilesistem()
-    {
-        return $this->files;
-    }
-
-    /**
-     * @param $template
-     * @return string
-     */
-    public function findTemplate($template)
-    {
-        if($path = $this->getViewFinder()->find($template)) {
-            if(!array_key_exists($path, $this->filemtime)) {
-                $this->filemtime[$path] = $this->files->lastModified($path);
-            }
-        }
-
-        return $path;
-    }
-
-    /**
-     * @param $path
+     * @param TemplateContent $path
      * @return void
      */
     public function setFileMtime($path)
     {
-        if(!array_key_exists($path, $this->filemtime) && $this->files->exists($path)) {
-            $this->filemtime[$path] = $this->files->lastModified($path);
+        if($path && !array_key_exists($path->getPath(), $this->filemtime)) {
+            $this->filemtime[$path->getPath()] = $path->getFileMtime();
         }
     }
 
     /**
      * @param $path
-     * @return string
+     * @return TemplateContent
      * @throws FileNotFoundException
      */
     public function getTemplateSource($path)
     {
-        return $this->getFileSource($this->findTemplate($path));
+        return $this->getFinder()->find($path)->getContent();
     }
 
     /**
      * Compile the view at the given path.
      *
-     * @param  string $path
+     * @param  TemplateContent $path
      * @return void
      * @throws FileNotFoundException
      */
-    public function compile($path = null)
+    public function compile($path)
     {
-        if ($path) {
-            $this->setPath($path);
-        }
+        $this->setPath($path);
 
-        $templateTokens = $this->tokenize($this->getFileSource($this->getPath()));
+        $templateTokens = $this->tokenize($path->getContent());
 
         $this->root = new Document(null, $templateTokens, $this);
 
         if($this->isExpired($path)) {
-            $this->files->put($this->getCompiledPath($this->getPath()), serialize($this->root));
+            $this->getCacheStore()->forever($this->getCompiledKey($path), (object)[
+                'filemtime' => time(),
+                'content' => $this->root
+            ]);
         }
+    }
+
+    /**
+     * Get the path to the compiled version of a view.
+     *
+     * @param  TemplateContent  $path
+     * @return string
+     */
+    public function getCompiledKey($path)
+    {
+        return sha1($path->getPath());
     }
 
     /**
      * Renders the current template
      *
-     * @param string $path
+     * @param TemplateContent $path
      * @param array $assigns an array of values for the template
      *
      * @return string
@@ -349,7 +316,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
             }
         }
 
-        $this->root = unserialize($this->getFileSource($this->getCompiledPath($path)));
+        $this->root = $this->getCacheStore()->get($this->getCompiledKey($path))->content;
 
         $result = $this->root->render($context);
 
@@ -359,24 +326,28 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     /**
      * Determine if the view at the given path is expired.
      *
-     * @param  string  $path
+     * @param  TemplateContent  $path
      * @return bool
      */
     public function isExpired($path)
     {
-        $compiled = $this->getCompiledPath($path);
+        $compiled = $this->getCompiledKey($path);
 
         // If the compiled file doesn't exist we will indicate that the view is expired
         // so that it can be re-compiled. Else, we will verify the last modification
         // of the views is less than the modification times of the compiled views.
-        if (! $this->files->exists($compiled)) {
+        if (! $this->getCacheStore()->has($compiled)) {
             return true;
         }
 
-        $pathLastModify = count($this->filemtime) > 0 ? max($this->filemtime) : $this->files->lastModified($path);
+        $compiledData = $this->getCacheStore()->get($compiled);
+        if(empty($compiledData->filemtime) || !isset($compiledData->content)) {
+            return true;
+        }
 
-        return $pathLastModify >=
-            $this->files->lastModified($compiled);
+        $pathLastModify = count($this->filemtime) > 0 ? max($this->filemtime) : $path->getFileMtime();
+
+        return $pathLastModify >= $compiledData->filemtime;
     }
 
 
@@ -384,12 +355,20 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     {
         $pattern = '/' . preg_quote($text, '/') . '/i';
         $lineNumber = 0;
-        if ($this->getPath() && preg_match($pattern, $content = $this->getFileSource($this->getPath()), $matches, PREG_OFFSET_CAPTURE)) {
+        if ($this->getPath() && preg_match($pattern, $content = $this->getPath()->getContent(), $matches, PREG_OFFSET_CAPTURE)) {
             //PREG_OFFSET_CAPTURE will add offset of the found string to the array of matches
             //now get a substring of the offset length and explode it by \n
             $lineNumber = count(explode(PHP_EOL, substr($content, 0, $matches[0][1])));
         }
 
         return $lineNumber;
+    }
+
+    /**
+     * @return Repository|\Illuminate\Contracts\Cache\Repository
+     */
+    public function getCacheStore()
+    {
+        return cache()->store(config('liquid.compiled_store', 'file'));
     }
 }

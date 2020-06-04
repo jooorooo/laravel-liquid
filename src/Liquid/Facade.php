@@ -8,29 +8,40 @@
 
 namespace Liquid;
 
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\Facade AS IlluminateFacade;
 use Illuminate\View\ViewFinderInterface;
 
 /**
- * @method static void compile($path = null)
- * @method static string findTemplate($path)
- * @method static bool getAutoEscape()
- * @method static string getCompiledPath()
- * @method static string getFileSource()
- * @method static string getPath()
- * @method static array getTags()
- * @method static string getTemplateSource()
- * @method static ViewFinderInterface getViewFinder()
- * @method static bool isExpired()
- * @method static LiquidCompiler registerFilter($filter)
- * @method static LiquidCompiler registerTag($name, $class)
- * @method static string render($path, array $assigns = array())
- * @method static LiquidCompiler setAutoEscape($value)
- * @method static LiquidCompiler setExtension($value)
- * @method static LiquidCompiler setFilters(array $filters)
- * @method static LiquidCompiler setPath($path)
- * @method static LiquidCompiler setTags(array $tags)
- * @method static array tokenize($source)
+ * @method static View make($view, $data = [], $mergeData = [])
+ * @method static View first($views, $data = [], $mergeData = [])
+ * @method static string renderWhen($condition, $view, $data = [], $mergeData = [])
+ * @method static string renderEach($view, $data, $iterator, $empty = 'raw|')
+ * @method static bool exists($view)
+ * @method static mixed share($key, $value = null)
+ * @method static void addLocation($location)
+ * @method static Factory addNamespace($namespace, $hints)
+ * @method static Factory prependNamespace($namespace, $hints)
+ * @method static Factory replaceNamespace($namespace, $hints)
+ * @method static CompilerEngine getEngine()
+ * @method static LiquidCompiler getCompiler()
+ * @method static ViewFinderManager getFinder()
+ * @method static void flushFinderCache()
+ * @method static Dispatcher getDispatcher()
+ * @method static void setDispatcher(Dispatcher $events)
+ * @method static Container getContainer()
+ * @method static void setContainer(Container $container)
+ * @method static mixed shared($key, $default = null)
+ * @method static array getShared()
+ * @method static void macro($name, $macro)
+ * @method static void mixin($mixin)
+ * @method static bool hasMacro($name)
+ * @method static array creator($views, $callback)
+ * @method static array composers($composers)
+ * @method static array composer($views, $callback)
+ * @method static void callComposer($view)
+ * @method static void callCreator($view)
  */
 
 class Facade extends IlluminateFacade
@@ -42,6 +53,6 @@ class Facade extends IlluminateFacade
      */
     protected static function getFacadeAccessor()
     {
-        return 'liquid.compiler';
+        return 'liquid.factory';
     }
 }

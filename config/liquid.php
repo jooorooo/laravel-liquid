@@ -12,13 +12,13 @@ use Liquid\Tag\TagDecrement;
 use Liquid\Tag\TagFor;
 use Liquid\Tag\TagIf;
 use Liquid\Tag\TagIfchanged;
-use Liquid\Tag\TagInclude;
 use Liquid\Tag\TagIncrement;
 use Liquid\Tag\TagExtends;
 use Liquid\Tag\TagLayout;
 use Liquid\Tag\TagLiquid;
 use Liquid\Tag\TagPaginate;
 use Liquid\Tag\TagRaw;
+use Liquid\Tag\TagRender;
 use Liquid\Tag\TagTablerow;
 use Liquid\Tag\TagUnless;
 use Liquid\Tag\TagEcho;
@@ -50,6 +50,15 @@ return [
      | By default extension is extension.php.
      */
     'extension' => 'liquid',
+
+    /*
+     |--------------------------------------------------------------------------
+     | Liquid extension
+     |--------------------------------------------------------------------------
+     |
+     | By default compiled store cache is file.
+     */
+    'compiled_store' => 'file',
 
     /*
      |--------------------------------------------------------------------------
@@ -93,7 +102,7 @@ return [
         'for' => TagFor::class,
         'if' => TagIf::class,
         'ifchanged' => TagIfchanged::class,
-        'include' => TagInclude::class,
+        'render' => TagRender::class,
         'increment' => TagIncrement::class,
         'extends' => TagExtends::class,
         'paginate' => TagPaginate::class,

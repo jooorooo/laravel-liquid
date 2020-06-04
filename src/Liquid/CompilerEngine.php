@@ -3,7 +3,6 @@
 namespace Liquid;
 
 use Exception;
-use Symfony\Component\Debug\Exception\FatalThrowableError;
 use ErrorException;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Engines\PhpEngine;
@@ -45,7 +44,7 @@ class CompilerEngine extends PhpEngine
     /**
      * Get the evaluated contents of the view.
      *
-     * @param string $path
+     * @param TemplateContent $path
      * @param array $data
      * @return string|null
      * @throws ErrorException
@@ -65,10 +64,8 @@ class CompilerEngine extends PhpEngine
             array_pop($this->lastCompiled);
 
             return $results;
-        } catch (Exception $e) {
-            $this->handleViewException($e, $obLevel);
         } catch (Throwable $e) {
-            $this->handleViewException(new FatalThrowableError($e), $obLevel);
+            $this->handleViewException(new Exception($e->getMessage(), $e->getCode(), $e), $obLevel);
         }
         return null;
     }
@@ -101,6 +98,6 @@ class CompilerEngine extends PhpEngine
      */
     protected function getMessage(Exception $e)
     {
-        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)) . ')';
+        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)->getPath()) . ')';
     }
 }

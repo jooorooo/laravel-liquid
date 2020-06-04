@@ -11,11 +11,14 @@ class TemplateContent
 
     protected $path;
 
-    public function __construct($content, $fileMtime, $path)
+    protected $name;
+
+    public function __construct($content, $fileMtime, $path, $name)
     {
         $this->content = $content;
         $this->fileMtime = $fileMtime;
         $this->path = $path;
+        $this->name = $name;
     }
 
     /**
@@ -40,6 +43,14 @@ class TemplateContent
     public function getPath()
     {
         return $this->path;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
     }
 
 }
