@@ -41,6 +41,11 @@ class TagLayout extends AbstractTag
     private $document;
 
     /**
+     * @var Document The Document that represents the included template
+     */
+    private $document2;
+
+    /**
      * Constructor
      *
      * @param string $markup
@@ -71,7 +76,7 @@ class TagLayout extends AbstractTag
     public function parse(array &$tokens)
     {
         if($this->layoutPath == 'none') {
-            $rest = $tokens;
+            $this->document = new Document(null, $tokens, $this->getTagToken(), $this->compiler);
         } else {
             // read the source of the template and create a new sub document
             $source = $this->compiler->getTemplateSource($this->layoutPath . '.theme');
@@ -79,15 +84,18 @@ class TagLayout extends AbstractTag
             // tokens in this new document
             $maintokens = $this->tokenize($source);
 
-            $rest = array_merge(
+            /*$rest = array_merge(
                 (new GuessToken(0, '{% capture "content_for_layout" %}'))->parseType(''),
                 $tokens,
                 (new GuessToken(0, '{% endcapture %}'))->parseType('')
-                , $maintokens);
+                , $maintokens);*/
+
+            $this->document = new Document(null, $tokens, $this->getTagToken(), $this->compiler);
+            $this->document2 = new Document(null, $maintokens, $this->getTagToken(), $this->compiler);
 
         }
 
-        $this->document = new Document(null, $rest, $this->getTagToken(), $this->compiler);
+
     }
 
     /**
@@ -101,7 +109,14 @@ class TagLayout extends AbstractTag
     public function render(Context $context)
     {
         $context->push();
-        $result = $this->document->render($context);
+
+        if($this->document2) {
+            $context->set('content_for_layout', $this->document->render($context));
+
+            $result = $this->document2->render($context);
+        } else {
+            $result = $this->document->render($context);
+        }
         $context->pop();
         return $result;
     }

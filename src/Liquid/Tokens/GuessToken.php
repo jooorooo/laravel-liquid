@@ -121,6 +121,14 @@ class GuessToken
     }
 
     /**
+     * @return string
+     */
+    public function getFileName()
+    {
+        return str_replace('.', '/', $this->name) . '.liquid';
+    }
+
+    /**
      * @param string $name
      */
     public function setName($name): void

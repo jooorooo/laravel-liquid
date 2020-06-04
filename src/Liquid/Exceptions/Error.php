@@ -36,10 +36,17 @@ class Error extends Exception
     {
         parent::__construct('', 0, $previous);
 
-        $this->sourcePath = $token->getName();
+        $temp_file = tempnam(sys_get_temp_dir(), $token->getName());
+        file_put_contents($temp_file, $token->getSource());
+
+        register_shutdown_function(function() use($temp_file) {
+            unlink($temp_file);
+        });
+
+        $this->sourcePath = $temp_file;
         $this->sourceCode = $token->getSource();
         $this->lineno = $token->getLine();
-        $this->name = $token->getName();
+        $this->name = $token->getFileName();
         $this->rawMessage = $message;
 
         $this->updateRepr();
