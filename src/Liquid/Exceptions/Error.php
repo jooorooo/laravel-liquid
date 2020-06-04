@@ -4,6 +4,9 @@ namespace Liquid\Exceptions;
 
 use Exception;
 use Liquid\LiquidCompiler;
+use Liquid\Tokens\TagToken;
+use function is_object;
+use function is_string;
 
 class Error extends Exception
 {
@@ -26,99 +29,22 @@ class Error extends Exception
      * By default, automatic guessing is enabled.
      *
      * @param string             $message  The error message
-     * @param int                $lineno   The template line where the error occurred
-     * @param LiquidCompiler|string|null $source   The source context where the error occurred
-     * @param \Exception         $previous The previous exception
+     * @param TagToken           $token   The template line where the error occurred
+     * @param LiquidCompiler     $source   The source context where the error occurred
+     * @param Exception $previous The previous exception
      */
-    public function __construct(string $message, int $lineno = -1, $source = null, \Exception $previous = null, bool $autoGuess = true)
+    public function __construct(string $message, TagToken $token, LiquidCompiler $source, Exception $previous = null)
     {
         parent::__construct('', 0, $previous);
 
-        if (null === $source) {
-            $name = null;
-        } elseif($source instanceof LiquidCompiler) {
-            $name = $source->getPath()->getName();
-            $this->sourcePath = $source->getPath()->getPath();
-            $this->sourceCode = $source->getPath()->getContent();
-        } else {
-            $name = null;
-//            $this->sourceCode = $source->getCode();
-//            $this->sourcePath = $source->getPath();
-        }
-
-        $this->lineno = $lineno;
-        $this->name = $name;
-
-//        if ($autoGuess && (-1 === $lineno || null === $name || null === $this->sourcePath)) {
-//            $this->guessTemplateInfo();
-//        }
-
+        $this->sourcePath = $source->getPath()->getPath();
+        $this->sourceCode = $source->getPath()->getContent();
+        $this->lineno = $token->getLine();
+        $this->name = $source->getPath()->getName();
         $this->rawMessage = $message;
 
         $this->updateRepr();
     }
-
-//    private function guessTemplateInfo()
-//    {
-//        $template = null;
-//        $templateClass = null;
-//
-//        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT);
-//        foreach ($backtrace as $trace) {
-//            if (isset($trace['object']) && $trace['object'] instanceof Template) {
-//                $currentClass = \get_class($trace['object']);
-//                $isEmbedContainer = 0 === strpos($templateClass, $currentClass);
-//                if (null === $this->name || ($this->name == $trace['object']->getTemplateName() && !$isEmbedContainer)) {
-//                    $template = $trace['object'];
-//                    $templateClass = \get_class($trace['object']);
-//                }
-//            }
-//        }
-//
-//        // update template name
-//        if (null !== $template && null === $this->name) {
-//            $this->name = $template->getTemplateName();
-//        }
-//
-//        // update template path if any
-//        if (null !== $template && null === $this->sourcePath) {
-//            $src = $template->getSourceContext();
-//            $this->sourceCode = $src->getCode();
-//            $this->sourcePath = $src->getPath();
-//        }
-//
-//        if (null === $template || $this->lineno > -1) {
-//            return;
-//        }
-//
-//        $r = new \ReflectionObject($template);
-//        $file = $r->getFileName();
-//
-//        $exceptions = [$e = $this];
-//        while ($e = $e->getPrevious()) {
-//            $exceptions[] = $e;
-//        }
-//
-//        while ($e = array_pop($exceptions)) {
-//            $traces = $e->getTrace();
-//            array_unshift($traces, ['file' => $e->getFile(), 'line' => $e->getLine()]);
-//
-//            while ($trace = array_shift($traces)) {
-//                if (!isset($trace['file']) || !isset($trace['line']) || $file != $trace['file']) {
-//                    continue;
-//                }
-//
-//                foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
-//                    if ($codeLine <= $trace['line']) {
-//                        // update template line
-//                        $this->lineno = $templateLine;
-//
-//                        return;
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     public function appendMessage($rawMessage)
     {
@@ -170,7 +96,7 @@ class Error extends Exception
         }
 
         if ($this->name) {
-            if (\is_string($this->name) || (\is_object($this->name) && method_exists($this->name, '__toString'))) {
+            if (is_string($this->name) || (is_object($this->name) && method_exists($this->name, '__toString'))) {
                 $name = sprintf('"%s"', $this->name);
             } else {
                 $name = json_encode($this->name);

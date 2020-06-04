@@ -13,11 +13,14 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 use Liquid\Traits\DecisionTrait;
 use Liquid\Traits\HelpersTrait;
+use ReflectionException;
 
 /**
  * An if statement
@@ -67,24 +70,23 @@ class TagUnless extends AbstractBlock
     /**
      * Handler for unknown tags, handle else tags
      *
-     * @param string $tag
-     * @param array $params
+     * @param TagToken $token
      * @param array $tokens
-     * @param int $line
      * @throws LiquidException
-     * @throws \ReflectionException
+     * @throws SyntaxError
+     * @throws ReflectionException
      */
-    public function unknownTag($tag, $params, array $tokens, $line = 0)
+    public function unknownTag($token, array $tokens)
     {
-        if ($tag == 'else') {
+        if ($token->getTag() == 'else') {
             // Update reference to nodelistHolder for this block
             $this->nodelist = &$this->nodelistHolders[count($this->blocks) + 1];
             $this->nodelistHolders[count($this->blocks) + 1] = array();
 
-            array_push($this->blocks, array($tag, $params, &$this->nodelist));
+            array_push($this->blocks, array($token->getTag(), $token->getParameters(), &$this->nodelist));
 
         } else {
-            parent::unknownTag($tag, $params, $tokens, $line);
+            parent::unknownTag($token, $tokens);
         }
     }
 
@@ -93,7 +95,7 @@ class TagUnless extends AbstractBlock
      *
      * @param Context $context
      *
-     * @throws \Liquid\LiquidException
+     * @throws LiquidException
      * @return string
      */
     public function render(Context $context)

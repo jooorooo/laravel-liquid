@@ -63,7 +63,7 @@ class GuessToken
                     $filters[] = 'rstrip';
                     $match[4] = Str::substr($match[4], 0, -1);
                 }
-                $return[] = new TagToken($start, $match[2], $source, $match[5], $match[4], $filters);
+                $return[] = new TagToken($start, $match[2], $source, $match[5], $match[4], trim($match[6]), $filters);
                 $start += Str::length($match[2]);
             }
             if(!empty($match[8])) {

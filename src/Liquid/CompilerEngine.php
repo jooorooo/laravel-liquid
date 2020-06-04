@@ -6,6 +6,7 @@ use Exception;
 use ErrorException;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Engines\PhpEngine;
+use Liquid\Exceptions\SyntaxError;
 use Throwable;
 
 class CompilerEngine extends PhpEngine
@@ -47,7 +48,7 @@ class CompilerEngine extends PhpEngine
      * @param TemplateContent $path
      * @param array $data
      * @return string|null
-     * @throws ErrorException
+     * @throws Exception
      */
     public function get($path, array $data = [])
     {
@@ -63,8 +64,9 @@ class CompilerEngine extends PhpEngine
 
             return $results;
         } catch (Throwable $e) {
-            $this->handleViewException(new Exception($e->getMessage(), $e->getCode(), $e), $obLevel);
+            $this->handleViewException($e, $obLevel);
         }
+
         return null;
     }
 
@@ -79,23 +81,10 @@ class CompilerEngine extends PhpEngine
      */
     protected function handleViewException(Exception $e, $obLevel)
     {
-        $e = new ErrorException($this->getMessage($e), 0, 1, $e->getFile(), $e->getLine(), $e);
-
         while (ob_get_level() > $obLevel) {
             ob_end_clean();
         }
 
         throw $e;
-    }
-
-    /**
-     * Get the exception message for an exception.
-     *
-     * @param  Exception $e
-     * @return string
-     */
-    protected function getMessage(Exception $e)
-    {
-        return $e->getMessage() . ' (View: ' . realpath(last($this->lastCompiled)->getPath()) . ')';
     }
 }

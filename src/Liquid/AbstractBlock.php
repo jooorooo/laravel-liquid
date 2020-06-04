@@ -18,6 +18,7 @@ use Liquid\Tag\TagLayout;
 use Liquid\Tokens\TagToken;
 use Liquid\Tokens\TextToken;
 use Liquid\Tokens\VariableToken;
+use ReflectionException;
 
 /**
  * Base class for blocks.
@@ -44,14 +45,10 @@ class AbstractBlock extends AbstractTag
      *
      * @return void
      * @throws LiquidException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function parse(array &$tokens)
     {
-        $startRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '(-)?/');
-        $tagRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '(-)?\s*(\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/s');
-        $variableStartRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '/');
-
         $this->nodelist = array();
 
         if (!is_array($tokens)) {
@@ -81,7 +78,8 @@ class AbstractBlock extends AbstractTag
                 }
 
                 if (!array_key_exists($token->getTag(), $tags)) {
-                    $this->unknownTag($token->getTag(), '', $tokens, $token->getLine());
+                    $this->unknownTag($token, $tokens);
+                    continue;
                 }
 
                 $tagName = $tags[$token->getTag()];
@@ -161,28 +159,25 @@ class AbstractBlock extends AbstractTag
     /**
      * Handler for unknown tags
      *
-     * @param string $tag
-     * @param string $params
+     * @param TagToken $token
      * @param array $tokens
      *
-     * @param int $line
      * @throws LiquidException
      * @throws SyntaxError
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    protected function unknownTag($tag, $params, array $tokens, $line = 0)
+    protected function unknownTag($token, array $tokens)
     {
-        switch ($tag) {
+        switch ($token->getTag()) {
             case 'else':
                 throw new LiquidException($this->blockName() . " does not expect else tag");
             case 'end':
                 throw new LiquidException("'end' is not a valid delimiter for " . $this->blockName() . " tags. Use " . $this->blockDelimiter());
             default:
                 //@todo must be make better
-                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $tag), $line, $this->compiler);
-                $e->addSuggestions($tag, array_keys($this->compiler->getTags()));
+                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $token->getTag()), $token, $this->compiler);
+                $e->addSuggestions($token->getTag(), array_keys($this->compiler->getTags()));
                 throw $e;
-                //throw new LiquidException("Unknown tag $tag");
         }
     }
 
@@ -192,7 +187,7 @@ class AbstractBlock extends AbstractTag
      *
      * @return void
      * @throws LiquidException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function assertMissingDelimitation()
     {
@@ -203,7 +198,7 @@ class AbstractBlock extends AbstractTag
      * Returns the string that delimits the end of the block
      *
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function blockDelimiter()
     {
@@ -214,7 +209,7 @@ class AbstractBlock extends AbstractTag
      * Returns the name of the block
      *
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function blockName()
     {

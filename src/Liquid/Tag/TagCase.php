@@ -13,10 +13,13 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 use Liquid\Traits\DecisionTrait;
+use ReflectionException;
 
 /**
  * A switch statement
@@ -93,21 +96,21 @@ class TagCase extends AbstractBlock
     /**
      * Unknown tag handler
      *
-     * @param string $tag
-     * @param string $params
+     * @param TagToken $token
      * @param array $tokens
-     * @param int $line
      *
-     * @throws \Liquid\LiquidException
+     * @throws LiquidException
+     * @throws SyntaxError
+     * @throws ReflectionException
      */
-    public function unknownTag($tag, $params, array $tokens, $line = 0)
+    public function unknownTag($token, array $tokens)
     {
         $whenSyntaxRegexp = new Regexp('/' . LiquidCompiler::QUOTED_FRAGMENT . '/');
 
-        switch ($tag) {
+        switch ($token->getTag()) {
             case 'when':
                 // push the current nodelist onto the stack and prepare for a new one
-                if ($whenSyntaxRegexp->match($params)) {
+                if ($whenSyntaxRegexp->match($token->getParameters())) {
                     $this->pushNodelist();
                     $this->right = $whenSyntaxRegexp->matches[0];
                     $this->nodelist = array();
@@ -126,7 +129,7 @@ class TagCase extends AbstractBlock
                 break;
 
             default:
-                parent::unknownTag($tag, $params, $tokens, $line);
+                parent::unknownTag($token, $tokens);
         }
     }
 
