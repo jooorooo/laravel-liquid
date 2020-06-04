@@ -23,7 +23,6 @@ class LiquidServiceProvider extends ServiceProvider
         $this->registerLiquidViewFinder();
         $this->registerLiquidCompiler();
         $this->registerLiquidFactory();
-        $this->registerLiquidEngine();
     }
 
     public function setupConfig()
@@ -60,8 +59,8 @@ class LiquidServiceProvider extends ServiceProvider
         // The Compiler engine requires an instance of the CompilerInterface, which in
         // this case will be the Blade compiler, so we'll first create the compiler
         // instance to pass into the engine so it can compile the views properly.
-        $this->app->singleton('liquid.compiler', function () {
-            return new LiquidCompiler();
+        $this->app->singleton('liquid.compiler', function ($app) {
+            return new LiquidCompiler($app['config']->get('liquid', []));
         });
     }
 
@@ -79,21 +78,8 @@ class LiquidServiceProvider extends ServiceProvider
             return new Factory(
                 $this->app['liquid.compiler'],
                 $this->app['liquid.view.finder'],
-                $this->app['liquid.engine'],
                 $this->app['events']
             );
-        });
-    }
-
-    /**
-     * Register the Liquid engine implementation.
-     *
-     * @return void
-     */
-    public function registerLiquidEngine()
-    {
-        $this->app->singleton('liquid.engine', function () {
-            return new CompilerEngine($this->app['liquid.compiler'], $this->app['config']->get('liquid', []));
         });
     }
 

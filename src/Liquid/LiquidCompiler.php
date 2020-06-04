@@ -18,11 +18,13 @@ use Illuminate\Cache\Repository;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Illuminate\View\Compilers\Compiler;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\ViewFinderInterface;
 use Liquid\Traits\TokenizeTrait;
 use Liquid\ViewFinders\DatabaseViewFinder;
+use Throwable;
 
 /**
  * The Template class.
@@ -67,11 +69,6 @@ class LiquidCompiler extends Compiler implements CompilerInterface
      */
     protected $filemtime = [];
 
-    /**
-     * @var CompilerEngine
-     */
-    protected $compiler;
-
     // Operations tags.
     const OPERATION_TAGS = ['{%', '%}'];
 
@@ -89,9 +86,13 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
     const TAG_ATTRIBUTES = '/(\w+)\s*\:\s*(' . self::QUOTED_FRAGMENT . ')/';
 
-    public function __construct()
+    public function __construct(array $options = [])
     {
-        //
+        foreach($options AS $key => $value) {
+            if(method_exists($this, $method = Str::camel('set_' . $key))) {
+                $this->$method($value);
+            }
+        }
     }
 
     /**
@@ -353,5 +354,29 @@ class LiquidCompiler extends Compiler implements CompilerInterface
     public function getCacheStore()
     {
         return cache()->store(config('liquid.compiled_store', 'file'));
+    }
+
+    /**
+     * Get the evaluated contents of the view.
+     *
+     * @param TemplateContent $path
+     * @param array $data
+     * @return string|null
+     * @throws Throwable
+     */
+    public function get($path, array $data = [])
+    {
+        $obLevel = ob_get_level();
+        try {
+            $this->compile($path);
+
+            return $this->render($path, $data);
+        } catch (Throwable $e) {
+            while (ob_get_level() > $obLevel) {
+                ob_end_clean();
+            }
+
+            throw $e;
+        }
     }
 }

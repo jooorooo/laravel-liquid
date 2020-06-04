@@ -8,7 +8,6 @@ use ArrayAccess;
 use BadMethodCallException;
 use Illuminate\Support\Str;
 use Illuminate\Support\MessageBag;
-use Illuminate\Contracts\View\Engine;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Renderable;
@@ -59,14 +58,14 @@ class View implements ArrayAccess, ViewContract
     /**
      * Create a new view instance.
      *
-     * @param  \Illuminate\View\Factory  $factory
-     * @param  \Illuminate\Contracts\View\Engine  $engine
+     * @param  Factory  $factory
+     * @param  LiquidCompiler  $engine
      * @param  string  $view
      * @param  string  $path
      * @param  mixed  $data
      * @return void
      */
-    public function __construct(Factory $factory, Engine $engine, $view, $path, $data = [])
+    public function __construct(Factory $factory, LiquidCompiler $engine, $view, $path, $data = [])
     {
         $this->view = $view;
         $this->path = $path;
@@ -256,16 +255,6 @@ class View implements ArrayAccess, ViewContract
     public function getFactory()
     {
         return $this->factory;
-    }
-
-    /**
-     * Get the view's rendering engine.
-     *
-     * @return \Illuminate\Contracts\View\Engine
-     */
-    public function getEngine()
-    {
-        return $this->engine;
     }
 
     /**

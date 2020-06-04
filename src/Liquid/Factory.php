@@ -25,13 +25,6 @@ class Factory implements FactoryContract
     protected $compiler;
 
     /**
-     * The engine implementation.
-     *
-     * @var CompilerEngine
-     */
-    protected $engine;
-
-    /**
      * The view finder implementation.
      *
      * @var ViewFinderManager
@@ -64,15 +57,13 @@ class Factory implements FactoryContract
      *
      * @param LiquidCompiler $compiler
      * @param ViewFinderManager $finder
-     * @param CompilerEngine $engine
      * @param \Illuminate\Contracts\Events\Dispatcher $events
      */
-    public function __construct(LiquidCompiler $compiler, ViewFinderManager $finder, CompilerEngine $engine, Dispatcher $events)
+    public function __construct(LiquidCompiler $compiler, ViewFinderManager $finder, Dispatcher $events)
     {
         $this->finder = $finder;
         $this->events = $events;
         $this->compiler = $compiler;
-        $this->engine = $engine;
 
         $this->share('__env', $this);
     }
@@ -211,7 +202,7 @@ class Factory implements FactoryContract
      */
     protected function viewInstance($view, $path, $data)
     {
-        return new View($this, $this->engine, $view, $path, $data);
+        return new View($this, $this->compiler, $view, $path, $data);
     }
 
     /**
@@ -300,16 +291,6 @@ class Factory implements FactoryContract
         $this->finder->replaceNamespace($namespace, $hints);
 
         return $this;
-    }
-
-    /**
-     * Get the engine instance.
-     *
-     * @return CompilerEngine
-     */
-    public function getEngine()
-    {
-        return $this->engine;
     }
 
     /**

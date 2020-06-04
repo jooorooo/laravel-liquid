@@ -24,7 +24,6 @@ use Illuminate\View\ViewFinderInterface;
  * @method static Factory addNamespace($namespace, $hints)
  * @method static Factory prependNamespace($namespace, $hints)
  * @method static Factory replaceNamespace($namespace, $hints)
- * @method static CompilerEngine getEngine()
  * @method static LiquidCompiler getCompiler()
  * @method static ViewFinderManager getFinder()
  * @method static void flushFinderCache()
