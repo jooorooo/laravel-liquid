@@ -11,6 +11,8 @@ class GuessToken
     protected $end;
     protected $line;
     protected $code;
+    protected $source;
+    protected $name;
 
     public function __construct($offset, $code, $source = null)
     {
@@ -19,6 +21,7 @@ class GuessToken
         $this->end = $this->start + strlen($this->code);
         if(!is_null($source)) {
             $this->line = substr_count(substr($source, 0, $this->start + 1), "\n") + 1;
+            $this->source = $source;
         }
     }
 
@@ -107,5 +110,37 @@ class GuessToken
     public function getCode()
     {
         return $this->code;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param string $name
+     */
+    public function setName($name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * @param string $source
+     */
+    public function setSource($source): void
+    {
+        $this->source = $source;
     }
 }

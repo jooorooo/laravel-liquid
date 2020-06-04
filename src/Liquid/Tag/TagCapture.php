@@ -16,6 +16,7 @@ use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 
 /**
  * Captures the output inside a block and assigns it to a variable
@@ -39,16 +40,17 @@ class TagCapture extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $syntaxRegexp = new Regexp('/[\'\"](\w+)[\'\"]\s*/');
 
         if ($syntaxRegexp->match($markup)) {
             $this->to = $syntaxRegexp->matches[1];
-            parent::__construct($markup, $tokens, $compiler);
+            parent::__construct($markup, $tokens, $token, $compiler);
         } else {
             throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var]");
         }

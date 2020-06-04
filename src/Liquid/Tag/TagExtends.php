@@ -17,6 +17,7 @@ use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 
 /**
  * https://github.com/harrydeluxe/php-liquid/wiki/Template-Inheritance
@@ -44,10 +45,11 @@ class TagExtends extends AbstractTag
      * @param string $markup
      * @param array $tokens
      *
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
 
@@ -57,7 +59,7 @@ class TagExtends extends AbstractTag
             throw new LiquidException("Error in tag 'extends' - Valid syntax: extends '[template name]'");
         }
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
     }
 
     /**
@@ -148,7 +150,7 @@ class TagExtends extends AbstractTag
             }
         }
 
-        $this->document = new Document(null, $rest, $this->compiler);
+        $this->document = new Document(null, $rest, $this->getTagToken(), $this->compiler);
     }
 
     /**

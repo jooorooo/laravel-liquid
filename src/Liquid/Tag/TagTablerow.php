@@ -49,12 +49,13 @@ class TagTablerow extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
+     * @param $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
 
         $syntax = new Regexp('/(\w+)\s+in\s+(' . LiquidCompiler::VARIABLE_NAME . ')/');
 

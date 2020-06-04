@@ -18,6 +18,7 @@ use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\GuessToken;
+use Liquid\Tokens\TagToken;
 
 /**
  * https://github.com/harrydeluxe/php-liquid/wiki/Template-Inheritance
@@ -45,10 +46,11 @@ class TagLayout extends AbstractTag
      * @param string $markup
      * @param array $tokens
      *
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
         if ($regex->match($markup)) {
@@ -57,7 +59,7 @@ class TagLayout extends AbstractTag
             throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template path]'");
         }
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
     }
 
     /**
@@ -85,7 +87,7 @@ class TagLayout extends AbstractTag
 
         }
 
-        $this->document = new Document(null, $rest, $this->compiler);
+        $this->document = new Document(null, $rest, $this->getTagToken(), $this->compiler);
     }
 
     /**

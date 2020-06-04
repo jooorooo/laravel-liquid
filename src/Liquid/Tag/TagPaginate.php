@@ -24,6 +24,7 @@ use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 use Liquid\Traits\TransformLaravelModel;
 
 /**
@@ -60,13 +61,14 @@ class TagPaginate extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
 
         $syntax = new Regexp('/(' . Constant::VariableSignaturePartial . ')\s+by\s+(\d+)/');
 

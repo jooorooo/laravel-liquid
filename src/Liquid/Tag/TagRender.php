@@ -18,6 +18,7 @@ use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 
 /**
  * Includes another, partial, template
@@ -75,10 +76,11 @@ class TagRender extends AbstractTag
      * @param string $markup
      * @param array $tokens
      *
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')(\s+(with|for)\s+(' . $compiler::QUOTED_FRAGMENT . '+))?/');
         if ($regex->match($markup)) {
@@ -94,7 +96,7 @@ class TagRender extends AbstractTag
             throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
         }
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
     }
 
     /**
@@ -118,7 +120,7 @@ class TagRender extends AbstractTag
 
         if(!$this->self_include) {
             $templateTokens = $this->tokenize($source);
-            $this->document = new Document(null, $templateTokens, $this->compiler);
+            $this->document = new Document(null, $templateTokens, $this->getTagToken(), $this->compiler);
         }
     }
 
@@ -203,7 +205,7 @@ class TagRender extends AbstractTag
         if ($this->collection) {
             if(is_array($variable)) {
                 $templateTokens = $this->tokenize($this->compiler->getTemplateSource('snippets.' . $this->templateName));
-                $document = new Document(null, $templateTokens, $this->compiler);
+                $document = new Document(null, $templateTokens, $this->getTagToken(), $this->compiler);
 
                 foreach ($variable as $item) {
                     $context->set($this->templateName, $item);
@@ -217,7 +219,7 @@ class TagRender extends AbstractTag
             }
 
             $templateTokens = $this->tokenize($this->compiler->getTemplateSource('snippets.' . $this->templateName));
-            $document = new Document(null, $templateTokens, $this->compiler);
+            $document = new Document(null, $templateTokens, $this->getTagToken(), $this->compiler);
             $result .= $document->render($context);
         }
 

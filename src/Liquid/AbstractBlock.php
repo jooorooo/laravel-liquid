@@ -13,11 +13,10 @@ namespace Liquid;
 
 use Illuminate\Support\Str;
 use Liquid\Exceptions\SyntaxError;
-use Liquid\Tag\TagBlock;
-use Liquid\Tag\TagLayout;
 use Liquid\Tokens\TagToken;
 use Liquid\Tokens\TextToken;
 use Liquid\Tokens\VariableToken;
+use ReflectionClass;
 use ReflectionException;
 
 /**
@@ -85,7 +84,7 @@ class AbstractBlock extends AbstractTag
                 $tagName = $tags[$token->getTag()];
 
                 /** @var AbstractTag $node */
-                $node = new $tagName(trim(Str::substr($token->getToken(), Str::length($token->getTag()))), $tokens, $this->compiler);
+                $node = new $tagName(trim(Str::substr($token->getToken(), Str::length($token->getTag()))), $tokens, $token, $this->compiler);
                 if($filters = $token->getFilters()) {
                     $node->setFilters($filters);
                 }
@@ -175,7 +174,7 @@ class AbstractBlock extends AbstractTag
                 throw new LiquidException("'end' is not a valid delimiter for " . $this->blockName() . " tags. Use " . $this->blockDelimiter());
             default:
                 //@todo must be make better
-                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $token->getTag()), $token, $this->compiler);
+                $e = new SyntaxError(sprintf('Unknown "%s" tag.', $token->getTag()), $token);
                 $e->addSuggestions($token->getTag(), array_keys($this->compiler->getTags()));
                 throw $e;
         }
@@ -188,9 +187,14 @@ class AbstractBlock extends AbstractTag
      * @return void
      * @throws LiquidException
      * @throws ReflectionException
+     * @throws SyntaxError
      */
     protected function assertMissingDelimitation()
     {
+        if($token = $this->getTagToken()) {
+            throw new SyntaxError(sprintf('"%s" tag was never closed.', $token->getTag()), $token);
+        }
+
         throw new LiquidException($this->blockName() . " tag was never closed");
     }
 
@@ -213,50 +217,7 @@ class AbstractBlock extends AbstractTag
      */
     private function blockName()
     {
-        $reflection = new \ReflectionClass($this);
+        $reflection = new ReflectionClass($this);
         return str_replace('tag', '', strtolower($reflection->getShortName()));
-    }
-
-    /**
-     * Create a variable for the given token
-     *
-     * @param string $token
-     *
-     * @throws \Liquid\LiquidException
-     * @return Variable
-     */
-    private function createVariable($token)
-    {
-        $variableRegexp = new Regexp('/^' . LiquidCompiler::VARIABLE_TAG[0] . '(.*)' . LiquidCompiler::VARIABLE_TAG[1] . '$/');
-        if ($variableRegexp->match($token)) {
-            return $this->compileVariable($variableRegexp->matches[1]);
-        }
-
-        throw new LiquidException("Variable $token was not properly terminated");
-    }
-
-    /**
-     * Create a variable for the given token
-     *
-     * @param string $token
-     *
-     * @throws \Liquid\LiquidException
-     * @return Variable
-     */
-    private function compileVariable($variable)
-    {
-        $filters = [];
-        if(substr($variable, 0, 1) == '-') {
-            $filters[] = 'lstrip';
-            $variable = substr($variable, 1);
-        }
-        if(substr($variable, -1) == '-') {
-            $filters[] = 'rstrip';
-            $variable = substr($variable, 0, -1);
-        }
-
-        $variableObject = new Variable(trim($variable), $this->compiler);
-        $variableObject->preSetFilters($filters);
-        return $variableObject;
     }
 }

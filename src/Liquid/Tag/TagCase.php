@@ -66,15 +66,16 @@ class TagCase extends AbstractBlock
      * @param string $markup
      * @param array $tokens
      *
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $this->nodelists = array();
         $this->elseNodelist = array();
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
 
         $syntaxRegexp = new Regexp('/' . LiquidCompiler::QUOTED_FRAGMENT . '/');
 

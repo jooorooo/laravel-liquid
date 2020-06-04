@@ -48,7 +48,7 @@ class CompilerEngine extends PhpEngine
      * @param TemplateContent $path
      * @param array $data
      * @return string|null
-     * @throws Exception
+     * @throws Throwable
      */
     public function get($path, array $data = [])
     {
@@ -64,27 +64,11 @@ class CompilerEngine extends PhpEngine
 
             return $results;
         } catch (Throwable $e) {
-            $this->handleViewException($e, $obLevel);
+            while (ob_get_level() > $obLevel) {
+                ob_end_clean();
+            }
+
+            throw $e;
         }
-
-        return null;
-    }
-
-    /**
-     * Handle a view exception.
-     *
-     * @param  Exception $e
-     * @param  int $obLevel
-     * @return void
-     *
-     * @throws $e
-     */
-    protected function handleViewException(Exception $e, $obLevel)
-    {
-        while (ob_get_level() > $obLevel) {
-            ob_end_clean();
-        }
-
-        throw $e;
     }
 }

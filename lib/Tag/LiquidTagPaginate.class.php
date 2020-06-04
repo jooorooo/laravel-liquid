@@ -3,12 +3,12 @@
  * Paginates a given collection
  *
  * @author Ryan Marshall (ryan@syngency.com)
- * 
+ *
  * @example
  * {% paginate blog.articles by 5 %} {% for article in blog.articles %} {% endpaginate %}
- * 
+ *
  * @package Liquid
- * @copyright Copyright (c) 2011-2012 Harald Hanek, 
+ * @copyright Copyright (c) 2011-2012 Harald Hanek,
  * fork of php-liquid (c) 2006 Mateo Murphy,
  * based on Liquid for Ruby (c) 2006 Tobias Luetke
  * @license http://harrydeluxe.mit-license.org
@@ -32,7 +32,7 @@ class LiquidTagPaginate extends AbstractBlock
      * @var array The collection object
      */
     private $_collection;
-    
+
     /**
      *
      * @var int The size of the collection
@@ -43,12 +43,12 @@ class LiquidTagPaginate extends AbstractBlock
      * @var int The number of items to paginate by
      */
     private $_numberItems;
-    
+
     /**
      * @var int The current page
      */
     private $_currentPage;
-    
+
     /**
      * @var int Total pages
      */
@@ -63,7 +63,7 @@ class LiquidTagPaginate extends AbstractBlock
      * @param Filesystem $fileSystem
      * @throws LiquidException
      */
-    public function __construct($markup, &$tokens, Filesystem $fileSystem)
+    public function __construct($markup, &$tokens, $token, Filesystem $fileSystem)
     {
         parent::__construct($markup, $tokens, $fileSystem);
 
@@ -96,18 +96,18 @@ class LiquidTagPaginate extends AbstractBlock
     	$this->_collectionSize = count($this->_collection);
     	$this->_totalPages = ceil($this->_collectionSize / $this->_numberItems);
     	$paginated_collection =  array_slice($this->_collection,$this->_currentOffset,$this->_numberItems);
-    	
+
     	// Sets the collection if it's a key of another collection (ie search.results, collection.products, blog.articles)
     	$segments = explode('.',$this->_collectionName);
     	if ( count($segments) == 2 )
     	{
 	    	$context->set($segments[0], array($segments[1] => $paginated_collection));
-    	} 
-    	else 
+    	}
+    	else
     	{
 	    	$context->set($this->_collectionName, $paginated_collection);
     	}
-    	
+
     	$paginate = array(
     		'page_size' => $this->_numberItems,
     		'current_page' => $this->_currentPage,
@@ -117,7 +117,7 @@ class LiquidTagPaginate extends AbstractBlock
     		'previous' => false,
     		'next' => false
     	);
-    	
+
     	if ( $this->_currentPage != 1 )
     	{
 	    	$paginate['previous'] = array(
@@ -125,7 +125,7 @@ class LiquidTagPaginate extends AbstractBlock
 				'url' => $this->current_url() . '?page=' . ( $this->_currentPage - 1 )
 			);
     	}
-    	
+
     	if ( $this->_currentPage != $this->_totalPages )
     	{
 	    	$paginate['next'] = array(
@@ -137,7 +137,7 @@ class LiquidTagPaginate extends AbstractBlock
     	$context->set('paginate',$paginate);
         return parent::render($context);
     }
-    
+
     /**
      * Returns the current page URL
      */

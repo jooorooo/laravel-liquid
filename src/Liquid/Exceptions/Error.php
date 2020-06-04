@@ -30,17 +30,16 @@ class Error extends Exception
      *
      * @param string             $message  The error message
      * @param TagToken           $token   The template line where the error occurred
-     * @param LiquidCompiler     $source   The source context where the error occurred
      * @param Exception $previous The previous exception
      */
-    public function __construct(string $message, TagToken $token, LiquidCompiler $source, Exception $previous = null)
+    public function __construct(string $message, TagToken $token, Exception $previous = null)
     {
         parent::__construct('', 0, $previous);
 
-        $this->sourcePath = $source->getPath()->getPath();
-        $this->sourceCode = $source->getPath()->getContent();
+        $this->sourcePath = $token->getName();
+        $this->sourceCode = $token->getSource();
         $this->lineno = $token->getLine();
-        $this->name = $source->getPath()->getName();
+        $this->name = $token->getName();
         $this->rawMessage = $message;
 
         $this->updateRepr();

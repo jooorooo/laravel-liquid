@@ -256,7 +256,7 @@ class LiquidCompiler extends Compiler implements CompilerInterface
 
         $templateTokens = $this->tokenize($path);
 
-        $this->root = new Document(null, $templateTokens, $this);
+        $this->root = new Document(null, $templateTokens, null, $this);
 
         if($this->isExpired($path)) {
             $this->getCacheStore()->forever($this->getCompiledKey($path), (object)[

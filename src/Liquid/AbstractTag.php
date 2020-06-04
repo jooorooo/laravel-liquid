@@ -11,6 +11,9 @@
 
 namespace Liquid;
 
+use Liquid\Tokens\TagToken;
+use Liquid\Tokens\TextToken;
+use Liquid\Tokens\VariableToken;
 use Liquid\Traits\TokenizeTrait;
 
 /**
@@ -49,16 +52,23 @@ abstract class AbstractTag
     protected $globalFilters = array();
 
     /**
+     * @var null|TagToken|VariableToken|TextToken
+     */
+    protected $_tag_token;
+
+    /**
      * Constructor.
      *
      * @param string $markup
      * @param array $tokens
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $this->markup = $markup;
         $this->compiler = $compiler;
+        $this->_tag_token = $token;
         $this->parse($tokens);
     }
 
@@ -126,5 +136,21 @@ abstract class AbstractTag
     protected function name()
     {
         return strtolower(get_class($this));
+    }
+
+    /**
+     * @return TagToken|TextToken|VariableToken|null
+     */
+    public function getTagToken()
+    {
+        return $this->_tag_token;
+    }
+
+    /**
+     * @param TagToken|TextToken|VariableToken|null $token
+     */
+    public function setTagToken($token): void
+    {
+        $this->_tag_token = $token;
     }
 }

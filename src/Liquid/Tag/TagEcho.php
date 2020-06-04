@@ -39,10 +39,11 @@ class TagEcho extends AbstractTag
      * @param string $markup
      * @param array $tokens
      *
+     * @param $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/(' . Constant::QuotedFragmentPartial . ')/');
         if ($regex->match($markup)) {
@@ -51,7 +52,7 @@ class TagEcho extends AbstractTag
             throw new LiquidException("Error in tag 'echo' - Valid syntax: echo '[variable]'");
         }
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
     }
 
     /**

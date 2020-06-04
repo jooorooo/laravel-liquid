@@ -51,8 +51,11 @@ trait TokenizeTrait
             $tokens = call_user_func_array('array_merge', $tokens);
         }
 
-        $tokens = array_map(function($token) use($content) {
-            return (new GuessToken($token[1], $token[0]))->parseType($content);
+        $tokens = array_map(function($token) use($source, $content) {
+            return array_map(function($token) use($source) {
+                $token->setName($source->getName());
+                return $token;
+            }, (new GuessToken($token[1], $token[0]))->parseType($content));
         }, $tokens);
 
         if(empty($tokens)) {

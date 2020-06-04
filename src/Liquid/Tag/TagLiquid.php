@@ -54,7 +54,7 @@ class TagLiquid extends AbstractTag
             return sprintf('%s %s %s', LiquidCompiler::OPERATION_TAGS[0], trim($line), LiquidCompiler::OPERATION_TAGS[1]);
         }, array_filter(explode("\n", $markup)));
 
-        $this->document = new Document(null, $templateTokens, $this->compiler);
+        $this->document = new Document(null, $templateTokens, $this->getTagToken(), $this->compiler);
     }
 
     /**

@@ -17,6 +17,7 @@ use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Context;
+use Liquid\Tokens\TagToken;
 use Liquid\Traits\HelpersTrait;
 use Liquid\Variable;
 
@@ -54,12 +55,13 @@ class TagAssign extends AbstractTag
      * @param string $markup
      *
      * @param array|null $tokens
+     * @param TagToken, $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens = null, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
-        parent::__construct(null, $tokens, $compiler);
+        parent::__construct(null, $tokens, $token, $compiler);
 
         $syntaxRegexp = new Regexp('/(' . Constant::VariableSignaturePartial . '+)\s*=\s*(' . Constant::QuotedFragmentPartial . ')\s*/ms');
         if($syntaxRegexp->match($markup)) {

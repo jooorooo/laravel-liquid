@@ -16,6 +16,7 @@ use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
 
 /**
  * Used to increment a counter into a template
@@ -41,10 +42,11 @@ class TagIncrement extends AbstractTag
      * @param string $markup
      *
      * @param array|null $tokens
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      * @throws LiquidException
      */
-    public function __construct($markup, array &$tokens = null, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $syntax = new Regexp('/(' . $compiler::VARIABLE_NAME . ')/');
 
@@ -54,7 +56,7 @@ class TagIncrement extends AbstractTag
             throw new LiquidException("Syntax Error in 'increment' - Valid syntax: increment [var]");
         }
 
-        parent::__construct(null, $tokens, $compiler);
+        parent::__construct(null, $tokens, $token, $compiler);
     }
 
     /**

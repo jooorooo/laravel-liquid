@@ -70,15 +70,16 @@ class TagIf extends AbstractBlock
      *
      * @param string $markup
      * @param array $tokens
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
      */
-    public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
+    public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $this->nodelist = &$this->nodelistHolders[count($this->blocks)];
 
         array_push($this->blocks, array('if', $markup, &$this->nodelist));
 
-        parent::__construct($markup, $tokens, $compiler);
+        parent::__construct($markup, $tokens, $token, $compiler);
     }
 
     /**
