@@ -94,7 +94,7 @@ trait DecisionTrait
             }
 
             $value = $this->getValue($left, $context);
-            
+
             $value = $this->stringValue($value);
             return $reverse ? !$value : $value;
         }
@@ -167,6 +167,13 @@ trait DecisionTrait
 
     protected function getValue($text, Context $context)
     {
+        if(is_numeric($text)) {
+            if(($check = filter_var($text, FILTER_VALIDATE_INT)) !== false) {
+                return $check;
+            }
+            return (float)$text;
+        }
+
         $var = new Variable($text, $this->compiler);
         return $var->render($context);
     }

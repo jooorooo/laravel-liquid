@@ -163,9 +163,9 @@ class TagIf extends AbstractBlock
                 $right = (isset($conditionalRegex->matches[5])) ? $conditionalRegex->matches[5] : null;
 
                 array_push($conditions, array(
-                    'left' => $left,
-                    'operator' => $operator,
-                    'right' => $right
+                    'left' => $this->numericFix($left),
+                    'operator' => $this->numericFix($operator),
+                    'right' => $this->numericFix($right)
                 ));
             } else {
                 throw new LiquidException("Syntax Error in tag 'if' - Valid syntax: if [condition]");
@@ -204,7 +204,6 @@ class TagIf extends AbstractBlock
         foreach ($this->blocks as $block) {
             if ($block[0] == 'else') {
                 $result = $this->renderAll($block[2], $context);
-
                 break;
             }
 
@@ -219,5 +218,18 @@ class TagIf extends AbstractBlock
         $context->pop();
 
         return $result;
+    }
+
+    protected function numericFix($value)
+    {
+        if(!is_numeric($value)) {
+            return $value;
+        }
+
+        if(($check = filter_var($value, FILTER_VALIDATE_INT)) !== false) {
+            return $check;
+        }
+
+        return (float)$value;
     }
 }
