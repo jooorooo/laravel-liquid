@@ -37,6 +37,9 @@ class TagContinue extends AbstractTag
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         $context->registers['continue'] = true;
     }
 }

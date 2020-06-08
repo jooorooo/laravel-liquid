@@ -37,6 +37,8 @@ class TagIfchanged extends AbstractBlock
     {
         $output = parent::render($context);
 
+        $context->setToken($this->getTagToken());
+
         if ($this->lastValue == $output) {
             return '';
         } else {

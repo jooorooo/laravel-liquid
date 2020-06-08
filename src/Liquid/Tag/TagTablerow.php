@@ -80,6 +80,9 @@ class TagTablerow extends AbstractBlock
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         $collection = $context->get($this->collectionName);
 
         if ($collection instanceof \Traversable) {

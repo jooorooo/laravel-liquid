@@ -68,6 +68,9 @@ class TagIncrement extends AbstractTag
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         // If the value is not set in the environment check to see if it
         // exists in the context, and if not set it to -1
         if (!isset($context->registers['increments_decrements'][$this->toIncrement])) {

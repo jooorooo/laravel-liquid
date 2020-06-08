@@ -103,6 +103,9 @@ class TagUnless extends AbstractBlock
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         $context->push();
 
         $result = '';

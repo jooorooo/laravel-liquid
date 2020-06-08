@@ -33,8 +33,8 @@ trait DecisionTrait
      *
      * @param mixed $value
      *
-     * @throws \Liquid\LiquidException
      * @return string
+     * @throws LiquidException
      */
     private function stringValue($value)
     {
@@ -81,8 +81,8 @@ trait DecisionTrait
      * @param string $op
      * @param Context $context
      *
-     * @throws \Liquid\LiquidException
      * @return bool
+     * @throws LiquidException
      */
     protected function interpretCondition($left, $right, $op, Context $context)
     {
@@ -186,8 +186,8 @@ trait DecisionTrait
      * @param string $right
      * @param Context $context
      *
-     * @throws \Liquid\LiquidException
      * @return bool
+     * @throws LiquidException
      */
     protected function blankOperationCompare($left, $op, $right)
     {

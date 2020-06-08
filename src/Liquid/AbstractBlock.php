@@ -45,6 +45,7 @@ class AbstractBlock extends AbstractTag
      * @return void
      * @throws LiquidException
      * @throws ReflectionException
+     * @throws SyntaxError
      */
     public function parse(array &$tokens)
     {
@@ -108,6 +109,8 @@ class AbstractBlock extends AbstractTag
      */
     public function render(Context $context)
     {
+        $context->setToken($this->getTagToken());
+
         return $this->renderAll($this->nodelist, $context);
     }
 

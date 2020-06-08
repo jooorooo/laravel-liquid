@@ -32,6 +32,9 @@ class TagComment extends AbstractBlock
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         return '';
     }
 }

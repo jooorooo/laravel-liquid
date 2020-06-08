@@ -145,6 +145,8 @@ class TagRender extends AbstractTag
      */
     public function render(Context $context)
     {
+        $context->setToken($this->getTagToken());
+
         if($this->self_include) {
             return $this->_renderOutline($context);
         } else {

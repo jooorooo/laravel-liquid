@@ -73,6 +73,9 @@ class TagLiquid extends AbstractTag
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         return $this->document->render($context);
     }
 }

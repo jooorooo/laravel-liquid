@@ -92,6 +92,8 @@ class TagAssign extends AbstractTag
             }
         }
 
+        $context->setToken($this->getTagToken());
+
         $output = $context->get($this->from);
 
         foreach (array_merge($this->globalFilters, $this->filters) as $filter) {

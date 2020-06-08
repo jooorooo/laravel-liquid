@@ -151,7 +151,10 @@ class TagCase extends AbstractBlock
      */
     public function render(Context $context)
     {
-        $output = ''; // array();
+
+        $context->setToken($this->getTagToken());
+
+        $output = '';
         $runElseBlock = true;
 
         foreach ($this->nodelists as $data) {

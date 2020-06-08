@@ -37,6 +37,8 @@ class TagBreak extends AbstractTag
      */
     public function render(Context $context)
     {
+        $context->setToken($this->getTagToken());
+
         $context->registers['break'] = true;
     }
 }

@@ -112,6 +112,9 @@ class TagLayout extends AbstractTag
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         $context->push();
 
         if($this->document2) {

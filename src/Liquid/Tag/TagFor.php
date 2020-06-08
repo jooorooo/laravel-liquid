@@ -155,6 +155,8 @@ class TagFor extends AbstractBlock
     public function render(Context $context)
     {
 
+        $context->setToken($this->getTagToken());
+
         if (!isset($context->registers['for'])) {
             $context->registers['for'] = array();
         }

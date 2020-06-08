@@ -66,6 +66,9 @@ class TagEcho extends AbstractTag
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         return $context->get($this->string);
     }
 }

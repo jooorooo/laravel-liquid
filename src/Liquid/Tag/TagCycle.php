@@ -83,6 +83,8 @@ class TagCycle extends AbstractTag
     {
         $context->push();
 
+        $context->setToken($this->getTagToken());
+
         $key = $context->get($this->name);
 
         if (isset($context->registers['cycle'][$key])) {

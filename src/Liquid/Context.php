@@ -17,6 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Iterator;
 use IteratorAggregate;
+use Liquid\Exceptions\SyntaxError;
+use Liquid\Tokens\TagToken;
+use Liquid\Tokens\TextToken;
+use Liquid\Tokens\VariableToken;
 
 /**
  * Context keeps the variable stack and resolves variables, as well as keywords.
@@ -69,6 +73,10 @@ class Context
      * @var bool|integer
      */
     private $push = false;
+    /**
+     * @var TagToken|TextToken|VariableToken
+     */
+    private $token;
 
     /**
      * List with magick methods to ignore for filters
@@ -449,15 +457,6 @@ class Context
             return $part;
         }, $parts);
 
-//        $parts = array();
-//        foreach ($matches[1] as $match) {
-//            if (preg_match("/\[([a-zA-Z0-9\s_-]+)\]/i", $match, $m)) {
-//                array_push($parts, is_numeric($m[1]) ? $m[1] : $this->fetch($m[1]));
-//            } else {
-//                array_push($parts, $match);
-//            }
-//      }
-
         $object = $this->value($this->transformIteratorAggregate($this->fetch(array_shift($parts))));
 
         while (count($parts) > 0) {
@@ -492,6 +491,10 @@ class Context
             !($object instanceof Builder) &&
             !($object instanceof Relation)
         ) {
+            if($token = $this->getToken()) {
+                throw new SyntaxError(sprintf("Value of type %s has no `__toString` methods", get_class($object)), $token);
+            }
+
             throw new LiquidException(sprintf("Value of type %s has no `__toString` methods", get_class($object)));
         }
 
@@ -508,6 +511,8 @@ class Context
     }
 
     /**
+     * @param $element
+     * @param $property
      * @return bool
      */
     public function hasGetValue($element, $property)
@@ -586,5 +591,21 @@ class Context
         }
 
         return 0;
+    }
+
+    /**
+     * @return TagToken|TextToken|VariableToken
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
+
+    /**
+     * @param TagToken|TextToken|VariableToken $token
+     */
+    public function setToken($token): void
+    {
+        $this->token = $token;
     }
 }

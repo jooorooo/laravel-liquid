@@ -70,6 +70,8 @@ class TagCapture extends AbstractBlock
             throw new SyntaxError(sprintf('Variable "%s" is protected!', $this->to), $this->getTagToken());
         }
 
+        $context->setToken($this->getTagToken());
+
         $context->registers['capture'][$this->to] = $this->to;
         $context->set($this->to, function() use($context) {
             return trim(parent::render($context));

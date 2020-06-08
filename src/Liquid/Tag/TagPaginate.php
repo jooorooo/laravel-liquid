@@ -93,6 +93,9 @@ class TagPaginate extends AbstractBlock
      */
     public function render(Context $context)
     {
+
+        $context->setToken($this->getTagToken());
+
         $collectionGet = $context->get($this->collectionName);
 
         if($collectionGet instanceof Model || $collectionGet instanceof Builder || $collectionGet instanceof Relation) {

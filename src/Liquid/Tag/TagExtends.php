@@ -174,6 +174,8 @@ class TagExtends extends AbstractTag
      */
     public function render(Context $context)
     {
+        $context->setToken($this->getTagToken());
+
         $context->push();
         $result = $this->document->render($context);
         $context->pop();
