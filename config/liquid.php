@@ -1,5 +1,13 @@
 <?php
 
+use Liquid\Filters\ArrFilters;
+use Liquid\Filters\DateFilters;
+use Liquid\Filters\DefFilters;
+use Liquid\Filters\EscapeFilters;
+use Liquid\Filters\MathFilters;
+use Liquid\Filters\MultyFilters;
+use Liquid\Filters\StrFilters;
+
 use Liquid\Tag\TagAssign;
 use Liquid\Tag\TagBlock;
 use Liquid\Tag\TagBreak;
@@ -22,14 +30,6 @@ use Liquid\Tag\TagRender;
 use Liquid\Tag\TagTablerow;
 use Liquid\Tag\TagUnless;
 use Liquid\Tag\TagEcho;
-
-use Liquid\Filters\Str;
-use Liquid\Filters\Escape;
-use Liquid\Filters\Def;
-use Liquid\Filters\Arr;
-use Liquid\Filters\Multy;
-use Liquid\Filters\Math;
-use Liquid\Filters\Date;
 
 return [
 
@@ -120,13 +120,13 @@ return [
      |--------------------------------------------------------------------------
      */
     'filters' => [
-        Str::class,
-        Escape::class,
-        Def::class,
-        Arr::class,
-        Multy::class,
-        Math::class,
-        Date::class,
+        StrFilters::class,
+        EscapeFilters::class,
+        DefFilters::class,
+        ArrFilters::class,
+        MultyFilters::class,
+        MathFilters::class,
+        DateFilters::class,
     ],
 
     /*

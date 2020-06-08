@@ -8,7 +8,7 @@
 
 namespace Liquid\Filters;
 
-class Escape extends AbstractFilters
+class EscapeFilters extends AbstractFilters
 {
     /**
      * Escape a string

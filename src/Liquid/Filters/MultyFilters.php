@@ -12,7 +12,7 @@ use Iterator;
 use Liquid\Context;
 use Illuminate\Support\Str AS IlluminateStr;
 
-class Multy extends AbstractFilters
+class MultyFilters extends AbstractFilters
 {
     /**
      * Return the size of an array or of an string

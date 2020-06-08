@@ -30,14 +30,6 @@ class AbstractBlock extends AbstractTag
     protected $nodelist = array();
 
     /**
-     * @return array
-     */
-    public function getNodelist()
-    {
-        return $this->nodelist;
-    }
-
-    /**
      * Parses the given tokens
      *
      * @param array $tokens
@@ -167,7 +159,7 @@ class AbstractBlock extends AbstractTag
      * @throws SyntaxError
      * @throws ReflectionException
      */
-    protected function unknownTag($token, array $tokens)
+    protected function unknownTag($token, /** @noinspection PhpUnusedParameterInspection */ array $tokens)
     {
         switch ($token->getTag()) {
             case 'else':

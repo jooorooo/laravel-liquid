@@ -118,6 +118,7 @@ class TagLayout extends AbstractTag
         $context->push();
 
         if($this->document2) {
+            $context->registers['noEscape']['content_for_layout'] = 'content_for_layout';
             $context->set('content_for_layout', $this->document->render($context));
 
             $result = $this->document2->render($context);

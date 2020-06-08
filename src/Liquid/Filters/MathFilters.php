@@ -8,7 +8,7 @@
 
 namespace Liquid\Filters;
 
-class Math extends AbstractFilters
+class MathFilters extends AbstractFilters
 {
 
     /**

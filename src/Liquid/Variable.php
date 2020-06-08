@@ -197,6 +197,7 @@ class Variable
      * @param Context $context
      *
      * @return mixed|string
+     * @throws Exceptions\SyntaxError
      * @throws LiquidException
      */
     public function render(Context $context)
@@ -204,7 +205,7 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(in_array(trim($this->name), $this->getProtectedVariables()) || ($context->registers['capture'][$this->name]??null === $this->name)) {
+        if(in_array(trim($this->name), static::getProtectedVariables()) || ($context->registers['noEscape'][$this->name]??null === $this->name)) {
             foreach($filters AS $index => $filter) {
                 if(in_array($filter[0], ['escape', 'escape_once'])) {
                     unset($filters[$index]);
@@ -228,11 +229,12 @@ class Variable
             $output = $context->invoke($filtername, $output, $filterArgValues);
         }
 
-        if (is_float($output)) {
-            if ($output == (int)$output) {
-                return (int)$output;
-//                return number_format($output, 1);
+        if(is_numeric($output)) {
+            if(($check = filter_var($output, FILTER_VALIDATE_INT)) !== false) {
+                return $check;
             }
+
+            return (float)$output;
         }
 
         return $output;
@@ -241,10 +243,10 @@ class Variable
     /**
      * @return array
      */
-    protected function getProtectedVariables()
+    public static function getProtectedVariables()
     {
         if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables)) {
-            return $protected_variables;
+            return array_unique(array_merge($protected_variables, ['content_for_layout']));
         }
 
         return ['content_for_header', 'content_for_layout', 'content_for_index', 'content_for_footer'];

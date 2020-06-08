@@ -11,7 +11,7 @@ abstract class AbstractFilters
      */
     protected $context;
 
-    public function __construct(Context $context)
+    final public function __construct(Context $context)
     {
         $this->context = $context;
     }

@@ -11,7 +11,7 @@ namespace Liquid\Filters;
 use Iterator;
 use Traversable;
 
-class Arr extends AbstractFilters
+class ArrFilters extends AbstractFilters
 {
 
     /**

@@ -86,14 +86,6 @@ class Error extends Exception
         return $this->name;
     }
 
-    /**
-     * @return int
-     */
-    public function getLineno()
-    {
-        return $this->lineno;
-    }
-
     private function updateRepr()
     {
         $this->message = $this->rawMessage;

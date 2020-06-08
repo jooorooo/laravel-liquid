@@ -10,7 +10,7 @@ namespace Liquid\Filters;
 
 use Illuminate\Support\Str AS IlluminateStr;
 
-class Str extends AbstractFilters
+class StrFilters extends AbstractFilters
 {
 
     /**

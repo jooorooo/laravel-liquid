@@ -10,7 +10,7 @@ namespace Liquid\Filters;
 
 use Carbon\Carbon;
 
-class Date extends AbstractFilters
+class DateFilters extends AbstractFilters
 {
 
     /**

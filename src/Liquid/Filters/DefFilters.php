@@ -8,7 +8,7 @@
 
 namespace Liquid\Filters;
 
-class Def extends AbstractFilters
+class DefFilters extends AbstractFilters
 {
 
     /**
