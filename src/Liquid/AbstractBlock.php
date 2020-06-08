@@ -52,19 +52,19 @@ class AbstractBlock extends AbstractTag
         while (count($tokens)) {
             $token = array_shift($tokens);
 
-            if($token instanceof TextToken) {
-                if($token->getCode() != '') {
+            if ($token instanceof TextToken) {
+                if ($token->getCode() != '' && $this->textTokenValidate($token)) {
                     $this->nodelist[] = $token->getCode();
                 }
-            } elseif($token instanceof VariableToken) {
+            } elseif ($token instanceof VariableToken) {
                 $variableObject = new Variable($token->getVariable(), $this->compiler);
-                if($filters = $token->getFilters()) {
+                if ($filters = $token->getFilters()) {
                     $variableObject->preSetFilters($filters);
                 }
 
                 $this->nodelist[] = $variableObject;
-            } elseif($token instanceof TagToken) {
-                if($token->getTag() == $this->blockDelimiter()) {
+            } elseif ($token instanceof TagToken) {
+                if ($token->getTag() == $this->blockDelimiter()) {
                     $this->endTag();
                     return;
                 }
@@ -78,7 +78,7 @@ class AbstractBlock extends AbstractTag
 
                 /** @var AbstractTag $node */
                 $node = new $tagName(trim(Str::substr($token->getToken(), Str::length($token->getTag()))), $tokens, $token, $this->compiler);
-                if($filters = $token->getFilters()) {
+                if ($filters = $token->getFilters()) {
                     $node->setFilters($filters);
                 }
 
@@ -119,15 +119,15 @@ class AbstractBlock extends AbstractTag
         $result = '';
 
         foreach ($list as $token) {
-            if(is_object($token) && method_exists($token, 'render')) {
+            if (is_object($token) && method_exists($token, 'render')) {
                 $renderResult = $token->render($context);
             } else {
                 $renderResult = $token;
             }
 
-            if(is_scalar($renderResult)) {
+            if (is_scalar($renderResult)) {
                 $result .= $renderResult;
-            } elseif(is_object($renderResult) && method_exists($renderResult, '__toString')) {
+            } elseif (is_object($renderResult) && method_exists($renderResult, '__toString')) {
                 $result .= $renderResult->__toString();
             }
 
@@ -185,7 +185,7 @@ class AbstractBlock extends AbstractTag
      */
     protected function assertMissingDelimitation()
     {
-        if($token = $this->getTagToken()) {
+        if ($token = $this->getTagToken()) {
             throw new SyntaxError(sprintf('"%s" tag was never closed.', $token->getTag()), $token);
         }
 
@@ -213,5 +213,32 @@ class AbstractBlock extends AbstractTag
     {
         $reflection = new ReflectionClass($this);
         return str_replace('tag', '', strtolower($reflection->getShortName()));
+    }
+
+    private function textTokenValidate(TextToken $token)
+    {
+        $code = $token->getCode();
+
+        if(preg_match('/(' . LiquidCompiler::ANY_STARTING_TAG . ')/', $code, $match, PREG_OFFSET_CAPTURE)) {
+            $line = preg_split("/(\<|\n)/", Str::substr($code, $match[0][1]))[0] ?? null;
+            $tokenName = Str::substr($line, 2);
+            if($match[0][0] == LiquidCompiler::OPERATION_TAGS[0]) {
+                $type = 'Tag';
+                preg_match('/(\w+)\s*?(.*)/', $tokenName, $m);
+                $newToken = new TagToken($match[0][1] + $token->getStart(), $line, $token->getSource(), $m[1] ?? null, Str::substr($line, 2), $m[2] ?? null);
+                $tokenHelp = $newToken->getTag();
+            } else {
+                $type = 'Variable';
+                $v = new Variable($tokenName, $this->compiler);
+                $newToken = new TagToken($match[0][1] + $token->getStart(), $line, $token->getSource(), $v->getName(), Str::substr($line, 2), null);
+                $tokenHelp = $newToken->getTag();
+            }
+
+            $newToken->setName($token->getName());
+
+            throw new SyntaxError(sprintf('%s [%s] was not properly terminated', $type, $tokenHelp), $newToken);
+        }
+
+        return true;
     }
 }
