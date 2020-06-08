@@ -8,7 +8,7 @@
 
 namespace Liquid\Filters;
 
-class Escape
+class Escape extends AbstractFilters
 {
     /**
      * Escape a string
@@ -17,7 +17,7 @@ class Escape
      *
      * @return string
      */
-    public static function escape($input)
+    public function escape($input)
     {
         return is_string($input) ? htmlentities($input, ENT_QUOTES, 'utf-8') : $input;
     }
@@ -29,11 +29,11 @@ class Escape
      *
      * @return string
      */
-    public static function raw($input)
+    public function raw($input)
     {
         return $input;
     }
-    
+
     /**
      * Escape a string once, keeping all previous HTML entities intact
      *
@@ -41,7 +41,7 @@ class Escape
      *
      * @return string
      */
-    public static function escape_once($input)
+    public function escape_once($input)
     {
         return is_string($input) ? htmlentities($input, ENT_QUOTES, 'utf-8', false) : $input;
     }

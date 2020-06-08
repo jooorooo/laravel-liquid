@@ -10,7 +10,7 @@ namespace Liquid\Filters;
 
 use Carbon\Carbon;
 
-class Date
+class Date extends AbstractFilters
 {
 
     /**
@@ -21,7 +21,7 @@ class Date
      *
      * @return string
      */
-    public static function date($input, $format)
+    public function date($input, $format)
     {
         if($input instanceof Carbon) {
             $input = $input->timestamp;

@@ -10,7 +10,7 @@ namespace Liquid\Filters;
 
 use Illuminate\Support\Str AS IlluminateStr;
 
-class Str
+class Str extends AbstractFilters
 {
 
     /**
@@ -21,7 +21,7 @@ class Str
      *
      * @return string
      */
-    public static function append($input, $string)
+    public function append($input, $string)
     {
         if(!is_scalar($input) || !is_scalar($string)) {
             return $input;
@@ -38,7 +38,7 @@ class Str
      *
      * @return string
      */
-    public static function prepend($input, $string)
+    public function prepend($input, $string)
     {
         if(!is_scalar($input) || !is_scalar($string)) {
             return $input;
@@ -54,7 +54,7 @@ class Str
      *
      * @return string
      */
-    public static function downcase($input)
+    public function downcase($input)
     {
         return is_string($input) ? IlluminateStr::lower($input) : $input;
     }
@@ -66,7 +66,7 @@ class Str
      *
      * @return string
      */
-    public static function upcase($input)
+    public function upcase($input)
     {
         return is_string($input) ? IlluminateStr::upper($input) : $input;
     }
@@ -78,7 +78,7 @@ class Str
      *
      * @return string
      */
-    public static function strip_html($input)
+    public function strip_html($input)
     {
         return is_string($input) ? strip_tags($input) : $input;
     }
@@ -90,7 +90,7 @@ class Str
      *
      * @return string
      */
-    public static function strip_newlines($input)
+    public function strip_newlines($input)
     {
         return is_string($input) ? str_replace(array(
             "\n", "\r"
@@ -106,12 +106,10 @@ class Str
      *
      * @return string
      */
-    public static function truncate($input, $characters = 100, $ending = '...')
+    public function truncate($input, $characters = 100, $ending = '...')
     {
-        if (is_scalar($input)) {
-            if (strlen($input) > $characters) {
-                return IlluminateStr::substr($input, 0, $characters) . $ending;
-            }
+        if (is_scalar($input) && IlluminateStr::length($input) > $characters) {
+            return IlluminateStr::substr($input, 0, $characters) . $ending;
         }
 
         return $input;
@@ -127,7 +125,7 @@ class Str
      *
      * @return string
      */
-    public static function truncatewords($input, $words = 15, $ending = '...')
+    public function truncatewords($input, $words = 15, $ending = '...')
     {
         return is_scalar($input) ? IlluminateStr::words($input, $words, $ending) : $input;
     }
@@ -139,7 +137,7 @@ class Str
      *
      * @return string
      */
-    public static function newline_to_br($input)
+    public function newline_to_br($input)
     {
         return is_string($input) ? str_replace(array(
             "\n", "\r"
@@ -155,7 +153,7 @@ class Str
      *
      * @return string
      */
-    public static function replace($input, $string, $replacement = '')
+    public function replace($input, $string, $replacement = '')
     {
         if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
             return $input;
@@ -173,7 +171,7 @@ class Str
      *
      * @return string
      */
-    public static function replace_first($input, $string, $replacement = '')
+    public function replace_first($input, $string, $replacement = '')
     {
         if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
             return $input;
@@ -190,7 +188,7 @@ class Str
      *
      * @return string
      */
-    public static function remove($input, $string)
+    public function remove($input, $string)
     {
         if(!is_scalar($input) || !is_scalar($string)) {
             return $input;
@@ -208,7 +206,7 @@ class Str
      *
      * @return string
      */
-    public static function remove_first($input, $string)
+    public function remove_first($input, $string)
     {
         if(!is_scalar($input) || !is_scalar($string)) {
             return $input;
@@ -226,7 +224,7 @@ class Str
      *
      * @return string
      */
-    public static function replace_last($input, $string, $replacement = '')
+    public function replace_last($input, $string, $replacement = '')
     {
         if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
             return $input;
@@ -243,7 +241,7 @@ class Str
      *
      * @return string
      */
-    public static function remove_last($input, $string)
+    public function remove_last($input, $string)
     {
         if(!is_scalar($input) || !is_scalar($string)) {
             return $input;
@@ -260,10 +258,10 @@ class Str
      *
      * @return array
      */
-    public static function split($input, $pattern)
+    public function split($input, $pattern)
     {
         if(!is_scalar($input) || !is_scalar($pattern)) {
-            return $input;
+            return array();
         }
 
         // Unlike PHP explode function, empty string after split filtering is empty array in Liquid.
@@ -280,7 +278,7 @@ class Str
      *
      * @return string
      */
-    public static function capitalize($input)
+    public function capitalize($input)
     {
         return is_string($input) ? IlluminateStr::title($input) : $input;
     }
@@ -292,7 +290,7 @@ class Str
      *
      * @return string
      */
-    public static function camelize($input)
+    public function camelize($input)
     {
         return is_string($input) ? IlluminateStr::camel($input) : $input;
     }
@@ -302,7 +300,7 @@ class Str
      *
      * @return string
      */
-    public static function lstrip($input)
+    public function lstrip($input)
     {
         if(!is_scalar($input)) {
             return $input;
@@ -316,7 +314,7 @@ class Str
      *
      * @return string
      */
-    public static function rstrip($input)
+    public function rstrip($input)
     {
         if(!is_scalar($input)) {
             return $input;
@@ -330,7 +328,7 @@ class Str
      *
      * @return string
      */
-    public static function strip($input)
+    public function strip($input)
     {
         if(!is_scalar($input)) {
             return $input;
@@ -346,7 +344,7 @@ class Str
      *
      * @return string
      */
-    public static function url_encode($input)
+    public function url_encode($input)
     {
         if(!is_scalar($input)) {
             return $input;

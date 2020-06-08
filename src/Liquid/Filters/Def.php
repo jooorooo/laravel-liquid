@@ -8,7 +8,7 @@
 
 namespace Liquid\Filters;
 
-class Def
+class Def extends AbstractFilters
 {
 
     /**
@@ -19,7 +19,7 @@ class Def
      *
      * @return string
      */
-    public static function default($input, $default_value)
+    public function default($input, $default_value)
     {
         $isBlank = $input == '' || $input === false || $input === null;
         return $isBlank ? $default_value : $input;

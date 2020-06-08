@@ -8,7 +8,7 @@
 
 namespace Liquid\Filters;
 
-class Math
+class Math extends AbstractFilters
 {
 
     /**
@@ -19,7 +19,7 @@ class Math
      *
      * @return float
      */
-    public static function plus($input, $operand)
+    public function plus($input, $operand)
     {
         $input = is_numeric($input) ? $input : 0;
         $operand = is_numeric($operand) ? $operand : 0;
@@ -34,7 +34,7 @@ class Math
      *
      * @return int
      */
-    public static function minus($input, $operand)
+    public function minus($input, $operand)
     {
         $input = is_numeric($input) ? $input : 0;
         $operand = is_numeric($operand) ? $operand : 0;
@@ -46,7 +46,7 @@ class Math
      *
      * @return int
      */
-    public static function ceil($input)
+    public function ceil($input)
     {
         if(is_numeric($input)) {
             return (int)ceil($input);
@@ -63,7 +63,7 @@ class Math
      *
      * @return int
      */
-    public static function divided_by($input, $operand = null)
+    public function divided_by($input, $operand = null)
     {
         if(is_numeric($input) && is_numeric($operand) && (float)$operand !== (float)0) {
             return $input / $operand;
@@ -77,7 +77,7 @@ class Math
      *
      * @return int
      */
-    public static function floor($input)
+    public function floor($input)
     {
         if(is_numeric($input)) {
             return (int)floor($input);
@@ -94,7 +94,7 @@ class Math
      *
      * @return int|float
      */
-    public static function modulo($input, $operand = null)
+    public function modulo($input, $operand = null)
     {
         if(is_numeric($input) && is_numeric($operand)) {
             return fmod($input, $operand);
@@ -111,7 +111,7 @@ class Math
      *
      * @return float
      */
-    public static function round($input, $n = 0)
+    public function round($input, $n = 0)
     {
         if(is_numeric($input) && is_numeric($n)) {
             $input = round($input, (int)$n);
@@ -131,7 +131,7 @@ class Math
      *
      * @return int|float
      */
-    public static function times($input, $operand = null)
+    public function times($input, $operand = null)
     {
         if(is_numeric($input) && is_numeric($operand)) {
             return $input * $operand;

@@ -12,18 +12,8 @@ use Iterator;
 use Liquid\Context;
 use Illuminate\Support\Str AS IlluminateStr;
 
-class Multy
+class Multy extends AbstractFilters
 {
-    /**
-     * @var Context
-     */
-    protected $context;
-
-    public function __construct(Context $context = null)
-    {
-        $this->context = $context;
-    }
-
     /**
      * Return the size of an array or of an string
      *
@@ -48,10 +38,11 @@ class Multy
         if ($input instanceof Iterator) {
             $input = iterator_to_array($input);
         }
+
         if (is_array($input)) {
             $input = array_slice($input, $offset, $length);
         } elseif (is_string($input) || is_numeric($input)) {
-            if($length === null) {
+            if(is_null($length)) {
                 $input = IlluminateStr::substr($input, $offset);
             } else {
                 $input = IlluminateStr::substr($input, $offset, $length);

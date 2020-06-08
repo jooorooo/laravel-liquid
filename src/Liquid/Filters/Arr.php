@@ -8,23 +8,11 @@
 
 namespace Liquid\Filters;
 
-use ArrayAccess;
 use Iterator;
-use Liquid\Context;
-use Liquid\Drop;
 use Traversable;
 
-class Arr
+class Arr extends AbstractFilters
 {
-    /**
-     * @var Context
-     */
-    protected $context;
-
-    public function __construct(Context $context = null)
-    {
-        $this->context = $context;
-    }
 
     /**
      * Joins elements of an array with a given character between them
@@ -52,7 +40,7 @@ class Arr
     /**
      * Returns the first element of an array
      *
-     * @param array|\Iterator $input
+     * @param array|Iterator $input
      *
      * @return mixed
      */
@@ -90,7 +78,7 @@ class Arr
      * @param array|Traversable $input
      * @param string $property
      *
-     * @return string
+     * @return array
      */
     public function map($input, $property = null)
     {
@@ -112,7 +100,7 @@ class Arr
      *
      * @param array|Traversable $input
      *
-     * @return array
+     * @return array|string
      */
     public function reverse($input)
     {
@@ -133,7 +121,7 @@ class Arr
      * @param array|Traversable $input
      * @param string $property use this property of an array element
      *
-     * @return array
+     * @return array|string
      */
     public function sort($input, $property = null)
     {
@@ -141,11 +129,11 @@ class Arr
             return $input;
         }
 
-        if ($input instanceof \Traversable) {
+        if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
 
-        if ($property === null) {
+        if (is_null($property)) {
             asort($input);
         } else {
             $first = reset($input);
@@ -169,9 +157,9 @@ class Arr
     /**
      * Remove duplicate elements from an array
      *
-     * @param array|\Traversable $input
+     * @param array|Traversable $input
      *
-     * @return array
+     * @return array|string
      */
     public function uniq($input)
     {
@@ -179,7 +167,7 @@ class Arr
             return $input;
         }
 
-        if ($input instanceof \Traversable) {
+        if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
 
@@ -189,13 +177,14 @@ class Arr
     /**
      * Split an array into chunks
      *
-     * @param array|\Traversable $input
+     * @param array|Traversable $input
+     * @param null $size
      *
      * @return array
      */
     public function chunk($input, $size = null)
     {
-        if ($input instanceof \Traversable) {
+        if ($input instanceof Traversable) {
             $input = iterator_to_array($input);
         }
 
