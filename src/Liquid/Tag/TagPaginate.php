@@ -21,11 +21,12 @@ use Illuminate\Support\Arr;
 use Liquid\AbstractBlock;
 use Liquid\Constant;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
-use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
 use Liquid\Traits\TransformLaravelModel;
+use Traversable;
 
 /**
  * The paginate tag works in conjunction with the for tag to split content into numerous pages.
@@ -63,7 +64,7 @@ class TagPaginate extends AbstractBlock
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -77,7 +78,7 @@ class TagPaginate extends AbstractBlock
             $this->numberItems = $this->validateNumberItems($syntax->matches[2]);
             $this->extractAttributes($markup);
         } else {
-            throw new LiquidException("Syntax Error - Valid syntax: paginate [collection] by [items]");
+            throw new SyntaxError("Syntax Error - Valid syntax: paginate [collection] by [items]", $token);
         }
 
     }
@@ -92,20 +93,23 @@ class TagPaginate extends AbstractBlock
      */
     public function render(Context $context)
     {
-        $collection = $context->get($this->collectionName);
+        $collectionGet = $context->get($this->collectionName);
 
-        if($collection instanceof Model || $collection instanceof Builder || $collection instanceof Relation) {
-            /** @var \Illuminate\Pagination\LengthAwarePaginator $collection */
-            $collection = $collection->paginate($this->numberItems);
+        if($collectionGet instanceof Model || $collectionGet instanceof Builder || $collectionGet instanceof Relation) {
+            /** @var LengthAwarePaginator $collection */
+            $collection = $collectionGet->paginate($this->numberItems);
         } else {
-            if ($collection instanceof \Traversable) {
-                $collection = iterator_to_array($this->collection);
+            if ($collectionGet instanceof Traversable) {
+                $collection = iterator_to_array($collectionGet);
+            } else {
+                $collection = $collectionGet;
             }
+
             if(!is_array($collection)) {
                 $collection = [];
             }
 
-            /** @var \Illuminate\Pagination\LengthAwarePaginator $collection */
+            /** @var LengthAwarePaginator $collection */
             $currentPage = LengthAwarePaginator::resolveCurrentPage($pageName = 'page');
             $collection = new LengthAwarePaginator(
                 array_splice($collection, ($currentPage - 1) * $this->numberItems, $this->numberItems),

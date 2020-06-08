@@ -24,6 +24,7 @@ use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
 use Liquid\Traits\TransformLaravelModel;
 use ReflectionException;
+use Traversable;
 
 /**
  * Loops over an array, assigning the current value to a given variable
@@ -80,6 +81,11 @@ class TagFor extends AbstractBlock
     protected $blocks = array();
 
     /**
+     * @var integer
+     */
+    protected $start = 1;
+
+    /**
      * Constructor
      *
      * @param string $markup
@@ -87,7 +93,7 @@ class TagFor extends AbstractBlock
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -96,27 +102,23 @@ class TagFor extends AbstractBlock
 
         parent::__construct($markup, $tokens, $token, $compiler);
 
-        $syntaxRegexp = new Regexp('/(\w+)\s+in\s+(' . Constant::VariableSignaturePartial . ')/');
-
+        $syntaxRegexp = new Regexp('/(\w+)\s+in\s+\((\d+|' . LiquidCompiler::VARIABLE_NAME . ')\s*\.\.\s*(\d+|' . LiquidCompiler::VARIABLE_NAME . ')\)/');
         if ($syntaxRegexp->match($markup)) {
-
+            $this->type = 'digit';
             $this->variableName = $syntaxRegexp->matches[1];
-            $this->collectionName = $syntaxRegexp->matches[2];
-            $this->name = $syntaxRegexp->matches[1] . '-' . $syntaxRegexp->matches[2];
+            $this->start = $syntaxRegexp->matches[2];
+            $this->collectionName = $syntaxRegexp->matches[3];
+            $this->name = $syntaxRegexp->matches[1] . '-digit';
             $this->extractAttributes($markup);
-
         } else {
-
-            $syntaxRegexp = new Regexp('/(\w+)\s+in\s+\((\d+|' . LiquidCompiler::VARIABLE_NAME . ')\s*\.\.\s*(\d+|' . LiquidCompiler::VARIABLE_NAME . ')\)/');
+            $syntaxRegexp = new Regexp('/(\w+)\s+in\s+(' . Constant::VariableSignaturePartial . ')/');
             if ($syntaxRegexp->match($markup)) {
-                $this->type = 'digit';
                 $this->variableName = $syntaxRegexp->matches[1];
-                $this->start = $syntaxRegexp->matches[2];
-                $this->collectionName = $syntaxRegexp->matches[3];
-                $this->name = $syntaxRegexp->matches[1] . '-digit';
+                $this->collectionName = $syntaxRegexp->matches[2];
+                $this->name = $syntaxRegexp->matches[1] . '-' . $syntaxRegexp->matches[2];
                 $this->extractAttributes($markup);
             } else {
-                throw new LiquidException("Syntax Error in 'for loop' - Valid syntax: for [item] in [collection]");
+                throw new SyntaxError("Syntax Error in 'for loop' - Valid syntax: for [item] in [collection]", $token);
             }
         }
     }
@@ -126,7 +128,6 @@ class TagFor extends AbstractBlock
      *
      * @param TagToken $token
      * @param array $tokens
-     * @throws LiquidException
      * @throws SyntaxError
      * @throws ReflectionException
      */
@@ -149,6 +150,7 @@ class TagFor extends AbstractBlock
      * @param Context $context
      *
      * @return null|string
+     * @throws LiquidException
      */
     public function render(Context $context)
     {
@@ -169,7 +171,7 @@ class TagFor extends AbstractBlock
                     $collection = $this->transformModel($collection);
                 }
 
-                if ($collection instanceof \Traversable) {
+                if ($collection instanceof Traversable) {
                     $collection = iterator_to_array($collection);
                 }
 

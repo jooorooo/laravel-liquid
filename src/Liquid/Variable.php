@@ -204,7 +204,7 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(in_array(trim($this->name), $this->getProtectedVariables())) {
+        if(in_array(trim($this->name), $this->getProtectedVariables()) || ($context->registers['capture'][$this->name]??null === $this->name)) {
             foreach($filters AS $index => $filter) {
                 if(in_array($filter[0], ['escape', 'escape_once'])) {
                     unset($filters[$index]);

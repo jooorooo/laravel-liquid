@@ -18,9 +18,9 @@ class GuessToken
     {
         $this->start = $offset;
         $this->code = $code;
-        $this->end = $this->start + strlen($this->code);
+        $this->end = $this->start + Str::length($this->code);
         if(!is_null($source)) {
-            $this->line = substr_count(substr($source, 0, $this->start + 1), "\n") + 1;
+            $this->line = substr_count(Str::substr($source, 0, $this->start + 1), "\n") + 1;
             $this->source = $source;
         }
     }
@@ -89,6 +89,15 @@ class GuessToken
     }
 
     /**
+     * @param int $start
+     */
+    public function incrementStart(int $start): void
+    {
+        $this->start += $start;
+        $this->end = $this->start + Str::length($this->code);
+    }
+
+    /**
      * @return int
      */
     public function getEnd(): int
@@ -102,6 +111,14 @@ class GuessToken
     public function getLine(): int
     {
         return $this->line;
+    }
+
+    /**
+     * @param int $line
+     */
+    public function incrementLine(int $line): void
+    {
+        $this->line += $line;
     }
 
     /**

@@ -13,7 +13,7 @@ class TemplateContent
 
     protected $name;
 
-    public function __construct($content, $fileMtime, $path, $name)
+    public function __construct($content, $fileMtime = null, $path = null, $name = null)
     {
         $this->content = $content;
         $this->fileMtime = $fileMtime;

@@ -12,8 +12,13 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
+use Liquid\Context;
 use Liquid\LiquidCompiler;
 use Liquid\Regexp;
+use Liquid\Tokens\TagToken;
+use Liquid\Tokens\TextToken;
+use Liquid\Tokens\VariableToken;
+use ReflectionException;
 
 /**
  * Allows output of Liquid code on a page without being parsed.
@@ -29,29 +34,41 @@ class TagRaw extends AbstractBlock
 {
     /**
      * @param array $tokens
-     * @throws \ReflectionException
      */
     public function parse(array &$tokens)
     {
-        $tagRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*(\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
-
         $this->nodelist = array();
 
-        if (!is_array($tokens)) {
-            return;
-        }
+        if(is_array($tokens)) {
+            while (count($tokens)) {
+                /** @var TagToken|TextToken|VariableToken */
+                $token = array_shift($tokens);
 
-        while (count($tokens)) {
-            $token = array_shift($tokens);
-
-            if ($tagRegexp->match($token->getCode())) {
-                // If we found the proper block delimiter just end parsing here and let the outer block proceed
-                if ($tagRegexp->matches[1] == $this->blockDelimiter()) {
+                if ($token instanceof TagToken && $token->getTag() === $this->blockDelimiter()) {
                     return;
                 }
-            }
 
-            $this->nodelist[] = $token;
+                $this->nodelist[] = $token;
+            }
         }
+    }
+
+    /**
+     * Renders all the given nodelist's nodes
+     *
+     * @param array $list
+     * @param Context $context
+     *
+     * @return string
+     */
+    protected function renderAll(array $list, Context $context)
+    {
+        $result = '';
+        /** @var TagToken|TextToken|VariableToken */
+        foreach ($list as $token) {
+            $result .= $token->getCode();
+        }
+
+        return $result;
     }
 }

@@ -140,7 +140,7 @@ class AbstractBlock extends AbstractTag
                 break;
             }
             if (isset($context->registers['continue'])) {
-                break;
+                continue;
             }
         }
 

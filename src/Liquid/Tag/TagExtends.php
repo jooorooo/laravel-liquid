@@ -11,13 +11,18 @@
 
 namespace Liquid\Tag;
 
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
+use Liquid\Tokens\TextToken;
+use Liquid\Tokens\VariableToken;
+use Throwable;
 
 /**
  * https://github.com/harrydeluxe/php-liquid/wiki/Template-Inheritance
@@ -47,16 +52,15 @@ class TagExtends extends AbstractTag
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
-
-        if ($regex->match($markup)) {
+        if ($regex->match($markup) && !empty($regex->matches[1])) {
             $this->templateName = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
         } else {
-            throw new LiquidException("Error in tag 'extends' - Valid syntax: extends '[template name]'");
+            throw new SyntaxError("Error in tag 'extends' - Valid syntax: extends '[template name]'", $token);
         }
 
         parent::__construct($markup, $tokens, $token, $compiler);
@@ -69,45 +73,56 @@ class TagExtends extends AbstractTag
      */
     private function findBlocks(array $tokens)
     {
-        $blockstartRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
-        $blockendRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+        if(($tagKey = array_search(TagBlock::class, $this->compiler->getTags())) === false) {
+            $tagKey = 'block';
+        }
 
-        $b = array();
+        $blocks = array();
         $name = null;
-
-        foreach ($tokens as $token) {
-            if ($blockstartRegexp->match($token)) {
-                $name = $blockstartRegexp->matches[1];
-                $b[$name] = array();
-            } else if ($blockendRegexp->match($token)) {
+        /** @var TagToken|TextToken|VariableToken $token */
+        foreach($tokens AS $token) {
+            if($token instanceof TagToken && $token->getTag() === $tagKey && preg_match('/(\w+)\s*(.*)/', $token->getParameters(), $m)) {
+                $name = $m[1];
+                $blocks[$name] = array();
+            } elseif($token instanceof TagToken && $token->getTag() === 'end' . $tagKey) {
                 $name = null;
-            } else {
-                if ($name !== null) {
-                    array_push($b[$name], $token);
-                }
+            } elseif(!is_null($name)) {
+                array_push($blocks[$name], $token);
             }
         }
 
-        return $b;
+        return $blocks;
     }
 
     /**
      * Parses the tokens
      *
      * @param array $tokens
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws SyntaxError
+     * @throws Throwable
      */
     public function parse(array &$tokens)
     {
-        // read the source of the template and create a new sub document
-        $source = $this->compiler->getTemplateSource($this->templateName);
+        try {
+            // read the source of the template and create a new sub document
+            $source = $this->compiler->getTemplateSource($this->templateName);
+        } catch (Throwable $e) {
+            if(preg_match('/View \[(.*)\] not found/', $e->getMessage(), $m)) {
+                throw new SyntaxError(sprintf('View [%s] not found', str_replace('.', '/', $m[1]) . '.liquid'), $this->getTagToken());
+            }
+
+            throw $e;
+        }
 
         // tokens in this new document
         $maintokens = $this->tokenize($source);
 
-        $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*extends (.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+        if(($tagKey = array_search(get_class($this), $this->compiler->getTags())) === false) {
+            $tagKey = 'extends';
+        }
+        $eRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*' . $tagKey . '\s+(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
         foreach ($maintokens as $maintoken) {
-            if ($eRegexp->match($maintoken)) {
+            if ($eRegexp->match($maintoken->getCode())) {
                 $m = $eRegexp->matches[1];
                 break;
             }
@@ -118,34 +133,30 @@ class TagExtends extends AbstractTag
         } else {
             $childtokens = $this->findBlocks($tokens);
 
-            $blockstartRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*block (\w+)\s*(.*)?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
-            $blockendRegexp = new Regexp('/^' . LiquidCompiler::OPERATION_TAGS[0] . '\s*endblock\s*?' . LiquidCompiler::OPERATION_TAGS[1] . '$/');
+            if(($tagKey = array_search(TagBlock::class, $this->compiler->getTags())) === false) {
+                $tagKey = 'block';
+            }
 
             $name = null;
-
             $rest = array();
             $block_open = false;
-
-            for ($i = 0; $i < count($maintokens); $i++) {
-                if ($blockstartRegexp->match($maintokens[$i])) {
-                    $name = $blockstartRegexp->matches[1];
-
-                    if (isset($childtokens[$name])) {
+            /** @var TagToken|TextToken|VariableToken $maintoken */
+            foreach($maintokens AS $maintoken) {
+                if($maintoken instanceof TagToken && $maintoken->getTag() === $tagKey && preg_match('/(\w+)\s*(.*)/', $maintoken->getParameters(), $m)) {
+                    if(!empty($childtokens[$m[1]])) {
                         $block_open = true;
-                        array_push($rest, $maintokens[$i]);
-                        foreach ($childtokens[$name] as $item) {
+                        array_push($rest, $maintoken);
+                        array_map(function($item) use(&$rest) {
                             array_push($rest, $item);
-                        }
+                        }, $childtokens[$m[1]]);
                     }
-
                 }
                 if (!$block_open) {
-                    array_push($rest, $maintokens[$i]);
+                    array_push($rest, $maintoken);
                 }
-
-                if ($blockendRegexp->match($maintokens[$i]) && $block_open === true) {
+                if($maintoken instanceof TagToken && $maintoken->getTag() === 'end' . $tagKey && $block_open) {
                     $block_open = false;
-                    array_push($rest, $maintokens[$i]);
+                    array_push($rest, $maintoken);
                 }
             }
         }

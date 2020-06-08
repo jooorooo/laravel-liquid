@@ -13,6 +13,7 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
@@ -51,7 +52,7 @@ class TagTablerow extends AbstractBlock
      *
      * @param $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -65,7 +66,7 @@ class TagTablerow extends AbstractBlock
 
             $this->extractAttributes($markup);
         } else {
-            throw new LiquidException("Syntax Error in 'table_row loop' - Valid syntax: tablerow [item] in [collection] cols:3");
+            throw new SyntaxError("Syntax Error in 'table_row loop' - Valid syntax: tablerow [item] in [collection] cols:3", $token);
         }
     }
 
@@ -87,7 +88,6 @@ class TagTablerow extends AbstractBlock
 
         if (!is_array($collection)) {
             return '';
-//            die('not array, ' . var_export($collection, true));
         }
 
         // discard keys
@@ -172,47 +172,6 @@ class TagTablerow extends AbstractBlock
         if(isset($context->registers['continue'])) {
             unset($context->registers['continue']);
         }
-
-//        dd($rows, $result);
-//
-//        $row = 1;
-//        $col = 0;
-//
-//        $result = "<tr class=\"row1\">\n";
-//
-//        foreach ($collection as $index => $item) {
-//            $context->set($this->variableName, $item);
-//            $context->set('tablerowloop', array(
-//                'length' => $length,
-//                'index' => $index + 1,
-//                'index0' => $index,
-//                'rindex' => $length - $index,
-//                'rindex0' => $length - $index - 1,
-//                'first' => (int)($index == 0),
-//                'last' => (int)($index == $length - 1)
-//            ));
-//
-//            $text = $this->renderAll($this->nodelist, $context);
-//            $break = isset($context->registers['break']);
-//            $continue = isset($context->registers['continue']);
-//
-//            if ((!$break && !$continue) || strlen(trim($text)) > 0) {
-//                $result .= "<td class=\"col" . (++$col) . "\">$text</td>";
-//            }
-//
-//            if ($col == $cols && !($index == $length - 1)) {
-//                $col = 0;
-//                $result .= "</tr>\n<tr class=\"row" . (++$row) . "\">\n";
-//            }
-//
-//            if ($break) {
-//                unset($context->registers['break']);
-//                break;
-//            }
-//            if ($continue) {
-//                unset($context->registers['continue']);
-//            }
-//        }
 
         $context->pop();
 

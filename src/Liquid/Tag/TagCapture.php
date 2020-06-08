@@ -13,8 +13,8 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
-use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
 
@@ -42,17 +42,17 @@ class TagCapture extends AbstractBlock
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
-        $syntaxRegexp = new Regexp('/[\'\"](\w+)[\'\"]\s*/');
+        $syntaxRegexp = new Regexp('/[\'\"]?(\w+)[\'\"]?\s*/');
 
         if ($syntaxRegexp->match($markup)) {
             $this->to = $syntaxRegexp->matches[1];
             parent::__construct($markup, $tokens, $token, $compiler);
         } else {
-            throw new LiquidException("Syntax Error in 'capture' - Valid syntax: capture [var]");
+            throw new SyntaxError("Syntax Error in 'capture' - Valid syntax: capture [var]", $token);
         }
     }
 
@@ -62,29 +62,19 @@ class TagCapture extends AbstractBlock
      * @param Context $context
      *
      * @return string
+     * @throws SyntaxError
      */
     public function render(Context $context)
     {
-        if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables)) {
-            if(in_array($this->to, $protected_variables) && !$this->callFormTagLayout()) {
-                throw new LiquidException(sprintf('Variable "%s" is protected!', $this->to));
-            }
+        if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables) && in_array($this->to, $protected_variables)) {
+            throw new SyntaxError(sprintf('Variable "%s" is protected!', $this->to), $this->getTagToken());
         }
 
+        $context->registers['capture'][$this->to] = $this->to;
         $context->set($this->to, function() use($context) {
             return trim(parent::render($context));
         }, true);
 
         return '';
-    }
-
-    /**
-     * @return bool
-     */
-    protected function callFormTagLayout()
-    {
-        return !empty(array_filter(array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 0, 7), function($r) {
-            return ($r['class'] ?? null) == TagLayout::class;
-        }));
     }
 }

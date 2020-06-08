@@ -15,7 +15,6 @@ use Liquid\AbstractBlock;
 use Liquid\Context;
 use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
-use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
 use Liquid\Traits\DecisionTrait;
@@ -68,7 +67,7 @@ class TagCase extends AbstractBlock
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -82,7 +81,7 @@ class TagCase extends AbstractBlock
         if ($syntaxRegexp->match($markup)) {
             $this->left = $syntaxRegexp->matches[0];
         } else {
-            throw new LiquidException("Syntax Error in tag 'case' - Valid syntax: case [condition]"); // harry
+            throw new SyntaxError("Syntax Error in tag 'case' - Valid syntax: case [condition]", $token); // harry
         }
     }
 
@@ -100,7 +99,6 @@ class TagCase extends AbstractBlock
      * @param TagToken $token
      * @param array $tokens
      *
-     * @throws LiquidException
      * @throws SyntaxError
      * @throws ReflectionException
      */
@@ -117,7 +115,7 @@ class TagCase extends AbstractBlock
                     $this->nodelist = array();
 
                 } else {
-                    throw new LiquidException("Syntax Error in tag 'case' - Valid when condition: when [condition]"); // harry
+                    throw new SyntaxError("Syntax Error in tag 'case' - Valid when condition: when [condition]", $token); // harry
                 }
                 break;
 

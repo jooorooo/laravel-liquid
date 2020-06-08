@@ -13,11 +13,12 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
 use Liquid\Constant;
-use Liquid\Document;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\Context;
 use Liquid\LiquidException;
 use Liquid\Regexp;
+use Throwable;
 
 /**
  * Use to print in liquid tag
@@ -41,7 +42,7 @@ class TagEcho extends AbstractTag
      *
      * @param $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -49,7 +50,7 @@ class TagEcho extends AbstractTag
         if ($regex->match($markup)) {
             $this->string = $regex->matches[1];
         } else {
-            throw new LiquidException("Error in tag 'echo' - Valid syntax: echo '[variable]'");
+            throw new SyntaxError("Error in tag 'echo' - Valid syntax: echo '[variable]'", $token);
         }
 
         parent::__construct($markup, $tokens, $token, $compiler);
@@ -62,7 +63,6 @@ class TagEcho extends AbstractTag
      *
      * @return string
      * @throws LiquidException
-     * @throws \Throwable
      */
     public function render(Context $context)
     {

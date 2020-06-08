@@ -14,11 +14,12 @@ namespace Liquid\Tag;
 use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
-use Liquid\Tokens\GuessToken;
 use Liquid\Tokens\TagToken;
+use Throwable;
 
 /**
  * https://github.com/harrydeluxe/php-liquid/wiki/Template-Inheritance
@@ -58,10 +59,10 @@ class TagLayout extends AbstractTag
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
         $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
-        if ($regex->match($markup)) {
+        if ($regex->match($markup) && !empty($regex->matches[1])) {
             $this->layoutPath = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
         } else {
-            throw new LiquidException("Error in tag 'layout' - Valid syntax: layout '[template path]'");
+            throw new SyntaxError("Error in tag 'layout' - Valid syntax: layout '[template path]'", $token);
         }
 
         parent::__construct($markup, $tokens, $token, $compiler);
@@ -71,24 +72,27 @@ class TagLayout extends AbstractTag
      * Parses the tokens
      *
      * @param array $tokens
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws SyntaxError
+     * @throws Throwable
      */
     public function parse(array &$tokens)
     {
         if($this->layoutPath == 'none') {
             $this->document = new Document(null, $tokens, $this->getTagToken(), $this->compiler);
         } else {
-            // read the source of the template and create a new sub document
-            $source = $this->compiler->getTemplateSource($this->layoutPath . '.theme');
+            try {
+                // read the source of the template and create a new sub document
+                $source = $this->compiler->getTemplateSource($this->layoutPath . '.theme');
+            } catch (Throwable $e) {
+                if(preg_match('/View \[(.*)\] not found/', $e->getMessage(), $m)) {
+                    throw new SyntaxError(sprintf('View [%s] not found', str_replace('.', '/', $m[1]) . '.liquid'), $this->getTagToken());
+                }
+
+                throw $e;
+            }
 
             // tokens in this new document
             $maintokens = $this->tokenize($source);
-
-            /*$rest = array_merge(
-                (new GuessToken(0, '{% capture "content_for_layout" %}'))->parseType(''),
-                $tokens,
-                (new GuessToken(0, '{% endcapture %}'))->parseType('')
-                , $maintokens);*/
 
             $this->document = new Document(null, $tokens, $this->getTagToken(), $this->compiler);
             $this->document2 = new Document(null, $maintokens, $this->getTagToken(), $this->compiler);

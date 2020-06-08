@@ -13,6 +13,7 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
 use Liquid\Constant;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
@@ -55,9 +56,9 @@ class TagAssign extends AbstractTag
      * @param string $markup
      *
      * @param array|null $tokens
-     * @param TagToken, $token
+     * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -68,7 +69,7 @@ class TagAssign extends AbstractTag
             $this->to = $syntaxRegexp->matches[1];
             $this->from = $syntaxRegexp->matches[2];
         } else {
-            throw new LiquidException("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]");
+            throw new SyntaxError("Syntax Error in 'assign' - Valid syntax: assign [var] = [source]", $token);
         }
 
         $this->filters = (new Variable($markup, $compiler))->getFilters();
@@ -81,12 +82,13 @@ class TagAssign extends AbstractTag
      *
      * @return string|void
      * @throws LiquidException
+     * @throws SyntaxError
      */
     public function render(Context $context)
     {
         if(($protected_variables = config('liquid.protected_variables', [])) && is_array($protected_variables)) {
             if(in_array($this->to, $protected_variables)) {
-                throw new LiquidException(sprintf('Variable "%s" is protected!', $this->to));
+                throw new SyntaxError(sprintf('Variable "%s" is protected!', $this->to), $this->getTagToken());
             }
         }
 

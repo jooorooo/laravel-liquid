@@ -15,6 +15,7 @@ use Liquid\AbstractTag;
 use Liquid\Document;
 use Liquid\LiquidCompiler;
 use Liquid\Context;
+use Liquid\TemplateContent;
 
 /**
  * Performs an assignment of one variable to another
@@ -50,9 +51,16 @@ class TagLiquid extends AbstractTag
     public function parse(array &$tokens)
     {
         $markup = str_replace(["\r\n", "\r"], "\n", $this->markup);
-        $templateTokens = array_map(function($line) {
+        $templateTokens = implode("\n", array_map(function($line) {
             return sprintf('%s %s %s', LiquidCompiler::OPERATION_TAGS[0], trim($line), LiquidCompiler::OPERATION_TAGS[1]);
-        }, array_filter(explode("\n", $markup)));
+        }, array_filter(explode("\n", $markup))));
+
+        $selfToken = $this->getTagToken();
+        $templateTokens = array_map(function($token) use($selfToken) {
+            $token->incrementLine($selfToken->getLine());
+            $token->incrementStart($selfToken->getStart());
+            return $token;
+        }, $this->tokenize(new TemplateContent($templateTokens, null, $this->getTagToken()->getName())));
 
         $this->document = new Document(null, $templateTokens, $this->getTagToken(), $this->compiler);
     }

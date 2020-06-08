@@ -13,8 +13,8 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
-use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
 
@@ -44,7 +44,7 @@ class TagIncrement extends AbstractTag
      * @param array|null $tokens
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -53,7 +53,7 @@ class TagIncrement extends AbstractTag
         if ($syntax->match($markup)) {
             $this->toIncrement = $syntax->matches[0];
         } else {
-            throw new LiquidException("Syntax Error in 'increment' - Valid syntax: increment [var]");
+            throw new SyntaxError("Syntax Error in 'increment' - Valid syntax: increment [var]", $token);
         }
 
         parent::__construct(null, $tokens, $token, $compiler);
@@ -65,21 +65,19 @@ class TagIncrement extends AbstractTag
      * @param Context $context
      *
      * @return string|void
-     * @throws LiquidException
      */
     public function render(Context $context)
     {
         // If the value is not set in the environment check to see if it
         // exists in the context, and if not set it to -1
-        if (!isset($context->environments[0][$this->toIncrement])) {
-            // check for a context value
-            $from_context = $context->get($this->toIncrement);
-
+        if (!isset($context->registers['increments_decrements'][$this->toIncrement])) {
             // we already have a value in the context
-            $context->environments[0][$this->toIncrement] = (null !== $from_context) ? $from_context : -1;
+            $context->registers['increments_decrements'][$this->toIncrement] = -1;
         }
 
         // Increment the value
-        $context->environments[0][$this->toIncrement]++;
+        $context->registers['increments_decrements'][$this->toIncrement]++;
+
+        return $context->registers['increments_decrements'][$this->toIncrement];
     }
 }

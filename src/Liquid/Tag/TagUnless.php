@@ -16,10 +16,8 @@ use Liquid\Context;
 use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
-use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
-use Liquid\Traits\DecisionTrait;
-use Liquid\Traits\HelpersTrait;
+use Liquid\Traits\ParseBracket;
 use ReflectionException;
 
 /**
@@ -35,14 +33,14 @@ use ReflectionException;
 class TagUnless extends AbstractBlock
 {
 
-    use DecisionTrait, HelpersTrait;
+    use ParseBracket;
 
     /**
      * Array holding the nodes to render for each logical block
      *
      * @var array
      */
-    private $nodelistHolders = array();
+    protected $nodelistHolders = array();
 
     /**
      * Array holding the block type, block markup (conditions) and block nodelist
@@ -61,6 +59,10 @@ class TagUnless extends AbstractBlock
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
+        if(trim($markup) === '') {
+            throw new SyntaxError("Syntax Error in 'unless' - Valid syntax: unless [condition]", $token);
+        }
+
         $this->nodelist = &$this->nodelistHolders[count($this->blocks)];
 
         array_push($this->blocks, array('unless', $markup, &$this->nodelist));
@@ -73,13 +75,12 @@ class TagUnless extends AbstractBlock
      *
      * @param TagToken $token
      * @param array $tokens
-     * @throws LiquidException
-     * @throws SyntaxError
      * @throws ReflectionException
+     * @throws SyntaxError
      */
     public function unknownTag($token, array $tokens)
     {
-        if ($token->getTag() == 'else') {
+        if (in_array($token->getTag(), ['else'])) {
             // Update reference to nodelistHolder for this block
             $this->nodelist = &$this->nodelistHolders[count($this->blocks) + 1];
             $this->nodelistHolders[count($this->blocks) + 1] = array();
@@ -96,66 +97,23 @@ class TagUnless extends AbstractBlock
      *
      * @param Context $context
      *
-     * @throws LiquidException
      * @return string
+     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function render(Context $context)
     {
         $context->push();
 
-        $logicalRegex = new Regexp('/\s+(and|or)\s+/');
-        $conditionalRegex = new Regexp('/(' . LiquidCompiler::QUOTED_FRAGMENT . ')\s*([=!<>a-z_]+)?\s*(' . LiquidCompiler::QUOTED_FRAGMENT . ')?/');
-
         $result = '';
         foreach ($this->blocks as $block) {
             if ($block[0] == 'else') {
                 $result = $this->renderAll($block[2], $context);
-
                 break;
             }
 
             if ($block[0] == 'unless') {
-                // Extract logical operators
-                $logicalRegex->matchAll($block[1]);
-
-                $logicalOperators = $logicalRegex->matches;
-                $logicalOperators = array_merge(array('and'), $logicalOperators[1]);
-                // Extract individual conditions
-                $temp = $logicalRegex->split($block[1]);
-
-                $conditions = array();
-
-                foreach ($temp as $condition) {
-                    if ($conditionalRegex->match($condition)) {
-                        $left = (isset($conditionalRegex->matches[1])) ? $conditionalRegex->matches[1] : null;
-                        $operator = (isset($conditionalRegex->matches[2])) ? $conditionalRegex->matches[2] : null;
-                        $right = (isset($conditionalRegex->matches[3])) ? $conditionalRegex->matches[3] : null;
-
-                        array_push($conditions, array(
-                            'left' => $left,
-                            'operator' => $operator,
-                            'right' => $right
-                        ));
-                    } else {
-                        throw new LiquidException("Syntax Error in tag 'if' - Valid syntax: if [condition]");
-                    }
-                }
-
-                $boolean = true;
-                $results = array();
-                foreach ($logicalOperators as $k => $logicalOperator) {
-                    $r = $this->interpretCondition($conditions[$k]['left'], $conditions[$k]['right'], $conditions[$k]['operator'], $context);
-                    if ($logicalOperator == 'and') {
-                        $boolean = $boolean && $this->isTruthy($r);
-                    } else {
-                        $results[] = $boolean;
-                        $boolean = $this->isTruthy($r);
-                    }
-                }
-
-                $results[] = $boolean;
-
-                if (!in_array(true, $results)) {
+                if ($this->recursiveReplaceBracket($block[1], $context) === 'false') {
                     $result = $this->renderAll($block[2], $context);
                     break;
                 }

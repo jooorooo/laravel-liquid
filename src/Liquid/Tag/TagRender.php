@@ -15,25 +15,27 @@ use Liquid\AbstractTag;
 use Liquid\Constant;
 use Liquid\Document;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
 use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
+use Throwable;
 
 /**
  * Includes another, partial, template
  *
  * Example:
  *
- *     {% include 'foo' %}
+ *     {% render 'foo' %}
  *
  *     Will include the template called 'foo'
  *
- *     {% include 'foo' with 'bar' %}
+ *     {% render 'foo' with 'bar' %}
  *
  *     Will include the template called 'foo', with a variable called foo that will have the value of 'bar'
  *
- *     {% include 'foo' for 'bar' %}
+ *     {% render 'foo' for 'bar' %}
  *
  *     Will loop over all the values of bar, including the template foo, passing a variable called foo
  *     with each value of bar
@@ -78,7 +80,7 @@ class TagRender extends AbstractTag
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -93,7 +95,7 @@ class TagRender extends AbstractTag
 
             $this->extractAttributes($markup);
         } else {
-            throw new LiquidException("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]");
+            throw new SyntaxError("Error in tag 'include' - Valid syntax: include '[template]' (with|for) [object|collection]", $token);
         }
 
         parent::__construct($markup, $tokens, $token, $compiler);
@@ -108,8 +110,16 @@ class TagRender extends AbstractTag
      */
     public function parse(array &$tokens)
     {
-        // read the source of the template and create a new sub document
-        $source = $this->compiler->getTemplateSource('snippets.' . $this->templateName);
+        try {
+            // read the source of the template and create a new sub document
+            $source = $this->compiler->getTemplateSource('snippets.' . $this->templateName);
+        } catch (Throwable $e) {
+            if(preg_match('/View \[(.*)\] not found/', $e->getMessage(), $m)) {
+                throw new SyntaxError(sprintf('View [%s] not found', str_replace('.', '/', $m[1]) . '.liquid'), $this->getTagToken());
+            }
+
+            throw $e;
+        }
 
         if(($tagName = array_search(get_class($this), $this->compiler->getTags())) === false) {
             $tagName = 'render';
@@ -131,7 +141,7 @@ class TagRender extends AbstractTag
      *
      * @return string
      * @throws LiquidException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function render(Context $context)
     {
@@ -189,7 +199,7 @@ class TagRender extends AbstractTag
      *
      * @return string
      * @throws LiquidException
-     * @throws \Throwable
+     * @throws Throwable
      */
     protected function _renderOutline(Context $context)
     {

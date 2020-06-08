@@ -13,8 +13,8 @@ namespace Liquid\Tag;
 
 use Liquid\AbstractTag;
 use Liquid\Context;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
-use Liquid\LiquidException;
 use Liquid\Regexp;
 
 /**
@@ -43,7 +43,7 @@ class TagDecrement extends AbstractTag
      * @param array|null $tokens
      * @param $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -54,7 +54,7 @@ class TagDecrement extends AbstractTag
         if ($syntax->match($markup)) {
             $this->toDecrement = $syntax->matches[0];
         } else {
-            throw new LiquidException("Syntax Error in 'decrement' - Valid syntax: decrement [var]");
+            throw new SyntaxError("Syntax Error in 'decrement' - Valid syntax: decrement [var]", $token);
         }
     }
 
@@ -64,21 +64,19 @@ class TagDecrement extends AbstractTag
      * @param Context $context
      *
      * @return string|void
-     * @throws LiquidException
      */
     public function render(Context $context)
     {
         // if the value is not set in the environment check to see if it
         // exists in the context, and if not set it to 0
-        if (!isset($context->environments[0][$this->toDecrement])) {
-            // check for a context value
-            $fromContext = $context->get($this->toDecrement);
-
+        if (!isset($context->registers['increments_decrements'][$this->toDecrement])) {
             // we already have a value in the context
-            $context->environments[0][$this->toDecrement] = (null !== $fromContext) ? $fromContext : 0;
+            $context->registers['increments_decrements'][$this->toDecrement] = 0;
         }
 
         // decrement the environment value
-        $context->environments[0][$this->toDecrement]--;
+        $context->registers['increments_decrements'][$this->toDecrement]--;
+
+        return $context->registers['increments_decrements'][$this->toDecrement];
     }
 }

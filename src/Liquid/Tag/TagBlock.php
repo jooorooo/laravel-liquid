@@ -12,11 +12,8 @@
 namespace Liquid\Tag;
 
 use Liquid\AbstractBlock;
-use Liquid\Constant;
-use Liquid\Context;
-use Liquid\Document;
+use Liquid\Exceptions\SyntaxError;
 use Liquid\LiquidCompiler;
-use Liquid\LiquidException;
 use Liquid\Regexp;
 use Liquid\Tokens\TagToken;
 
@@ -37,11 +34,6 @@ class TagBlock extends AbstractBlock
     private $block;
 
     /**
-     * @var bool check if self included
-     */
-    private $self_include = false;
-
-    /**
      * Constructor
      *
      * @param string $markup
@@ -49,7 +41,7 @@ class TagBlock extends AbstractBlock
      *
      * @param TagToken $token
      * @param LiquidCompiler|null $compiler
-     * @throws LiquidException
+     * @throws SyntaxError
      */
     public function __construct($markup, array &$tokens, $token, LiquidCompiler $compiler = null)
     {
@@ -59,7 +51,7 @@ class TagBlock extends AbstractBlock
             $this->block = $syntaxRegexp->matches[1];
             parent::__construct($markup, $tokens, $token, $compiler);
         } else {
-            throw new LiquidException("Syntax Error in 'block' - Valid syntax: block [name]");
+            throw new SyntaxError("Syntax Error in 'block' - Valid syntax: block [name]", $token);
         }
     }
 }
