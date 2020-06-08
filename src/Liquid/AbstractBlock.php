@@ -161,7 +161,6 @@ class AbstractBlock extends AbstractTag
      * @param TagToken $token
      * @param array $tokens
      *
-     * @throws LiquidException
      * @throws SyntaxError
      * @throws ReflectionException
      */
@@ -169,9 +168,9 @@ class AbstractBlock extends AbstractTag
     {
         switch ($token->getTag()) {
             case 'else':
-                throw new LiquidException($this->blockName() . " does not expect else tag");
+                throw new SyntaxError($this->blockName() . " does not expect else tag", $token);
             case 'end':
-                throw new LiquidException("'end' is not a valid delimiter for " . $this->blockName() . " tags. Use " . $this->blockDelimiter());
+                throw new SyntaxError("'end' is not a valid delimiter for " . $this->blockName() . " tags. Use " . $this->blockDelimiter(), $token);
             default:
                 //@todo must be make better
                 $e = new SyntaxError(sprintf('Unknown "%s" tag.', $token->getTag()), $token);

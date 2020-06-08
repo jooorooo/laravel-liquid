@@ -2,8 +2,8 @@
 
 namespace Liquid\Exceptions;
 
+use Closure;
 use Exception;
-use Liquid\LiquidCompiler;
 use Liquid\Tokens\TagToken;
 use function is_object;
 use function is_string;
@@ -36,14 +36,6 @@ class Error extends Exception
     {
         parent::__construct('', 0, $previous);
 
-//        $temp_file = tempnam(sys_get_temp_dir(), $token->getName());
-//        file_put_contents($temp_file, $token->getSource());
-//
-//        register_shutdown_function(function() use($temp_file) {
-//            unlink($temp_file);
-//        });
-//
-//        $this->sourcePath = $temp_file;
         $this->sourceCode = $token->getSource();
         $this->lineno = $token->getLine();
         $this->name = $token->getFileName();
@@ -94,6 +86,14 @@ class Error extends Exception
         return $this->name;
     }
 
+    /**
+     * @return int
+     */
+    public function getLineno()
+    {
+        return $this->lineno;
+    }
+
     private function updateRepr()
     {
         $this->message = $this->rawMessage;
@@ -120,6 +120,8 @@ class Error extends Exception
         if ($this->name) {
             if (is_string($this->name) || (is_object($this->name) && method_exists($this->name, '__toString'))) {
                 $name = sprintf('"%s"', $this->name);
+            } elseif($this->name instanceof Closure) {
+                $name = 'closure';
             } else {
                 $name = json_encode($this->name);
             }
