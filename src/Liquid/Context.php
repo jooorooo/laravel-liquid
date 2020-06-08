@@ -12,6 +12,10 @@
 namespace Liquid;
 
 use ArrayAccess;
+use ArrayIterator;
+use Closure;
+use Countable;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -21,6 +25,10 @@ use Liquid\Exceptions\SyntaxError;
 use Liquid\Tokens\TagToken;
 use Liquid\Tokens\TextToken;
 use Liquid\Tokens\VariableToken;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
+use Traversable;
 
 /**
  * Context keeps the variable stack and resolves variables, as well as keywords.
@@ -95,8 +103,6 @@ class Context
      *
      * @param array $assigns
      * @param array $registers
-     * @throws LiquidException
-     * @throws \ReflectionException
      */
     public function __construct(array $assigns = array(), array $registers = array())
     {
@@ -107,32 +113,11 @@ class Context
     }
 
     /**
-     * @return array
-     */
-    public function getAssigns()
-    {
-        foreach($this->assigns AS $a) {
-            if($a) {
-                return $a;
-            }
-        }
-        return [];
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllAssigns()
-    {
-        return count($this->assigns) > 1 ? call_user_func_array('array_merge', array_reverse($this->assigns)) : $this->getAssigns();
-    }
-
-    /**
      * Add a filter to the context
      *
      * @param mixed $filter
      * @throws LiquidException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function addFilter($filter)
     {
@@ -152,8 +137,8 @@ class Context
 
         // If the filter is a class, register all its methods
         if (class_exists($filter)) {
-            $reflection = new \ReflectionClass($filter);
-            foreach ($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) AS $method) {
+            $reflection = new ReflectionClass($filter);
+            foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) AS $method) {
                 if (($methodName = $method->getName()) && !in_array(strtolower($methodName), $this->_disallow_magick_methods)) {
                     $this->methodMap[$methodName] = $filter;
                 }
@@ -248,6 +233,7 @@ class Context
      *
      * @return mixed
      * @throws LiquidException
+     * @throws SyntaxError
      */
     public function get($key)
     {
@@ -290,6 +276,7 @@ class Context
      *
      * @return bool
      * @throws LiquidException
+     * @throws SyntaxError
      */
     public function hasKey($key)
     {
@@ -303,8 +290,9 @@ class Context
      *
      * @param string $key
      *
-     * @throws LiquidException
      * @return mixed
+     * @throws LiquidException
+     * @throws SyntaxError
      */
     private function resolve($key)
     {
@@ -346,12 +334,12 @@ class Context
             return $matches[1];
         }
 
-        if (preg_match('/^(\d+)$/', $key, $matches)) {
-            return $matches[1];
-        }
+        if(is_numeric($key)) {
+            if(($check = filter_var($key, FILTER_VALIDATE_INT)) !== false) {
+                return $check;
+            }
 
-        if (preg_match('/^(\d[\d\.]+)$/', $key, $matches)) {
-            return $matches[1];
+            return (float)$key;
         }
 
         return $this->variable($key);
@@ -412,12 +400,16 @@ class Context
      * @param mixed $object
      *
      * @return mixed
+     * @throws Exception
      */
     private function transformIteratorAggregate($object)
     {
         if($object instanceof IteratorAggregate) {
-            /** @var \ArrayIterator $object */
-            $object = $object->getIterator()->getArrayCopy();
+            if(($iterator = $object->getIterator()) && method_exists($iterator, 'getArrayCopy')) {
+                return $iterator->getArrayCopy();
+            }
+
+            $object = array();
         }
 
         return $object;
@@ -428,8 +420,10 @@ class Context
      *
      * @param string $key
      *
-     * @throws LiquidException
      * @return mixed
+     * @throws LiquidException
+     * @throws SyntaxError
+     * @throws Exception
      */
     private function variable($key)
     {
@@ -485,7 +479,7 @@ class Context
         // if everything else fails, throw up
         if (
             is_object($object) &&
-            !($object instanceof \Traversable) &&
+            !($object instanceof Traversable) &&
             !($object instanceof Drop) &&
             !($object instanceof Model) &&
             !($object instanceof Builder) &&
@@ -507,7 +501,7 @@ class Context
      */
     protected function value($value)
     {
-        return $value instanceof \Closure ? $value($this) : $value;
+        return $value instanceof Closure ? $value($this) : $value;
     }
 
     /**
@@ -561,14 +555,13 @@ class Context
 
     /**
      * @param mixed $element
-     * @param string $property
      * @return mixed
      */
     public function getSize($element)
     {
         if(is_array($element)) {
             return count($element);
-        } elseif($element instanceof \Countable) {
+        } elseif($element instanceof Countable) {
             return $element->count();
         } elseif($element instanceof ArrayAccess) {
             $total = 0;
