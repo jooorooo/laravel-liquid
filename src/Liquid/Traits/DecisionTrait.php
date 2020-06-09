@@ -100,16 +100,16 @@ trait DecisionTrait
         }
 
         // values of 'empty' have a special meaning in array comparisons
-        if ($right == 'empty' && ($c = $this->getValue($left, $context)) && is_array($c)) {
+        if ($right === 'empty' && ($c = $this->getValue($left, $context)) && is_array($c)) {
             $left = count($this->getValue($left, $context));
             $right = 0;
-        } elseif ($left == 'empty' && ($c = $this->getValue($right, $context)) && is_array($c)) {
+        } elseif ($left === 'empty' && ($c = $this->getValue($right, $context)) && is_array($c)) {
             $right = count($this->getValue($right, $context));
             $left = 0;
-        } elseif ($right == 'blank') {
+        } elseif ($right === 'blank') {
             $c = $this->getValue($left, $context);
             return $this->blankOperationCompare($c, $op, '@');
-        } elseif ($left == 'blank') {
+        } elseif ($left === 'blank') {
             $c = $this->getValue($right, $context);
             return $this->blankOperationCompare('@', $op, $c);
         } else {
