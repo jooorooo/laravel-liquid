@@ -194,10 +194,10 @@ trait DecisionTrait
         // regular rules
         switch ($op) {
             case '==':
-                return $left == '@' ? empty($right) : empty($left);
+                return $left === '@' ? empty($right) : empty($left);
 
             case '!=':
-                return $left == '@' ? !empty($right) : !empty($left);
+                return $left === '@' ? !empty($right) : !empty($left);
 
             default:
                 throw new LiquidException("Error in tag '" . $this->name() . "' - Unknown operator $op");

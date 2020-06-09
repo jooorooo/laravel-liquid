@@ -472,7 +472,7 @@ class Context
         }
 
         // finally, resolve an object to a string or a plain value. if collection return it
-        if (method_exists($object, '__toString') && !($object instanceof Drop)) {
+        if (is_object($object) && method_exists($object, '__toString') && !($object instanceof Drop)) {
             $object = (string)$object;
         }
 
