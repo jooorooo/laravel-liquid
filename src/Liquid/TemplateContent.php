@@ -30,6 +30,14 @@ class TemplateContent
     }
 
     /**
+     * @param string $content
+     */
+    public function setContent($content)
+    {
+        $this->content = $content;
+    }
+
+    /**
      * @return int
      */
     public function getFileMtime()
