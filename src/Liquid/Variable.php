@@ -250,11 +250,8 @@ class Variable
             return true;
         }
 
-        $variable = new static($this->markup, $this->compiler);
-        foreach($variable->getFilters() AS $filter) {
-            if(in_array($filter[0], array('escape', 'escape_once'))) {
-                return false;
-            }
+        if(strpos($this->markup, 'escape') !== false || strpos($this->markup, 'escape_once') !== false) {
+            return false;
         }
 
         return true;
