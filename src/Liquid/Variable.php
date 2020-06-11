@@ -205,7 +205,7 @@ class Variable
         $output = $context->get($this->name);
 
         $filters = $this->filters;
-        if(in_array(trim($this->name), static::getProtectedVariables()) || ($context->registers['noEscape'][$this->name]??null === $this->name)) {
+        if(in_array(trim($this->name), static::getProtectedVariables()) || $this->checkRemoveEscape($context) === true) {
             foreach($filters AS $index => $filter) {
                 if(in_array($filter[0], ['escape', 'escape_once'])) {
                     unset($filters[$index]);
@@ -238,6 +238,26 @@ class Variable
         }
 
         return $output;
+    }
+
+    private function checkRemoveEscape($context)
+    {
+        if(is_null($name = ($context->registers['noEscape'][$this->name]??null))) {
+            return true;
+        }
+
+        if($name != $this->name) {
+            return true;
+        }
+
+        $variable = new static($this->markup, $this->compiler);
+        foreach($variable->getFilters() AS $filter) {
+            if(in_array($filter[0], array('escape', 'escape_once'))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
