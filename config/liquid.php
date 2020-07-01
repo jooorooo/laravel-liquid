@@ -1,6 +1,7 @@
 <?php
 
 use Liquid\Filters\ArrFilters;
+use Liquid\Filters\ColorFilters;
 use Liquid\Filters\DateFilters;
 use Liquid\Filters\DefFilters;
 use Liquid\Filters\EscapeFilters;
@@ -127,6 +128,7 @@ return [
         MultyFilters::class,
         MathFilters::class,
         DateFilters::class,
+        ColorFilters::class,
     ],
 
     /*
