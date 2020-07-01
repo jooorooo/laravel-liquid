@@ -334,11 +334,10 @@ class Color
     public function brightnessDifference($color)
     {
         if($color = static::parse($color)) {
-            if($this->brightness['total'] > $color->brightness['total']) {
-                return $this->brightness['total'] - ($color->brightness['total'] * 100) / $this->brightness['total'];
-            } else {
-                return $color->brightness['total'] - ($this->brightness['total'] * 100) / $color->brightness['total'];
-            }
+            return
+                (max($this->brightness['red'], $color->brightness['red']) - min($this->brightness['red'], $color->brightness['red'])) +
+                (max($this->brightness['green'], $color->brightness['green']) - min($this->brightness['green'], $color->brightness['green'])) +
+                (max($this->brightness['blue'], $color->brightness['blue']) - min($this->brightness['blue'], $color->brightness['blue']));
         }
 
         return 0;
@@ -404,10 +403,10 @@ class Color
     protected function setBrightness()
     {
         $this->brightness = array(
-            'red' => round($this->red * .299),
-            'green' => round($this->green * .587),
-            'blue' => round($this->blue * .114),
-            'total' => round(($this->red * .299) + ($this->green * .587) + ($this->blue * .114), 2),
+            'red' => round($this->red * 0.299),
+            'green' => round($this->green * 0.587),
+            'blue' => round($this->blue * 0.114),
+            'total' => round(($this->red * 0.299) + ($this->green * 0.587) + ($this->blue * 0.114), 2),
         );
 
         return $this;
