@@ -253,8 +253,8 @@ class ArrFilters extends AbstractFilters
      */
     public function uniq($input)
     {
-        if(is_array($input)) {
-            return array_unique($input);
+        if(is_array($input) || $input instanceof DropCollectionContract) {
+            return array_unique($input instanceof DropCollectionContract ? $input->all() : $input);
         }
 
         return $input;
