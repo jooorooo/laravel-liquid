@@ -221,12 +221,14 @@ class Variable
             list($filtername, $filterArgKeys) = $filter;
 
             $filterArgValues = array();
-
             foreach ($filterArgKeys as $arg_key) {
                 $filterArgValues[] = $context->get($arg_key);
             }
 
             $output = $context->invoke($filtername, $output, $filterArgValues);
+            if($context->_error) {
+                return $context->_error;
+            }
         }
 
         if(is_numeric($output)) {

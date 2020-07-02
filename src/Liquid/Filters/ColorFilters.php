@@ -8,83 +8,222 @@
 
 namespace Liquid\Filters;
 
+use Liquid\Exceptions\BaseFilterError;
+use Liquid\Exceptions\FilterError;
 use Liquid\Helpers\Color;
 
 class ColorFilters extends AbstractFilters
 {
     public function color_to_rgb($input)
     {
-        return Color::parse($input)->toCssRgb();
+        try {
+            return Color::parse($input)->toCssRgb();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     public function color_to_hsl($input)
     {
-        return Color::parse($input)->toCssHsl();
+        try {
+            return Color::parse($input)->toCssHsl();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     public function color_to_hex($input)
     {
-        return Color::parse($input)->toCssHex();
+        try {
+            return Color::parse($input)->toCssHex();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_extract($input, $component)
+    public function color_extract(...$input)
     {
-        return Color::parse($input)->getComponent($component);
+        try {
+            $this->__validate($input, 2, [
+                1 => 'scalar',
+            ]);
+
+            return Color::parse($input[0])->getComponent($input[1]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     public function color_brightness($input)
     {
-        return Color::parse($input)->getComponent('brightness')['total'] ?? null;
-    }
-
-    public function color_modify($input, $component, $range)
-    {
-        $instance = Color::parse($input);
-        if($component && is_string($component) && method_exists($instance, $method = sprintf('modify%s', ucfirst(strtolower($component))))) {
-            $instance = $instance->$method($range);
+        try {
+            return Color::parse($input)->getComponent('brightness')['total'] ?? null;
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
         }
-
-        return $instance->toCss();
     }
 
-    public function color_lighten($input, $value)
+    public function color_modify(...$input)
     {
-        return Color::parse($input)->lighten($value)->toCss();
+        try {
+            $this->__validate($input, 3, [
+                1 => 'scalar',
+                2 => 'numeric'
+            ]);
+
+            $instance = Color::parse($input[0]);
+            if($input[1] && is_string($input[1]) && method_exists($instance, $method = sprintf('modify%s', ucfirst(strtolower($input[1]))))) {
+                $instance = $instance->$method($input[2]);
+            }
+
+            return $instance->toCss();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_darken($input, $value)
+    public function color_lighten(...$input)
     {
-        return Color::parse($input)->darken($value)->toCss();
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->lighten($input[1])->toCss();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_saturate($input, $value)
+    public function color_darken(...$input)
     {
-        return Color::parse($input)->saturate($value)->toCss();
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->darken($input[1])->toCss();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_desaturate($input, $value)
+    public function color_saturate(...$input)
     {
-        return Color::parse($input)->desaturate($value)->toCss();
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->saturate($input[1])->toCss();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_mix($input, $color, $blend)
+    public function color_desaturate(...$input)
     {
-        return Color::parse($input)->mix($color, $blend)->toCss();
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->desaturate($input[1])->toCss();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_contrast($input, $color)
+    public function color_mix(...$input)
     {
-        return Color::parse($input)->contrast($color);
+        try {
+            $this->__validate($input, 3);
+
+            return Color::parse($input[0])->mix($input[1], $input[2])->toCss();
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function color_difference($input, $color)
+    public function color_contrast(...$input)
     {
-        return Color::parse($input)->difference($color);
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->contrast($input[1]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
-    public function brightness_difference($input, $color)
+    public function color_difference(...$input)
     {
-        return Color::parse($input)->brightnessDifference($color);
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->difference($input[1]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
+    }
+
+    public function brightness_difference(...$input)
+    {
+        try {
+            $this->__validate($input, 2);
+
+            return Color::parse($input[0])->brightnessDifference($input[1]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
 }

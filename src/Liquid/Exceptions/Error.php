@@ -32,7 +32,7 @@ class Error extends Exception
      * @param TagToken           $token   The template line where the error occurred
      * @param Exception $previous The previous exception
      */
-    public function __construct(string $message, TagToken $token, Exception $previous = null)
+    public function __construct(string $message, TagToken $token = null, Exception $previous = null)
     {
         parent::__construct('', 0, $previous);
 
@@ -43,9 +43,11 @@ class Error extends Exception
 //        });
 //        $this->sourcePath = $temp_file;
 
-        $this->sourceCode = $token->getSource();
-        $this->lineno = $token->getLine();
-        $this->name = $token->getFileName();
+        if($token) {
+            $this->sourceCode = $token->getSource();
+            $this->lineno = $token->getLine();
+            $this->name = $token->getFileName();
+        }
         $this->rawMessage = $message;
 
         $this->updateRepr();

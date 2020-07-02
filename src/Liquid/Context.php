@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Iterator;
 use IteratorAggregate;
+use Liquid\Contracts\DropContract;
+use Liquid\Exceptions\FilterError;
 use Liquid\Exceptions\SyntaxError;
 use Liquid\Tokens\TagToken;
 use Liquid\Tokens\TextToken;
@@ -85,6 +87,8 @@ class Context
      * @var TagToken|TextToken|VariableToken
      */
     private $token;
+
+    public $_error;
 
     /**
      * List with magick methods to ignore for filters
@@ -168,6 +172,7 @@ class Context
     public function invoke($name, $value, array $args = array())
     {
         array_unshift($args, $value);
+        $this->_error = null;
 
         // Consult the mapping
         if (isset($this->methodMap[$name])) {
@@ -178,11 +183,19 @@ class Context
                 $class = $this->filters[$class];
             }
 
-            // If we're calling a function
-            if ($class === false) {
-                return call_user_func_array($name, $args);
-            } else {
-                return call_user_func_array([new $class($this), $name], $args);
+            try {
+                $args = array_map(function($input) {
+                    return $input instanceof Traversable ? iterator_to_array($input) : $input;
+                }, $args);
+
+                // If we're calling a function
+                if ($class === false) {
+                    return call_user_func_array($name, $args);
+                } else {
+                    return call_user_func_array([new $class($this), $name], $args);
+                }
+            } catch (FilterError $e) {
+                return $this->_error = $e->getMessage();
             }
         }
 
@@ -359,7 +372,7 @@ class Context
                 if (array_key_exists($key, $scope)) {
                     $obj = $scope[$key];
 
-                    if ($obj instanceof Drop) {
+                    if ($obj instanceof DropContract) {
                         $obj->setContext($this);
                     }
 
@@ -383,7 +396,7 @@ class Context
             if (array_key_exists($key, $scope)) {
                 $obj = $scope[$key];
 
-                if ($obj instanceof Drop) {
+                if ($obj instanceof DropContract) {
                     $obj->setContext($this);
                 }
 
@@ -454,7 +467,7 @@ class Context
         $object = $this->value($this->transformIteratorAggregate($this->fetch(array_shift($parts))));
 
         while (count($parts) > 0) {
-            if ($object instanceof Drop) {
+            if ($object instanceof DropContract) {
                 $object->setContext($this);
             }
 
@@ -472,7 +485,7 @@ class Context
         }
 
         // finally, resolve an object to a string or a plain value. if collection return it
-        if (is_object($object) && method_exists($object, '__toString') && !($object instanceof Drop)) {
+        if (is_object($object) && method_exists($object, '__toString') && !($object instanceof DropContract)) {
             $object = (string)$object;
         }
 
@@ -480,7 +493,7 @@ class Context
         if (
             is_object($object) &&
             !($object instanceof Traversable) &&
-            !($object instanceof Drop) &&
+            !($object instanceof DropContract) &&
             !($object instanceof Model) &&
             !($object instanceof Builder) &&
             !($object instanceof Relation)
@@ -517,7 +530,7 @@ class Context
             ($element instanceof ArrayAccess && $element->offsetExists($property)) ||
             (is_object($element) && is_callable($element, $property)) ||
             (is_object($element) && property_exists($element, $property) && isset($element->$property)) ||
-            ($element instanceof Drop)
+            ($element instanceof DropContract)
         ) {
             return true;
         }
@@ -542,7 +555,7 @@ class Context
             return $element->$property();
         } elseif(is_object($element) && property_exists($element, $property) && isset($element->$property)) {
             return $element->$property;
-        } elseif($element instanceof Drop) {
+        } elseif($element instanceof DropContract) {
             if(!$element->hasKey($property)) {
                 return null;
             }

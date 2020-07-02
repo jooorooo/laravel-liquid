@@ -8,7 +8,11 @@
 
 namespace Liquid\Filters;
 
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Iterator;
+use Liquid\Exceptions\BaseFilterError;
+use Liquid\Exceptions\FilterError;
 use Traversable;
 
 class ArrFilters extends AbstractFilters
@@ -17,131 +21,164 @@ class ArrFilters extends AbstractFilters
     /**
      * Joins elements of an array with a given character between them
      *
-     * @param array|Traversable $input
-     * @param string $glue
+     * @param array $input
      *
      * @return string
      */
-    public function join($input, $glue = ' ')
+    public function join(...$input)
     {
-        if ($input instanceof Traversable) {
-            $str = '';
-            foreach ($input as $elem) {
-                if ($str) {
-                    $str .= $glue;
-                }
-                $str .= $elem;
+        try {
+            $this->__validate($input, 2, [
+                1 => 'scalar',
+            ]);
+
+            if(!is_array($input[0])) {
+                $input[0] = [$input[0]];
             }
-            return $str;
+
+            return implode($input[1], $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
         }
-        return is_array($input) ? implode($glue, $input) : $input;
     }
 
     /**
      * Returns the first element of an array
      *
-     * @param array|Iterator $input
+     * @param array $input
      *
      * @return mixed
      */
     public function first($input)
     {
-        if ($input instanceof Iterator) {
-            $input->rewind();
-            return $input->current();
+        if(is_array($input)) {
+            return Arr::first($input);
+        } elseif(is_scalar($input)) {
+            return Str::substr($input, 0, 1);
         }
-        return is_array($input) ? reset($input) : $input;
+
+        return null;
     }
 
     /**
      * Returns the last element of an array
      *
-     * @param array|Traversable $input
+     * @param array $input
      *
      * @return mixed
      */
     public function last($input)
     {
-        if ($input instanceof Traversable) {
-            $last = null;
-            foreach ($input as $elem) {
-                $last = $elem;
-            }
-            return $last;
+        if(is_array($input)) {
+            return end($input);
+        } elseif(is_scalar($input)) {
+            return Str::substr($input, -1);
         }
-        return is_array($input) ? end($input) : $input;
+
+        return null;
+    }
+
+    /**
+     * Concat array
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function concat(...$input)
+    {
+        try {
+            $this->__validate($input, 2, [
+                1 => 'array',
+            ]);
+
+            if(!is_array($input[0])) {
+                $input[0] = [$input[0]];
+            }
+
+            return call_user_func_array('array_merge', $input);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Map/collect on a given property
      *
-     * @param array|Traversable $input
-     * @param string $property
+     * @param array $input
      *
      * @return array
      */
-    public function map($input, $property = null)
+    public function map(...$input)
     {
-        if ($input instanceof Traversable) {
-            $input = iterator_to_array($input);
-        }
+        try {
+            $this->__validate($input, 2, [
+                1 => 'scalar',
+            ]);
 
-        if (!is_array($input)) {
-            return $input;
-        }
+            if (!is_array($input[0])) {
+                return null;
+            }
 
-        return array_map(function ($elem) use ($property) {
-            return $this->context->getValue($elem, $property);
-        }, $input);
+            return array_map(function ($elem) use ($input) {
+                return $this->context->getValue($elem, $input[1]);
+            }, $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Reverse the elements of an array
      *
-     * @param array|Traversable $input
+     * @param array $input
      *
      * @return array|string
      */
     public function reverse($input)
     {
-        if(is_scalar($input)) {
-            return $input;
+        if(is_array($input)) {
+            return array_reverse($input);
         }
 
-        if ($input instanceof Traversable) {
-            $input = iterator_to_array($input);
-        }
-        return array_reverse($input);
+        return $input;
     }
 
 
     /**
      * Sort the elements of an array
      *
-     * @param array|Traversable $input
-     * @param string $property use this property of an array element
+     * @param $input
      *
      * @return array|string
      */
-    public function sort($input, $property = null)
+    public function sort(...$input)
     {
-        if(is_scalar($input)) {
-            return $input;
+        if(!is_array($input[0])) {
+            return $input[0];
         }
 
-        if ($input instanceof Traversable) {
-            $input = iterator_to_array($input);
-        }
-
-        if (is_null($property)) {
-            asort($input);
+        if (is_null($input[1] = ($input[1] ?? null))) {
+            asort($input[0]);
         } else {
-            $first = reset($input);
+            $first = reset($input[0]);
 
-            if ($first !== false && $this->context->hasGetValue($first, $property)) {
-                uasort($input, function ($a, $b) use ($property) {
-                    $valueA = $this->context->getValue($a, $property);
-                    $valueB = $this->context->getValue($b, $property);
+            if ($first !== false && $this->context->hasGetValue($first, $input[1])) {
+                uasort($input[0], function ($a, $b) use ($input) {
+                    $valueA = $this->context->getValue($a, $input[1]);
+                    $valueB = $this->context->getValue($b, $input[1]);
                     if ($valueA == $valueB) {
                         return 0;
                     }
@@ -151,7 +188,35 @@ class ArrFilters extends AbstractFilters
             }
         }
 
-        return $input;
+        return $input[0];
+    }
+
+
+    /**
+     * Filter elements of an array
+     *
+     * @param $input
+     *
+     * @return array|string
+     */
+    public function where(...$input)
+    {
+        try {
+            $this->__validate($input, 3, [
+                1 => 'scalar',
+                2 => 'scalar',
+            ]);
+
+            return array_filter($input[0], function($context) use($input) {
+                return $this->context->getValue($context, $input[1]) === $input[2];
+            });
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
@@ -163,36 +228,39 @@ class ArrFilters extends AbstractFilters
      */
     public function uniq($input)
     {
-        if(is_scalar($input)) {
-            return $input;
+        if(is_array($input)) {
+            return array_unique($input);
         }
 
-        if ($input instanceof Traversable) {
-            $input = iterator_to_array($input);
-        }
-
-        return array_unique($input);
+        return $input;
     }
 
     /**
      * Split an array into chunks
      *
-     * @param array|Traversable $input
-     * @param null $size
+     * @param $input
      *
      * @return array
      */
-    public function chunk($input, $size = null)
+    public function chunk(...$input)
     {
-        if ($input instanceof Traversable) {
-            $input = iterator_to_array($input);
-        }
+        try {
+            $this->__validate($input, 2, [
+                1 => 'int',
+            ]);
 
-        if(!is_numeric($size)) {
-            return [];
-        }
+            if(!is_array($input[0])) {
+                return $input[0];
+            }
 
-        return is_array($input) ? array_chunk($input, $size) : [];
+            return array_chunk($input[0], $input[1]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
 }

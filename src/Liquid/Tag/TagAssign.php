@@ -118,6 +118,9 @@ class TagAssign extends AbstractTag
             }
 
             $output = $context->invoke($filtername, $output, $filterArgValues);
+            if($context->_error) {
+                return $context->_error;
+            }
         }
 
         $context->set($this->to, $output, true);

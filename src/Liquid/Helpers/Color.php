@@ -2,6 +2,8 @@
 
 namespace Liquid\Helpers;
 
+use Liquid\Exceptions\ColorError;
+
 class Color
 {
     /**
@@ -50,6 +52,9 @@ class Color
     const TYPE_HSL = 'hsl';
     const TYPE_WORD = 'word';
 
+    const RGB_MAP = ['Red', 'Green', 'Blue', 'Alpha'];
+    const HSL_MAP = ['Hue', 'Saturation', 'Lightness', 'Alpha'];
+
     /**
      * Color construct.
      *
@@ -83,7 +88,7 @@ class Color
     public static function fromHex(string $hex)
     {
         if(!in_array($length = strlen($hex = ltrim($hex, '#')), [3,4,6,8])) {
-            throw new \Exception('Error hex');
+            throw new ColorError(sprintf('color "#%s" is not valid hex color', $hex));
         }
 
         $map = array_map(function($c) {
@@ -150,7 +155,7 @@ class Color
             return $fromWord;
         }
 
-        throw new \Exception('Error');
+        throw new ColorError(sprintf('%s is not valid color', json_encode($color)));
     }
 
     public function toCssRgb()
@@ -198,6 +203,8 @@ class Color
     {
         if(preg_match('/^\d+$/', $color) && $color >= 0 && $color <= 255) {
             $this->red = $color;
+        } else {
+            throw new ColorError('Red must be an integer between 0 and 255');
         }
 
         return $this->setBrightness()
@@ -209,6 +216,8 @@ class Color
     {
         if(preg_match('/^\d+$/', $color) && $color >= 0 && $color <= 255) {
             $this->green = $color;
+        } else {
+            throw new ColorError('Green must be an integer between 0 and 255');
         }
 
         return $this->setBrightness()
@@ -220,6 +229,8 @@ class Color
     {
         if(preg_match('/^\d+$/', $color) && $color >= 0 && $color <= 255) {
             $this->blue = $color;
+        } else {
+            throw new ColorError('Blue must be an integer between 0 and 255');
         }
 
         return $this->setBrightness()
@@ -231,6 +242,8 @@ class Color
     {
         if(is_numeric($alpha) && $alpha >= 0 && $alpha <= 1) {
             $this->alpha = $alpha;
+        } else {
+            throw new ColorError('Alpha must be an numeric between 0 and 1');
         }
 
         return $this;
@@ -240,6 +253,8 @@ class Color
     {
         if(preg_match('/^\d+$/', $hue) && $hue >= 0 && $hue <= 360) {
             $this->hue = $hue === 360 ? 0 : $hue;
+        } else {
+            throw new ColorError('Hue must be an integer between 0 and 360');
         }
 
         return $this->setFromHslArray();
@@ -249,6 +264,8 @@ class Color
     {
         if(preg_match('/^\d+$/', $lightness) && $lightness >= 0 && $lightness <= 100) {
             $this->lightness = $lightness;
+        } else {
+            throw new ColorError('Lightness must be an integer between 0 and 100');
         }
 
         return $this->setFromHslArray();
@@ -258,6 +275,8 @@ class Color
     {
         if(preg_match('/^\d+$/', $saturation) && $saturation >= 0 && $saturation <= 100) {
             $this->saturation = $saturation;
+        } else {
+            throw new ColorError('Saturation must be an integer between 0 and 100');
         }
 
         return $this->setFromHslArray();
@@ -265,22 +284,38 @@ class Color
 
     public function lighten($lighten)
     {
-        return $this->modifyLightness(min($this->lightness + (int)$lighten, 100));
+        if(preg_match('/^\d+$/', $lighten) && $lighten >= 0 && $lighten <= 100) {
+            return $this->modifyLightness(min($this->lightness + (int)$lighten, 100));
+        } else {
+            throw new ColorError('Lighten must be an integer between 0 and 100');
+        }
     }
 
     public function darken($darken)
     {
-        return $this->modifyLightness(max(0, $this->lightness - (int)$darken));
+        if(preg_match('/^\d+$/', $darken) && $darken >= 0 && $darken <= 100) {
+            return $this->modifyLightness(max(0, $this->lightness - (int)$darken));
+        } else {
+            throw new ColorError('Darken must be an integer between 0 and 100');
+        }
     }
 
     public function saturate($saturation)
     {
-        return $this->modifySaturation(min(100, $this->saturation + $saturation));
+        if(preg_match('/^\d+$/', $saturation) && $saturation >= 0 && $saturation <= 100) {
+            return $this->modifySaturation(min(100, $this->saturation + $saturation));
+        } else {
+            throw new ColorError('Saturate must be an integer between 0 and 100');
+        }
     }
 
     public function desaturate($saturation)
     {
-        return $this->modifySaturation(max(0, $this->saturation - $saturation));
+        if(preg_match('/^\d+$/', $saturation) && $saturation >= 0 && $saturation <= 100) {
+            return $this->modifySaturation(max(0, $this->saturation - $saturation));
+        } else {
+            throw new ColorError('Desaturate must be an integer between 0 and 100');
+        }
     }
 
     public function mix($color, $blend)
@@ -302,9 +337,9 @@ class Color
             $map = array_map($h, array_map($f, [$this->red, $this->green, $this->blue]), array_map($g, [$color->red, $color->green, $color->blue]));
             return static::fromRgb($map)
                 ->setType(static::TYPE_HEX);
+        } else {
+            throw new ColorError('Blending factor must be between 0 and 100 percent');
         }
-
-        return $this;
     }
 
     public function contrast($color)
@@ -559,7 +594,7 @@ class Color
     protected static function formatArrayToRgb(array $map)
     {
         if(count($map) < 3 || count($map) > 4) {
-            throw new \Exception('Error array to rgb');
+            throw new ColorError('color is not valid rgb color');
         }
 
         $result = [];
@@ -577,7 +612,7 @@ class Color
     protected static function formatArrayToHsl(array $map)
     {
         if(count($map) < 3 || count($map) > 4) {
-            throw new \Exception('Error array to hsl');
+            throw new ColorError('color is not valid hsl color');
         }
 
         $result = [];
@@ -759,30 +794,26 @@ class Color
 
     protected function _parseFromHex($input)
     {
-        if(substr($input, 0, 1) === '#') {
-            return static::fromHex($input);
-        }
-
-        throw new \Exception('Error 2');
+        return static::fromHex($input);
     }
 
     protected function _parseFromRgba($input)
     {
-        $input = explode(',', str_replace([' ', 'rgba', '(', ')'], '', $input));
+        $input = explode(',', str_replace([' ', 'rgba', '(', ')'], '', $original = $input));
         if(count($input) < 3 || count($input) > 4) {
-            throw new \Exception('Error rgba');
+            throw new ColorError(sprintf('color "%s" is not valid rgba color', $original));
         }
 
         $input = array_map(function($value, $key) {
             if($key < 3) {
                 if (!preg_match('/^\d+$/', $value = trim($value)) || $value < 0 || $value > 255) {
-                    throw new \Exception('Error rgba num');
+                    throw new ColorError(sprintf('%s must be an integer between 0 and 255', static::RGB_MAP[$key]));
                 }
 
                 return (int)$value;
             } else {
                 if (!is_numeric($value = trim($value)) || $value < 0 || $value > 1) {
-                    throw new \Exception('Error rgba num');
+                    throw new ColorError(sprintf('%s must be an numeric between 0 and 1', static::RGB_MAP[$key]));
                 }
                 return (float)$value;
             }
@@ -793,33 +824,33 @@ class Color
 
     protected function _parseFromRgb($input)
     {
-        $input = explode(',', str_replace([' ', 'rgb', '(', ')'], '', $input));
+        $input = explode(',', str_replace([' ', 'rgb', '(', ')'], '', $original = $input));
         if(count($input) !== 3) {
-            throw new \Exception('Error rgb');
+            throw new ColorError(sprintf('color "%s" is not valid rgb color', $original));
         }
 
-        $input = array_map(function($value) {
+        $input = array_map(function($value, $key) {
             if(!preg_match('/^\d+$/', $value = trim($value)) || $value < 0 || $value > 255) {
-                throw new \Exception('Error rgb num');
+                throw new ColorError(sprintf('%s must be an integer between 0 and 255', static::RGB_MAP[$key]));
             }
 
             return (int)$value;
-        }, $input);
+        }, $input, array_keys($input));
 
         return static::fromRgb($input);
     }
 
     protected function _parseFromHsl($input)
     {
-        $input = explode(',', str_replace([' ', 'hsl', '(', ')', '%'], '', $input));
+        $input = explode(',', str_replace([' ', 'hsl', '(', ')', '%'], '', $original = $input));
         if(count($input) !== 3) {
-            throw new \Exception('Error hsl');
+            throw new ColorError(sprintf('color "%s" is not valid hsl color', $original));
         }
 
         $input = array_map(function($value, $key) {
             $max = $key === 0 ? 360 : 100;
             if (!preg_match('/^\d+$/', $value = trim($value)) || $value < 0 || $value > $max) {
-                throw new \Exception('Error hsl num ' . $value);
+                throw new ColorError(sprintf('%s must be an integer between 0 and %d', static::HSL_MAP[$key], $max));
             }
 
             return (int)$value;
@@ -830,21 +861,21 @@ class Color
 
     protected function _parseFromHsla($input)
     {
-        $input = explode(',', str_replace([' ', 'hsla', '(', ')', '%'], '', $input));
+        $input = explode(',', str_replace([' ', 'hsla', '(', ')', '%'], '', $original = $input));
         if(count($input) < 3 || count($input) > 4) {
-            throw new \Exception('Error hsla');
+            throw new ColorError(sprintf('color "%s" is not valid hsla color', $original));
         }
 
         $input = array_map(function($value, $key) {
             $max = $key === 0 ? 360 : 100;
             if($key < 3) {
                 if (!preg_match('/^\d+$/', $value = trim($value)) || $value < 0 || $value > $max) {
-                    throw new \Exception('Error hsla num');
+                    throw new ColorError(sprintf('%s must be an integer between 0 and %d', static::HSL_MAP[$key], $max));
                 }
                 return (int)$value;
             } else {
                 if (!is_numeric($value = trim($value)) || $value < 0 || $value > 1) {
-                    throw new \Exception('Error hsla num');
+                    throw new ColorError(sprintf('%s must be an numeric between 0 and 1', static::HSL_MAP[$key]));
                 }
                 return (float)$value;
             }

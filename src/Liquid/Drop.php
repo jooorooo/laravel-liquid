@@ -11,6 +11,8 @@
 
 namespace Liquid;
 
+use Liquid\Contracts\DropContract;
+
 /**
  * A drop in liquid is a class which allows you to to export DOM like things to liquid.
  * Methods of drops are callable.
@@ -32,7 +34,7 @@ namespace Liquid;
  * Your drop can either implement the methods sans any parameters or implement the beforeMethod(name) method which is a
  * catch all.
  */
-abstract class Drop
+abstract class Drop implements DropContract
 {
     /**
      * @var Context
@@ -46,7 +48,7 @@ abstract class Drop
      *
      * @return null
      */
-    protected function beforeMethod($method)
+    public function beforeMethod($method)
     {
         return null;
     }
