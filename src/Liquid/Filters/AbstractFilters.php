@@ -3,7 +3,7 @@
 namespace Liquid\Filters;
 
 use Liquid\Context;
-use Liquid\Exceptions\FilterError;
+use Liquid\Contracts\DropCollectionContract;
 use Liquid\Exceptions\FilterValidateError;
 
 abstract class AbstractFilters
@@ -43,7 +43,7 @@ abstract class AbstractFilters
 
     private function __validateArray($input)
     {
-        if(!is_array($input)) {
+        if(!is_array($input) && !($input instanceof DropCollectionContract)) {
             throw new FilterValidateError(
                 'filter requires an array argument'
             );
@@ -71,6 +71,15 @@ abstract class AbstractFilters
     private function __validateInt($input)
     {
         if(!preg_match('/^\d+$/', $input)) {
+            throw new FilterValidateError(
+                'filter requires an integer argument'
+            );
+        }
+    }
+
+    private function __validateNInt($input)
+    {
+        if(!preg_match('/^-?\d+$/', $input)) {
             throw new FilterValidateError(
                 'filter requires an integer argument'
             );

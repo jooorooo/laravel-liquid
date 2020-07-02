@@ -10,7 +10,7 @@ namespace Liquid\Filters;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Iterator;
+use Liquid\Contracts\DropCollectionContract;
 use Liquid\Exceptions\BaseFilterError;
 use Liquid\Exceptions\FilterError;
 use Traversable;
@@ -32,7 +32,7 @@ class ArrFilters extends AbstractFilters
                 1 => 'scalar',
             ]);
 
-            if(!is_array($input[0])) {
+            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
                 $input[0] = [$input[0]];
             }
 
@@ -96,11 +96,22 @@ class ArrFilters extends AbstractFilters
                 1 => 'array',
             ]);
 
-            if(!is_array($input[0])) {
+            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
                 $input[0] = [$input[0]];
             }
 
-            return call_user_func_array('array_merge', $input);
+            $className = is_object($input[0]) && $input[0] instanceof DropCollectionContract ? get_class($input[0]) : null;
+
+            $input = array_map(function($input) {
+                return $input instanceof DropCollectionContract ? $input->all() : $input;
+            }, $input);
+
+            $input = call_user_func_array('array_merge', $input);
+            if($className) {
+                $input = new $className($input);
+            }
+
+            return $input;
         } catch (BaseFilterError $e) {
             throw new FilterError(sprintf(
                 'Liquid error: "%s" %s',
@@ -124,13 +135,19 @@ class ArrFilters extends AbstractFilters
                 1 => 'scalar',
             ]);
 
-            if (!is_array($input[0])) {
+            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
                 return null;
             }
 
-            return array_map(function ($elem) use ($input) {
+            if($input[0] instanceof DropCollectionContract) {
+                $input[0] = $input[0]->all();
+            }
+
+            $input[0] = array_map(function ($elem) use ($input) {
                 return $this->context->getValue($elem, $input[1]);
             }, $input[0]);
+
+            return $input[0];
         } catch (BaseFilterError $e) {
             throw new FilterError(sprintf(
                 'Liquid error: "%s" %s',
@@ -166,8 +183,12 @@ class ArrFilters extends AbstractFilters
      */
     public function sort(...$input)
     {
-        if(!is_array($input[0])) {
+        if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
             return $input[0];
+        }
+
+        if($className = is_object($input[0]) && $input[0] instanceof DropCollectionContract ? get_class($input[0]) : null) {
+            $input[0] = $input[0]->all();
         }
 
         if (is_null($input[1] = ($input[1] ?? null))) {
@@ -186,6 +207,10 @@ class ArrFilters extends AbstractFilters
                     return $valueA < $valueB ? -1 : 1;
                 });
             }
+        }
+
+        if($className) {
+            $input[0] = new $className($input[0]);
         }
 
         return $input[0];
@@ -249,7 +274,7 @@ class ArrFilters extends AbstractFilters
                 1 => 'int',
             ]);
 
-            if(!is_array($input[0])) {
+            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
                 return $input[0];
             }
 

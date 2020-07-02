@@ -40,6 +40,8 @@ interface DropContract
     public function hasKey($name);
 
     /**
+     * Returns string. Object name
+     *
      * @return string
      */
     public function __toString();

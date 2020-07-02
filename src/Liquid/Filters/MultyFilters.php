@@ -9,8 +9,9 @@
 namespace Liquid\Filters;
 
 use Iterator;
-use Liquid\Context;
 use Illuminate\Support\Str AS IlluminateStr;
+use Liquid\Exceptions\BaseFilterError;
+use Liquid\Exceptions\FilterError;
 
 class MultyFilters extends AbstractFilters
 {
@@ -33,23 +34,28 @@ class MultyFilters extends AbstractFilters
      *
      * @return array|Iterator|string
      */
-    public function slice($input, $offset = 0, $length = null)
+    public function slice($input, $offset = 0, $length = 1)
     {
-        if ($input instanceof Iterator) {
-            $input = iterator_to_array($input);
-        }
+        try {
+            $this->__validate(func_get_args(), 2, [
+                1 => 'nInt',
+                2 => 'nInt',
+            ]);
 
-        if (is_array($input)) {
-            $input = array_slice($input, $offset, $length);
-        } elseif (is_string($input) || is_numeric($input)) {
-            if(is_null($length)) {
-                $input = IlluminateStr::substr($input, $offset);
-            } else {
+            if (is_array($input)) {
+                $input = array_slice($input, $offset, $length);
+            } elseif (is_string($input) || is_numeric($input)) {
                 $input = IlluminateStr::substr($input, $offset, $length);
             }
-        }
 
-        return $input;
+            return $input;
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**

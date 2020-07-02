@@ -2,11 +2,12 @@
 
 namespace Liquid;
 
+use ArrayAccess;
 use ArrayIterator;
 use Illuminate\Contracts\Support\Arrayable;
-use Liquid\Contracts\DropContract;
+use Liquid\Contracts\DropCollectionContract;
 
-class CollectionDrop extends ArrayIterator implements DropContract
+class CollectionDrop extends ArrayIterator implements DropCollectionContract
 {
 
     public function __construct($array = [], $flags = 0)
@@ -78,8 +79,31 @@ class CollectionDrop extends ArrayIterator implements DropContract
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function __toString()
     {
         return 'CollectionDrop';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function merge($data)
+    {
+        if(is_array($data) || $data instanceof DropCollectionContract) {
+            foreach($data as $key => $value) {
+                $this->offsetSet($key, $value);
+            }
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function all()
+    {
+        return iterator_to_array ($this, true);
     }
 }

@@ -184,10 +184,6 @@ class Context
             }
 
             try {
-                $args = array_map(function($input) {
-                    return $input instanceof Traversable ? iterator_to_array($input) : $input;
-                }, $args);
-
                 // If we're calling a function
                 if ($class === false) {
                     return call_user_func_array($name, $args);
