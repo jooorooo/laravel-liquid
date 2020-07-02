@@ -11,6 +11,7 @@
 
 namespace Liquid;
 
+use Liquid\Tokens\VariableToken;
 use Liquid\Traits\HelpersTrait;
 
 /**
@@ -40,6 +41,11 @@ class Variable
      * @var LiquidCompiler $compiler
      */
     protected $compiler;
+
+    /**
+     * @var VariableToken $token
+     */
+    protected $token;
 
     /**
      * Constructor
@@ -213,6 +219,10 @@ class Variable
             }
         }
 
+        if($this->token) {
+            $context->setToken($this->token);
+        }
+
         foreach ($filters as $filter) {
             if(empty($filter) || !isset($filter[1])) {
                 continue;
@@ -274,6 +284,22 @@ class Variable
         }
 
         return ['content_for_header', 'content_for_layout', 'content_for_index', 'content_for_footer'];
+    }
+
+    /**
+     * @return VariableToken
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
+
+    /**
+     * @param VariableToken $token
+     */
+    public function setToken(VariableToken $token)
+    {
+        $this->token = $token;
     }
 
 }

@@ -19,7 +19,7 @@ class DefFilters extends AbstractFilters
      *
      * @return string
      */
-    public function default($input, $default_value)
+    public function default($input, $default_value = null)
     {
         $isBlank = $input == '' || $input === false || $input === null;
         return $isBlank ? $default_value : $input;

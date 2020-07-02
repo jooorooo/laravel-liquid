@@ -20,7 +20,7 @@ abstract class AbstractFilters
 
     final protected function __validate($parameters, int $total_parameters, array $validation = null)
     {
-        if(($given = count($parameters)) != $total_parameters) {
+        if(($given = count($parameters)) < $total_parameters) {
             throw new FilterValidateError(sprintf(
                 'wrong number of arguments (given %d, expected %d)',
                 $given - 1,

@@ -5,6 +5,7 @@ namespace Liquid\Exceptions;
 use Closure;
 use Exception;
 use Liquid\Tokens\TagToken;
+use Liquid\Tokens\VariableToken;
 use function is_object;
 use function is_string;
 
@@ -32,7 +33,7 @@ class Error extends Exception
      * @param TagToken           $token   The template line where the error occurred
      * @param Exception $previous The previous exception
      */
-    public function __construct(string $message, TagToken $token = null, Exception $previous = null)
+    public function __construct(string $message, $token = null, Exception $previous = null)
     {
         parent::__construct('', 0, $previous);
 
@@ -43,11 +44,12 @@ class Error extends Exception
 //        });
 //        $this->sourcePath = $temp_file;
 
-        if($token) {
+        if($token instanceof TagToken || $token instanceof VariableToken) {
             $this->sourceCode = $token->getSource();
             $this->lineno = $token->getLine();
             $this->name = $token->getFileName();
         }
+
         $this->rawMessage = $message;
 
         $this->updateRepr();

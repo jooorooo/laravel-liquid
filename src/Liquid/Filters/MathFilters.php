@@ -8,37 +8,81 @@
 
 namespace Liquid\Filters;
 
+use Liquid\Exceptions\BaseFilterError;
+use Liquid\Exceptions\FilterError;
+use Liquid\Exceptions\FilterValidateError;
+
 class MathFilters extends AbstractFilters
 {
 
     /**
      * addition
      *
-     * @param float $input
-     * @param float $operand
+     * @param $input
      *
      * @return float
      */
-    public function plus($input, $operand)
+    public function abs($input)
     {
-        $input = is_numeric($input) ? $input : 0;
-        $operand = is_numeric($operand) ? $operand : 0;
-        return $input + $operand;
+        return is_numeric($input) ? abs($input) : 0;
     }
 
     /**
-     * subtraction
+     * addition
      *
-     * @param int $input
-     * @param int $operand
+     * @param $input
      *
-     * @return int
+     * @return float
      */
-    public function minus($input, $operand)
+    public function at_most(...$input)
     {
-        $input = is_numeric($input) ? $input : 0;
-        $operand = is_numeric($operand) ? $operand : 0;
-        return $input - $operand;
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
+
+            $input = [
+                floatVal(array_shift($input)),
+                floatVal(array_shift($input)),
+            ];
+
+            return min($input);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
+    }
+
+    /**
+     * addition
+     *
+     * @param $input
+     *
+     * @return float
+     */
+    public function at_least(...$input)
+    {
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
+
+            $input = [
+                floatVal(array_shift($input)),
+                floatVal(array_shift($input)),
+            ];
+
+            return max($input);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
@@ -58,18 +102,28 @@ class MathFilters extends AbstractFilters
     /**
      * division
      *
-     * @param int $input
-     * @param int $operand
+     * @param $input
      *
      * @return int
      */
-    public function divided_by($input, $operand = null)
+    public function divided_by(...$input)
     {
-        if(is_numeric($input) && is_numeric($operand) && (float)$operand !== (float)0) {
-            return $input / $operand;
-        }
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
 
-        return 0;
+            $value = floatVal(array_shift($input));
+            $operand = floatVal(array_shift($input));
+
+            return $operand != 0 ? $value / $operand : 0;
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
@@ -87,57 +141,151 @@ class MathFilters extends AbstractFilters
     }
 
     /**
-     * modulo
+     * addition
      *
-     * @param int|float $input
-     * @param int|float $operand
+     * @param $input
      *
-     * @return int|float
+     * @return float
      */
-    public function modulo($input, $operand = null)
+    public function plus(...$input)
     {
-        if(is_numeric($input) && is_numeric($operand)) {
-            return fmod($input, $operand);
-        }
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
 
-        return 0;
+            $input = [
+                floatVal(array_shift($input)),
+                floatVal(array_shift($input)),
+            ];
+
+            return array_sum($input);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
+    }
+
+    /**
+     * subtraction
+     *
+     * @param $input
+     *
+     * @return int
+     */
+    public function minus(...$input)
+    {
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
+
+            $input = [
+                floatVal(array_shift($input)),
+                floatVal(array_shift($input)) * -1,
+            ];
+
+            return array_sum($input);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Round a number
      *
-     * @param float $input
-     * @param int $n precision
+     * @param $input
      *
+     * @param int $precision
      * @return float
      */
-    public function round($input, $n = 0)
+    public function round($input, $precision = 0)
     {
-        if(is_numeric($input) && is_numeric($n)) {
-            $input = round($input, (int)$n);
-            if($n == 0) {
-                return (int)$input;
+        try {
+            if(!preg_match('/^\d+$/', $precision)) {
+                throw new FilterValidateError(
+                    'filter requires an integer argument'
+                );
             }
-        }
 
-        return is_numeric($input) ? (int)round($input) : 0;
+            $input = round(floatVal($input), $precision);
+            if($precision == 0) {
+                $input = (int)$input;
+            }
+
+            return $input;
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * multiplication
      *
-     * @param int|float $input
-     * @param int|float $operand
+     * @param $input
      *
      * @return int|float
      */
-    public function times($input, $operand = null)
+    public function times(...$input)
     {
-        if(is_numeric($input) && is_numeric($operand)) {
-            return $input * $operand;
-        }
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
 
-        return 0;
+            $input = [
+                floatVal(array_shift($input)),
+                floatVal(array_shift($input)),
+            ];
+
+            return $input[0] * $input[1];
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
+    }
+
+    /**
+     * modulo
+     *
+     * @param $input
+     *
+     * @return int|float
+     */
+    public function modulo(...$input)
+    {
+        try {
+            $this->__validate($input, 2, [
+                1 => 'numeric',
+            ]);
+
+            $input = [
+                floatVal(array_shift($input)),
+                floatVal(array_shift($input)),
+            ];
+
+            return fmod($input[0], $input[1]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
 }

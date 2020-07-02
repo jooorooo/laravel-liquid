@@ -21,7 +21,7 @@ class DateFilters extends AbstractFilters
      *
      * @return string
      */
-    public function date($input, $format)
+    public function date($input, $format = 'r')
     {
         if($input instanceof Carbon) {
             $input = $input->timestamp;

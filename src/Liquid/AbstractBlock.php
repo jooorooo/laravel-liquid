@@ -62,6 +62,8 @@ class AbstractBlock extends AbstractTag
                     $variableObject->preSetFilters($filters);
                 }
 
+                $variableObject->setToken($token);
+
                 $this->nodelist[] = $variableObject;
             } elseif ($token instanceof TagToken) {
                 if ($token->getTag() == $this->blockDelimiter()) {
