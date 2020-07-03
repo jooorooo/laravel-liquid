@@ -278,8 +278,13 @@ class ArrFilters extends AbstractFilters
      */
     public function uniq($input)
     {
-        if(is_array($input) || $input instanceof DropCollectionContract) {
-            return array_unique($input instanceof DropCollectionContract ? $input->all() : $input);
+        if($className = $this->__isCollection($input) ? get_class($input) : null) {
+            $input = $input->all();
+        }
+
+        if(is_array($input)) {
+            $input = array_unique($input);
+            return $className ? new $className($input) : $input;
         }
 
         return $input;
@@ -290,7 +295,7 @@ class ArrFilters extends AbstractFilters
      *
      * @param $input
      *
-     * @return array
+     * @return CollectionDrop
      */
     public function chunk(...$input)
     {
@@ -299,11 +304,17 @@ class ArrFilters extends AbstractFilters
                 1 => 'int',
             ]);
 
-            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
+            if(!$this->__isArray($input[0])) {
                 return $input[0];
             }
 
-            return array_chunk($input[0], $input[1]);
+            if($className = $this->__isCollection($input[0]) ? get_class($input[0]) : null) {
+                $input[0] = $input[0]->all();
+            }
+
+            return new CollectionDrop(array_map(function($input) use($className) {
+                return $className ? new $className($input) : $input;
+            }, array_chunk($input[0], $input[1])));
         } catch (BaseFilterError $e) {
             throw new FilterError(sprintf(
                 'Liquid error: "%s" %s',
