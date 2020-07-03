@@ -520,16 +520,4 @@ class StrFilters extends AbstractFilters
         return urlencode($inputNew);
     }
 
-    /**
-     * Check data is string or object with toString implementation string
-     *
-     * @param mixed $input
-     *
-     * @return bool
-     */
-    private function __isString($input)
-    {
-        return method_exists($input, '__toString') || is_scalar($input);
-    }
-
 }

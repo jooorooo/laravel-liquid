@@ -43,7 +43,7 @@ abstract class AbstractFilters
 
     private function __validateArray($input)
     {
-        if(!is_array($input) && !($input instanceof DropCollectionContract)) {
+        if(!$this->__isArray($input)) {
             throw new FilterValidateError(
                 'filter requires an array argument'
             );
@@ -52,7 +52,7 @@ abstract class AbstractFilters
 
     private function __validateScalar($input)
     {
-        if(!is_scalar($input) && !method_exists($input, '__toString')) {
+        if(!$this->__isString($input)) {
             throw new FilterValidateError(
                 'filter requires an scalar argument'
             );
@@ -84,6 +84,42 @@ abstract class AbstractFilters
                 'filter requires an integer argument'
             );
         }
+    }
+
+    /**
+     * Check data is string or object with toString implementation string
+     *
+     * @param mixed $input
+     *
+     * @return bool
+     */
+    protected function __isString($input)
+    {
+        return method_exists($input, '__toString') || is_scalar($input);
+    }
+
+    /**
+     * Check data is array or object implement DropCollectionContract
+     *
+     * @param mixed $input
+     *
+     * @return bool
+     */
+    protected function __isArray($input)
+    {
+        return is_array($input) || $this->__isCollection($input);
+    }
+
+    /**
+     * Check data is object implement DropCollectionContract
+     *
+     * @param mixed $input
+     *
+     * @return bool
+     */
+    protected function __isCollection($input)
+    {
+        return $input instanceof DropCollectionContract;
     }
 
 }

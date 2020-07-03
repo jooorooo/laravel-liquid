@@ -10,6 +10,7 @@ namespace Liquid\Filters;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Liquid\CollectionDrop;
 use Liquid\Contracts\DropCollectionContract;
 use Liquid\Exceptions\BaseFilterError;
 use Liquid\Exceptions\FilterError;
@@ -28,13 +29,17 @@ class ArrFilters extends AbstractFilters
     public function join(...$input)
     {
         try {
-            $this->__validate($input, 2, [
-                1 => 'scalar',
-            ]);
+            $this->__validate($input, 2);
 
-            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
+            if(!$this->__isArray($input[0])) {
                 $input[0] = [$input[0]];
             }
+
+            if($this->__isCollection($input[0])) {
+                $input[0] = $input[0]->all();
+            }
+
+            $input[1] = is_array($input[1]) ? json_encode($input[1]) : $input[1];
 
             return implode($input[1], $input[0]);
         } catch (BaseFilterError $e) {
@@ -55,6 +60,9 @@ class ArrFilters extends AbstractFilters
      */
     public function first($input)
     {
+        if($this->__isCollection($input)) {
+            $input = $input->all();
+        }
         if(is_array($input)) {
             return Arr::first($input);
         } elseif(is_scalar($input)) {
@@ -73,6 +81,9 @@ class ArrFilters extends AbstractFilters
      */
     public function last($input)
     {
+        if($this->__isCollection($input)) {
+            $input = $input->all();
+        }
         if(is_array($input)) {
             return end($input);
         } elseif(is_scalar($input)) {
@@ -96,14 +107,14 @@ class ArrFilters extends AbstractFilters
                 1 => 'array',
             ]);
 
-            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
+            if(!$this->__isArray($input[0])) {
                 $input[0] = [$input[0]];
             }
 
-            $className = is_object($input[0]) && $input[0] instanceof DropCollectionContract ? get_class($input[0]) : null;
+            $className = $this->__isCollection($input[0]) ? get_class($input[0]) : null;
 
             $input = array_map(function($input) {
-                return $input instanceof DropCollectionContract ? $input->all() : $input;
+                return $this->__isCollection($input) ? $input->all() : $input;
             }, $input);
 
             $input = call_user_func_array('array_merge', $input);
@@ -135,11 +146,11 @@ class ArrFilters extends AbstractFilters
                 1 => 'scalar',
             ]);
 
-            if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
+            if(!$this->__isArray($input[0])) {
                 return null;
             }
 
-            if($input[0] instanceof DropCollectionContract) {
+            if($this->__isCollection($input[0])) {
                 $input[0] = $input[0]->all();
             }
 
@@ -166,8 +177,12 @@ class ArrFilters extends AbstractFilters
      */
     public function reverse($input)
     {
+        if($className = $this->__isCollection($input) ? get_class($input) : null) {
+            $input = $input->all();
+        }
+
         if(is_array($input)) {
-            return array_reverse($input);
+            return $className ? new $className($input) : array_reverse($input);
         }
 
         return $input;
@@ -183,11 +198,11 @@ class ArrFilters extends AbstractFilters
      */
     public function sort(...$input)
     {
-        if(!is_array($input[0]) && !($input[0] instanceof DropCollectionContract)) {
+        if(!$this->__isArray($input[0])) {
             return $input[0];
         }
 
-        if($className = is_object($input[0]) && $input[0] instanceof DropCollectionContract ? get_class($input[0]) : null) {
+        if($className = $this->__isCollection($input[0]) ? get_class($input[0]) : null) {
             $input[0] = $input[0]->all();
         }
 
@@ -232,7 +247,7 @@ class ArrFilters extends AbstractFilters
                 2 => 'scalar',
             ]);
 
-            if($className = is_object($input[0]) && $input[0] instanceof DropCollectionContract ? get_class($input[0]) : null) {
+            if($className = $this->__isCollection($input[0]) ? get_class($input[0]) : null) {
                 $input[0] = $input[0]->all();
             }
 
