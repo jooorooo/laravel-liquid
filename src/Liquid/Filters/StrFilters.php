@@ -9,6 +9,8 @@
 namespace Liquid\Filters;
 
 use Illuminate\Support\Str AS IlluminateStr;
+use Liquid\Exceptions\BaseFilterError;
+use Liquid\Exceptions\FilterError;
 
 class StrFilters extends AbstractFilters
 {
@@ -16,35 +18,61 @@ class StrFilters extends AbstractFilters
     /**
      * Add one string to another
      *
-     * @param string $input
-     * @param string $string
+     * @param $input
      *
      * @return string
      */
-    public function append($input, $string)
+    public function append(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 2);
 
-        return $input . $string;
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1])) {
+                return $input[0];
+            }
+
+            return $input[0] . $input[1];
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Prepend a string to another
      *
-     * @param string $input
-     * @param string $string
+     * @param $input
      *
      * @return string
      */
-    public function prepend($input, $string)
+    public function prepend(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 2);
 
-        return $string . $input;
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1])) {
+                return $input[0];
+            }
+
+            return $input[1] . $input[0];
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
@@ -56,7 +84,8 @@ class StrFilters extends AbstractFilters
      */
     public function downcase($input)
     {
-        return is_string($input) ? IlluminateStr::lower($input) : $input;
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? IlluminateStr::lower($inputNew) : $input;
     }
 
     /**
@@ -68,7 +97,8 @@ class StrFilters extends AbstractFilters
      */
     public function upcase($input)
     {
-        return is_string($input) ? IlluminateStr::upper($input) : $input;
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? IlluminateStr::upper($inputNew) : $input;
     }
 
     /**
@@ -80,7 +110,8 @@ class StrFilters extends AbstractFilters
      */
     public function strip_html($input)
     {
-        return is_string($input) ? strip_tags($input) : $input;
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? strip_tags($inputNew) : $input;
     }
 
     /**
@@ -92,42 +123,83 @@ class StrFilters extends AbstractFilters
      */
     public function strip_newlines($input)
     {
-        return is_string($input) ? str_replace(array(
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? str_replace(array(
             "\n", "\r"
-        ), '', $input) : $input;
+        ), '', $inputNew) : $input;
     }
 
     /**
      * Truncate a string down to x characters
      *
-     * @param string $input
-     * @param int $characters
-     * @param string $ending string to append if truncated
+     * @param $input
      *
      * @return string
      */
-    public function truncate($input, $characters = 100, $ending = '...')
+    public function truncate(...$input)
     {
-        if (is_scalar($input) && IlluminateStr::length($input) > $characters) {
-            return IlluminateStr::substr($input, 0, $characters) . $ending;
-        }
+        try {
+            $this->__validate($input, 2, [
+                1 => 'int',
+            ]);
 
-        return $input;
+            if(!isset($input[2]) || !$this->__isString($input[2])) {
+                $input[2] = '...';
+            }
+
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0])) {
+                return $input[0];
+            }
+
+            return IlluminateStr::substr($input[0], 0, $input[1]) . $input[2];
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
 
     /**
      * Truncate string down to x words
      *
-     * @param string $input
-     * @param int $words
-     * @param string $ending string to append if truncated
+     * @param $input
      *
      * @return string
      */
-    public function truncatewords($input, $words = 15, $ending = '...')
+    public function truncatewords(...$input)
     {
-        return is_scalar($input) ? IlluminateStr::words($input, $words, $ending) : $input;
+        try {
+            $this->__validate($input, 2, [
+                1 => 'int',
+            ]);
+
+            if(!isset($input[2]) || !$this->__isString($input[2])) {
+                $input[2] = '...';
+            }
+
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0])) {
+                return $input[0];
+            }
+
+            return IlluminateStr::words($input[0], $input[1], $input[2]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
@@ -139,136 +211,225 @@ class StrFilters extends AbstractFilters
      */
     public function newline_to_br($input)
     {
-        return is_string($input) ? str_replace(array(
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? str_replace(array(
             "\n", "\r"
-        ), '<br />', $input) : $input;
+        ), '<br />', $inputNew) : $input;
     }
 
     /**
      * Replace occurrences of a string with another
      *
-     * @param string $input
-     * @param string $string
-     * @param string $replacement
+     * @param $input
      *
      * @return string
      */
-    public function replace($input, $string, $replacement = '')
+    public function replace(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 3);
 
-        return str_replace($string, $replacement, $input);
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1]) || !$this->__isString($input[2])) {
+                return $input[0];
+            }
+
+            return str_replace($input[1], $input[2], $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Replace the first occurrences of a string with another
      *
-     * @param string $input
-     * @param string $string
-     * @param string $replacement
+     * @param $input
      *
      * @return string
      */
-    public function replace_first($input, $string, $replacement = '')
+    public function replace_first(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 3);
 
-        return IlluminateStr::replaceFirst($string, $replacement, $input);
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1]) || !$this->__isString($input[2])) {
+                return $input[0];
+            }
+
+            return IlluminateStr::replaceFirst($input[1], $input[2], $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Remove a substring
      *
-     * @param string $input
-     * @param string $string
+     * @param $input
      *
      * @return string
      */
-    public function remove($input, $string)
+    public function remove(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 2);
 
-        return str_replace($string, '', $input);
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1])) {
+                return $input[0];
+            }
+
+            return str_replace($input[1], '', $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
 
     /**
      * Remove the first occurrences of a substring
      *
-     * @param string $input
-     * @param string $string
+     * @param $input
      *
      * @return string
      */
-    public function remove_first($input, $string)
+    public function remove_first(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 2);
 
-        return static::replace_first($input, $string);
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1])) {
+                return $input[0];
+            }
+
+            return IlluminateStr::replaceFirst($input[1], '', $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Replace the first occurrences of a string with another
      *
-     * @param string $input
-     * @param string $string
-     * @param string $replacement
+     * @param $input
      *
      * @return string
      */
-    public function replace_last($input, $string, $replacement = '')
+    public function replace_last(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string) || !is_scalar($replacement)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 3);
 
-        return IlluminateStr::replaceLast($string, $replacement, $input);
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1]) || !$this->__isString($input[2])) {
+                return $input[0];
+            }
+
+            return IlluminateStr::replaceLast($input[1], $input[2], $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Remove the first occurrences of a substring
      *
-     * @param string $input
-     * @param string $string
+     * @param $input
      *
      * @return string
      */
-    public function remove_last($input, $string)
+    public function remove_last(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($string)) {
-            return $input;
-        }
+        try {
+            $this->__validate($input, 2);
 
-        return static::replace_last($input, $string);
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1])) {
+                return $input[0];
+            }
+
+            return IlluminateStr::replaceLast($input[1], '', $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
+        }
     }
 
     /**
      * Split input string into an array of substrings separated by given pattern.
      *
-     * @param string $input
-     * @param string $pattern
+     * @param $input
      *
      * @return array
      */
-    public function split($input, $pattern)
+    public function split(...$input)
     {
-        if(!is_scalar($input) || !is_scalar($pattern)) {
-            return array();
-        }
+        try {
+            $this->__validate($input, 2);
 
-        // Unlike PHP explode function, empty string after split filtering is empty array in Liquid.
-        if (!is_string($input) || $input === '') {
-            return array();
+            $input = array_map(function($input) {
+                return is_array($input) ? json_encode($input) : $input;
+            }, $input);
+
+            if(!$this->__isString($input[0]) || !$this->__isString($input[1])) {
+                return [];
+            }
+
+            if ($input[0] === '') {
+                return [];
+            }
+
+            return empty($input[1]) ? str_split($input[0]) : explode($input[1], $input[0]);
+        } catch (BaseFilterError $e) {
+            throw new FilterError(sprintf(
+                'Liquid error: "%s" %s',
+                __FUNCTION__,
+                $e->getMessage()
+            ), $this->context->getToken());
         }
-        return explode($pattern, $input);
     }
 
     /**
@@ -280,7 +441,8 @@ class StrFilters extends AbstractFilters
      */
     public function capitalize($input)
     {
-        return is_string($input) ? IlluminateStr::title($input) : $input;
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? IlluminateStr::title($inputNew) : $input;
     }
 
     /**
@@ -292,7 +454,8 @@ class StrFilters extends AbstractFilters
      */
     public function camelize($input)
     {
-        return is_string($input) ? IlluminateStr::camel($input) : $input;
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        return $this->__isString($inputNew) ? IlluminateStr::camel($inputNew) : $input;
     }
 
     /**
@@ -302,11 +465,12 @@ class StrFilters extends AbstractFilters
      */
     public function lstrip($input)
     {
-        if(!is_scalar($input)) {
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        if(!$this->__isString($inputNew)) {
             return $input;
         }
 
-        return ltrim($input);
+        return ltrim($inputNew);
     }
 
     /**
@@ -316,11 +480,12 @@ class StrFilters extends AbstractFilters
      */
     public function rstrip($input)
     {
-        if(!is_scalar($input)) {
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        if(!$this->__isString($inputNew)) {
             return $input;
         }
 
-        return rtrim($input);
+        return rtrim($inputNew);
     }
 
     /**
@@ -330,11 +495,12 @@ class StrFilters extends AbstractFilters
      */
     public function strip($input)
     {
-        if(!is_scalar($input)) {
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        if(!$this->__isString($inputNew)) {
             return $input;
         }
 
-        return trim($input);
+        return trim($inputNew);
     }
 
     /**
@@ -346,11 +512,24 @@ class StrFilters extends AbstractFilters
      */
     public function url_encode($input)
     {
-        if(!is_scalar($input)) {
+        $inputNew = is_array($input) ? json_encode($input) : $input;
+        if(!$this->__isString($inputNew)) {
             return $input;
         }
 
-        return urlencode($input);
+        return urlencode($inputNew);
+    }
+
+    /**
+     * Check data is string or object with toString implementation string
+     *
+     * @param mixed $input
+     *
+     * @return bool
+     */
+    private function __isString($input)
+    {
+        return method_exists($input, '__toString') || is_scalar($input);
     }
 
 }

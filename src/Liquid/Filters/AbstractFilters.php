@@ -52,7 +52,7 @@ abstract class AbstractFilters
 
     private function __validateScalar($input)
     {
-        if(!is_scalar($input)) {
+        if(!is_scalar($input) && !method_exists($input, '__toString')) {
             throw new FilterValidateError(
                 'filter requires an scalar argument'
             );

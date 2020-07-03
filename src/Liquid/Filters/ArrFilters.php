@@ -232,9 +232,19 @@ class ArrFilters extends AbstractFilters
                 2 => 'scalar',
             ]);
 
-            return array_filter($input[0], function($context) use($input) {
+            if($className = is_object($input[0]) && $input[0] instanceof DropCollectionContract ? get_class($input[0]) : null) {
+                $input[0] = $input[0]->all();
+            }
+
+            $input[0] = array_filter($input[0], function($context) use($input) {
                 return $this->context->getValue($context, $input[1]) === $input[2];
             });
+
+            if($className) {
+                $input[0] = new $className($input[0]);
+            }
+
+            return $input[0];
         } catch (BaseFilterError $e) {
             throw new FilterError(sprintf(
                 'Liquid error: "%s" %s',
