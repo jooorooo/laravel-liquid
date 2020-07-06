@@ -1,10 +1,10 @@
 <?php
 
-namespace Liquid;
+namespace Liquid\Data;
 
-use ArrayAccess;
 use ArrayIterator;
 use Illuminate\Contracts\Support\Arrayable;
+use Liquid\Context;
 use Liquid\Contracts\DropCollectionContract;
 
 class CollectionDrop extends ArrayIterator implements DropCollectionContract

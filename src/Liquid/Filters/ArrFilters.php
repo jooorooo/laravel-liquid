@@ -10,8 +10,7 @@ namespace Liquid\Filters;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Liquid\CollectionDrop;
-use Liquid\Contracts\DropCollectionContract;
+use Liquid\Data\CollectionDrop;
 use Liquid\Exceptions\BaseFilterError;
 use Liquid\Exceptions\FilterError;
 use Traversable;
