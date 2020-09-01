@@ -255,7 +255,7 @@ class Variable
     private function checkRemoveEscape($context)
     {
         if(is_null($name = ($context->registers['noEscape'][$this->name]??null))) {
-            return true;
+            return false;
         }
 
         if($name != $this->name) {
