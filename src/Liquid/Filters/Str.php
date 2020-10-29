@@ -355,4 +355,20 @@ class Str
         return urlencode($input);
     }
 
+    /**
+     * json encode
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function json_encode($input)
+    {
+        if(is_resource($input)) {
+            return $input;
+        }
+
+        return json_encode($input);
+    }
+
 }
