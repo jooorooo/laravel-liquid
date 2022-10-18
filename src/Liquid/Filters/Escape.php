@@ -8,6 +8,8 @@
 
 namespace Liquid\Filters;
 
+use Liquid\HtmlString;
+
 class Escape
 {
     /**
@@ -18,6 +20,18 @@ class Escape
      * @return string
      */
     public static function escape($input)
+    {
+        return is_string($input) || $input instanceof HtmlString ? htmlentities($input, ENT_QUOTES, 'utf-8') : $input;
+    }
+
+    /**
+     * Escape a string
+     *
+     * @param string $input
+     *
+     * @return string
+     */
+    public static function auto_escape($input)
     {
         return is_string($input) ? htmlentities($input, ENT_QUOTES, 'utf-8') : $input;
     }
@@ -43,7 +57,7 @@ class Escape
      */
     public static function escape_once($input)
     {
-        return is_string($input) ? htmlentities($input, ENT_QUOTES, 'utf-8', false) : $input;
+        return is_string($input) || $input instanceof HtmlString ? htmlentities($input, ENT_QUOTES, 'utf-8', false) : $input;
     }
 
 }

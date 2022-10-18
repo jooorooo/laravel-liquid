@@ -106,7 +106,7 @@ class Variable
 
             foreach ($this->filters as $filter) {
                 // with empty filters set we would just move along
-                if (in_array($filter[0], array('escape', 'escape_once', 'raw', 'newline_to_br'))) {
+                if (in_array($filter[0], array('auto_escape', 'escape', 'escape_once', 'raw', 'newline_to_br'))) {
                     // if we have any raw-like filter, stop
                     $addEscapeFilter = false;
                     break;
@@ -114,7 +114,7 @@ class Variable
             }
 
             if ($addEscapeFilter) {
-                $this->filters[] = array('escape', array());
+                $this->filters[] = array('auto_escape', array());
             }
         }
     }
@@ -206,7 +206,7 @@ class Variable
         $filters = $this->filters;
         if(in_array(trim($this->name), $this->getProtectedVariables())) {
             foreach($filters AS $index => $filter) {
-                if(in_array($filter[0], ['escape', 'escape_once'])) {
+                if(in_array($filter[0], ['auto_escape', 'escape', 'escape_once'])) {
                     unset($filters[$index]);
                 }
             }
@@ -231,7 +231,6 @@ class Variable
         if (is_float($output)) {
             if ($output == (int)$output) {
                 return (int)$output;
-//                return number_format($output, 1);
             }
         }
 

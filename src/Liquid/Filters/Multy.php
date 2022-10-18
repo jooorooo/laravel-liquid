@@ -11,6 +11,7 @@ namespace Liquid\Filters;
 use Iterator;
 use Liquid\Context;
 use Illuminate\Support\Str AS IlluminateStr;
+use Liquid\HtmlString;
 
 class Multy
 {
@@ -68,7 +69,11 @@ class Multy
      */
     public function json($input)
     {
-        return json_encode($input);
+        if(is_resource($input)) {
+            return $input;
+        }
+
+        return new HtmlString(json_encode($input));
     }
 
 }
