@@ -49,7 +49,7 @@ class TagLayout extends AbstractTag
      */
     public function __construct($markup, array &$tokens, LiquidCompiler $compiler = null)
     {
-        $regex = new Regexp('/("[^"]+"|\'[^\']+\')?/');
+        $regex = new Regexp('/\(?("[^"]+"|\'[^\']+\')?\)?/');
         if ($regex->match($markup)) {
             $this->layoutPath = substr($regex->matches[1], 1, strlen($regex->matches[1]) - 2);
         } else {
